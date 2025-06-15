@@ -18,6 +18,42 @@ public class PlayerUIEquipmentManager : MonoBehaviour
     [SerializeField] Image leftHandSlot01;
     [SerializeField] Image leftHandSlot02;
     [SerializeField] Image leftHandSlot03;
+    
+    [SerializeField] Image headEquipmentSlot;
+    [SerializeField] Image bodyEquipmentSlot;
+    [SerializeField] Image handEquipmentSlot;
+    [SerializeField] Image legEquipmentSlot;
+
+    [Header("Highlight Selected Slot")]
+    public Image highlightedRightItemIcon01;
+    public Image highlightedRightItemIcon02;
+    public Image highlightedRightItemIcon03;
+    
+    public Image highlightedLeftItemIcon01;
+    public Image highlightedLeftItemIcon02;
+    public Image highlightedLeftItemIcon03;
+
+    public Image highlightedHeadEquipmentItemIcon;
+    public Image highlightedBodyEquipmentItemIcon;
+    public Image highlightedHandEquipmentItemIcon;
+    public Image highlightedLegEquipmentItemIcon;
+
+    [Header("unEquipButton ")]
+    public GameObject unEquipButtonRightItemIcon01;
+    public GameObject unEquipButtonRightItemIcon02;
+    public GameObject unEquipButtonRightItemIcon03;
+
+    public GameObject unEquipButtonLeftItemIcon01;
+    public GameObject unEquipButtonLeftItemIcon02;
+    public GameObject unEquipButtonLeftItemIcon03;
+
+    public GameObject unEquipButtonHeadEquipmentItemIcon;
+    public GameObject unEquipButtonBodyEquipmentItemIcon;
+    public GameObject unEquipButtonHandEquipmentItemIcon;
+    public GameObject unEquipButtonLegEquipmentItemIcon;
+
+
+
 
     [Header("Equipment Inventory")]
     [SerializeField] GameObject equipmentInventoryWindow;
@@ -26,6 +62,10 @@ public class PlayerUIEquipmentManager : MonoBehaviour
     [SerializeField] GameObject equipmentInventorySlotPrefab;
     
     [SerializeField] Item currentSelectedItem;
+
+
+
+    
 
 
     public void OpenEquipmentManagerMenu()
@@ -135,6 +175,61 @@ public class PlayerUIEquipmentManager : MonoBehaviour
         {
             leftHandSlot03.enabled = false;
         }
+
+        //Head Equipment
+        HeadEquipmentItem headEquipment = player.playerInventoryManager.headEquipment;
+
+        if (headEquipment != null)
+        {
+            headEquipmentSlot.enabled = true;
+            headEquipmentSlot.sprite = headEquipment.itemIcon;
+        }
+        else
+        {
+            headEquipmentSlot.enabled = false;
+        }
+
+        //Body Equipment
+        BodyEquipmentItem bodyEquipment = player.playerInventoryManager.bodyEquipment;
+
+        if (bodyEquipment != null)
+        {
+            bodyEquipmentSlot.enabled = true;
+            bodyEquipmentSlot.sprite = bodyEquipment.itemIcon;
+        }
+        else
+        {
+            bodyEquipmentSlot.enabled = false;
+        }
+
+        //Hand Equipment
+        HandEquipmentItem handEquipment = player.playerInventoryManager.handEquipment;
+
+        if (handEquipment != null)
+        {
+            handEquipmentSlot.enabled = true;
+            handEquipmentSlot.sprite = handEquipment.itemIcon;
+        }
+        else
+        {
+            handEquipmentSlot.enabled = false;
+        }
+
+        //Leg Equipment
+        LegEquipmentItem legEquipment = player.playerInventoryManager.legEquipment;
+
+        if (legEquipment != null)
+        {
+            legEquipmentSlot.enabled = true;
+            legEquipmentSlot.sprite = legEquipment.itemIcon;
+        }
+        else
+        {
+            legEquipmentSlot.enabled = false;
+        }
+
+
+
     }
 
     private void ClearEquipmentInventory()
@@ -175,6 +270,19 @@ public class PlayerUIEquipmentManager : MonoBehaviour
                 break;
             case EquipmentType.leftWeapon03:
                 LoadWeaponInventory();
+                break;
+
+            case EquipmentType.Head:
+                LoadHeadEquipmentInventory();
+                break;
+            case EquipmentType.Body:
+                LoadBodyEquipmentInventory();
+                break;
+            case EquipmentType.Hand:
+                LoadHandEquipmentInventory();
+                break;
+            case EquipmentType.Leg:
+                LoadLegEquipmentInventory();
                 break;
             default:
                 break;
@@ -230,11 +338,300 @@ public class PlayerUIEquipmentManager : MonoBehaviour
 
     }
 
+    private void LoadHeadEquipmentInventory()
+    {
+        playerManager player = playerManager.instance?.GetComponent<playerManager>();
+
+        List<HeadEquipmentItem> HeadEquipmentInInventory = new List<HeadEquipmentItem>();
+
+
+
+        for (int i = 0; i < player.playerInventoryManager.itemsInInventory.Count; i++)
+        {
+            HeadEquipmentItem HeadEquipment = player.playerInventoryManager.itemsInInventory[i] as HeadEquipmentItem;
+
+            if (HeadEquipment != null)
+            {
+                HeadEquipmentInInventory.Add(HeadEquipment);
+            }
+
+        }
+
+        if (HeadEquipmentInInventory.Count <= 0)
+        {
+            RefreshMenu();
+            return;
+
+        }
+
+        bool hasSelectedFirstInventorySlot = false;
+
+        for (int i = 0; i < HeadEquipmentInInventory.Count; i++)
+        {
+            GameObject inventorySlotGameObject = Instantiate(equipmentInventorySlotPrefab, equipmentInventoryContentWindow);
+            UI_EquipmentInventorySlot equipmentInventorySlot = inventorySlotGameObject.GetComponent<UI_EquipmentInventorySlot>();
+            equipmentInventorySlot.AddItem(HeadEquipmentInInventory[i]);
+
+            //This Will Select The First Button In The List
+            if (!hasSelectedFirstInventorySlot)
+            {
+                hasSelectedFirstInventorySlot = true;
+                Button inventorySlotButton = inventorySlotGameObject.GetComponent<Button>();
+                inventorySlotButton.Select();
+                inventorySlotButton.OnSelect(null);
+            }
+        }
+
+    }
+
+    private void LoadBodyEquipmentInventory()
+    {
+        playerManager player = playerManager.instance?.GetComponent<playerManager>();
+
+        List<BodyEquipmentItem> BodyEquipmentInInventory = new List<BodyEquipmentItem>();
+
+
+
+        for (int i = 0; i < player.playerInventoryManager.itemsInInventory.Count; i++)
+        {
+            BodyEquipmentItem BodyEquipment = player.playerInventoryManager.itemsInInventory[i] as BodyEquipmentItem;
+
+            if (BodyEquipment != null)
+            {
+                BodyEquipmentInInventory.Add(BodyEquipment);
+            }
+
+        }
+
+        if (BodyEquipmentInInventory.Count <= 0)
+        {
+            RefreshMenu();
+            return;
+
+        }
+
+        bool hasSelectedFirstInventorySlot = false;
+
+        for (int i = 0; i < BodyEquipmentInInventory.Count; i++)
+        {
+            GameObject inventorySlotGameObject = Instantiate(equipmentInventorySlotPrefab, equipmentInventoryContentWindow);
+            UI_EquipmentInventorySlot equipmentInventorySlot = inventorySlotGameObject.GetComponent<UI_EquipmentInventorySlot>();
+            equipmentInventorySlot.AddItem(BodyEquipmentInInventory[i]);
+
+            //This Will Select The First Button In The List
+            if (!hasSelectedFirstInventorySlot)
+            {
+                hasSelectedFirstInventorySlot = true;
+                Button inventorySlotButton = inventorySlotGameObject.GetComponent<Button>();
+                inventorySlotButton.Select();
+                inventorySlotButton.OnSelect(null);
+            }
+        }
+
+    }
+
+    private void LoadLegEquipmentInventory()
+    {
+        playerManager player = playerManager.instance?.GetComponent<playerManager>();
+
+        List<LegEquipmentItem> LegEquipmentInInventory = new List<LegEquipmentItem>();
+
+
+
+        for (int i = 0; i < player.playerInventoryManager.itemsInInventory.Count; i++)
+        {
+            LegEquipmentItem LegEquipment = player.playerInventoryManager.itemsInInventory[i] as LegEquipmentItem;
+
+            if (LegEquipment != null)
+            {
+                LegEquipmentInInventory.Add(LegEquipment);
+            }
+
+        }
+
+        if (LegEquipmentInInventory.Count <= 0)
+        {
+            RefreshMenu();
+            return;
+
+        }
+
+        bool hasSelectedFirstInventorySlot = false;
+
+        for (int i = 0; i < LegEquipmentInInventory.Count; i++)
+        {
+            GameObject inventorySlotGameObject = Instantiate(equipmentInventorySlotPrefab, equipmentInventoryContentWindow);
+            UI_EquipmentInventorySlot equipmentInventorySlot = inventorySlotGameObject.GetComponent<UI_EquipmentInventorySlot>();
+            equipmentInventorySlot.AddItem(LegEquipmentInInventory[i]);
+
+            //This Will Select The First Button In The List
+            if (!hasSelectedFirstInventorySlot)
+            {
+                hasSelectedFirstInventorySlot = true;
+                Button inventorySlotButton = inventorySlotGameObject.GetComponent<Button>();
+                inventorySlotButton.Select();
+                inventorySlotButton.OnSelect(null);
+            }
+        }
+
+    }
+
+    private void LoadHandEquipmentInventory()
+    {
+        playerManager player = playerManager.instance?.GetComponent<playerManager>();
+
+        List<HandEquipmentItem> HandEquipmentInInventory = new List<HandEquipmentItem>();
+
+
+
+        for (int i = 0; i < player.playerInventoryManager.itemsInInventory.Count; i++)
+        {
+            HandEquipmentItem HandEquipment = player.playerInventoryManager.itemsInInventory[i] as HandEquipmentItem;
+
+            if (HandEquipment != null)
+            {
+                HandEquipmentInInventory.Add(HandEquipment);
+            }
+
+        }
+
+        if (HandEquipmentInInventory.Count <= 0)
+        {
+            RefreshMenu();
+            return;
+
+        }
+
+        bool hasSelectedFirstInventorySlot = false;
+
+        for (int i = 0; i < HandEquipmentInInventory.Count; i++)
+        {
+            GameObject inventorySlotGameObject = Instantiate(equipmentInventorySlotPrefab, equipmentInventoryContentWindow);
+            UI_EquipmentInventorySlot equipmentInventorySlot = inventorySlotGameObject.GetComponent<UI_EquipmentInventorySlot>();
+            equipmentInventorySlot.AddItem(HandEquipmentInInventory[i]);
+
+            //This Will Select The First Button In The List
+            if (!hasSelectedFirstInventorySlot)
+            {
+                hasSelectedFirstInventorySlot = true;
+                Button inventorySlotButton = inventorySlotGameObject.GetComponent<Button>();
+                inventorySlotButton.Select();
+                inventorySlotButton.OnSelect(null);
+            }
+        }
+
+    }
+
     public void SelectEquipmentSlot(int EquipmentSlot)
     {
         currentSelectedEquipmentSlot = (EquipmentType)EquipmentSlot;
 
+        if(currentSelectedEquipmentSlot == EquipmentType.RightWeapon01)
+        {
+            highlightedRightItemIcon01.enabled = true;
+            unEquipButtonRightItemIcon01.SetActive(true);
+        }
+        else
+        {
+            highlightedRightItemIcon01.enabled = false;
+            unEquipButtonRightItemIcon01.SetActive(false);
+        }
+        if (currentSelectedEquipmentSlot == EquipmentType.RightWeapon02)
+        {
+            highlightedRightItemIcon02.enabled = true;
+            unEquipButtonRightItemIcon02.SetActive(true);
+        }
+        else
+        {
+            highlightedRightItemIcon02.enabled = false;
+            unEquipButtonRightItemIcon02.SetActive(false);
+        }
+        if (currentSelectedEquipmentSlot == EquipmentType.RightWeapon03)
+        {
+            highlightedRightItemIcon03.enabled = true;
+            unEquipButtonRightItemIcon03.SetActive(true);
+        }
+        else
+        {
+            highlightedRightItemIcon03.enabled = false;
+            unEquipButtonRightItemIcon03.SetActive(false);
+        }
+        if (currentSelectedEquipmentSlot == EquipmentType.leftWeapon01)
+        {
+            highlightedLeftItemIcon01.enabled = true;
+            unEquipButtonLeftItemIcon01.SetActive(true);
+        }
+        else
+        {
+            highlightedLeftItemIcon01.enabled = false;
+            unEquipButtonLeftItemIcon01.SetActive(false);
+        }
+        if (currentSelectedEquipmentSlot == EquipmentType.leftWeapon02)
+        {
+            highlightedLeftItemIcon02.enabled = true;
+            unEquipButtonLeftItemIcon02.SetActive(true);
+        }
+        else
+        {
+            highlightedLeftItemIcon02.enabled = false;
+            unEquipButtonLeftItemIcon02.SetActive(false);
+        }
+        if (currentSelectedEquipmentSlot == EquipmentType.leftWeapon03)
+        {
+            highlightedLeftItemIcon03.enabled = true;
+            unEquipButtonLeftItemIcon03.SetActive(true);
+        }
+        else
+        {
+            highlightedLeftItemIcon03.enabled = false;
+            unEquipButtonLeftItemIcon03.SetActive(false);
+        }
+
+        if (currentSelectedEquipmentSlot == EquipmentType.Head)
+        {
+            highlightedHeadEquipmentItemIcon.enabled = true;
+            unEquipButtonHeadEquipmentItemIcon.SetActive(true);
+        }
+        else
+        {
+            highlightedHeadEquipmentItemIcon.enabled = false;
+            unEquipButtonHeadEquipmentItemIcon.SetActive(false);
+        }
+        if (currentSelectedEquipmentSlot == EquipmentType.Body)
+        {
+            highlightedBodyEquipmentItemIcon.enabled = true;
+            unEquipButtonBodyEquipmentItemIcon.SetActive(true);
+        }
+        else
+        {
+            highlightedBodyEquipmentItemIcon.enabled = false;
+            unEquipButtonBodyEquipmentItemIcon.SetActive(false);
+        }
+        if (currentSelectedEquipmentSlot == EquipmentType.Hand)
+        {
+            highlightedHandEquipmentItemIcon.enabled = true;
+            unEquipButtonHandEquipmentItemIcon.SetActive(true);
+        }
+        else
+        {
+            highlightedHandEquipmentItemIcon.enabled = false;
+            unEquipButtonHandEquipmentItemIcon.SetActive(false);
+        }
+        if (currentSelectedEquipmentSlot == EquipmentType.Leg)
+        {
+            highlightedLegEquipmentItemIcon.enabled = true;
+            unEquipButtonLegEquipmentItemIcon.SetActive(true);
+        }
+        else
+        {
+            highlightedLegEquipmentItemIcon.enabled = false;
+            unEquipButtonLegEquipmentItemIcon.SetActive(false);
+        }
+
+
+
     }
+
 
     public void UnEquipSelectedItem()
     {
@@ -258,6 +655,7 @@ public class PlayerUIEquipmentManager : MonoBehaviour
                 if (player.playerInventoryManager.rightHandWeaponIndex ==0)
                 {
                     player.playerInventoryManager.currentRightHandWeaponID = WorldItemDatabase.instance.unArmedWeapon.itemID;
+                    //player.playerEquipmentManager.SwitchRightWeapon();
                 }
                 break;
 
@@ -276,6 +674,7 @@ public class PlayerUIEquipmentManager : MonoBehaviour
                 if (player.playerInventoryManager.rightHandWeaponIndex ==1)
                 {
                     player.playerInventoryManager.currentRightHandWeaponID = WorldItemDatabase.instance.unArmedWeapon.itemID;
+                    //player.playerEquipmentManager.SwitchRightWeapon();
                 }
                 break;
 
@@ -294,6 +693,7 @@ public class PlayerUIEquipmentManager : MonoBehaviour
                 if (player.playerInventoryManager.rightHandWeaponIndex ==2)
                 {
                     player.playerInventoryManager.currentRightHandWeaponID = WorldItemDatabase.instance.unArmedWeapon.itemID;
+                    //player.playerEquipmentManager.SwitchRightWeapon();
                 }
                 break;
 
@@ -351,6 +751,63 @@ public class PlayerUIEquipmentManager : MonoBehaviour
                     player.playerInventoryManager.currentLeftHandWeaponID = WorldItemDatabase.instance.unArmedWeapon.itemID;
                 }
                 break;
+
+            case EquipmentType.Head:
+                unEquippedItem = player.playerInventoryManager.headEquipment;
+
+                if (unEquippedItem != null)
+                {
+                    
+                    player.playerInventoryManager.AddItemToInventory(unEquippedItem);
+                    
+                }
+
+                player.playerInventoryManager.headEquipment = null;
+                player.playerEquipmentManager.LoadHeadEquipment(player.playerInventoryManager.headEquipment);
+                break;
+
+            case EquipmentType.Body:
+                unEquippedItem = player.playerInventoryManager.bodyEquipment;
+
+                if (unEquippedItem != null)
+                {
+
+                    player.playerInventoryManager.AddItemToInventory(unEquippedItem);
+
+                }
+
+                player.playerInventoryManager.bodyEquipment = null;
+                player.playerEquipmentManager.LoadBodyEquipment(player.playerInventoryManager.bodyEquipment);
+
+                break;
+
+             case EquipmentType.Hand:
+                unEquippedItem = player.playerInventoryManager.handEquipment;
+
+                if (unEquippedItem != null)
+                {
+
+                    player.playerInventoryManager.AddItemToInventory(unEquippedItem);
+
+                }
+
+                player.playerInventoryManager.handEquipment = null;
+                player.playerEquipmentManager.LoadHandEquipment(player.playerInventoryManager.handEquipment);
+                break;
+
+            case EquipmentType.Leg:
+                unEquippedItem = player.playerInventoryManager.legEquipment;
+
+                if (unEquippedItem != null)
+                {
+
+                    player.playerInventoryManager.AddItemToInventory(unEquippedItem);
+
+                }
+
+                player.playerInventoryManager.legEquipment = null;
+                player.playerEquipmentManager.LoadLegEquipment(player.playerInventoryManager.legEquipment);
+                break;
         }
         //Refresh Menu
         RefreshMenu();
@@ -398,6 +855,7 @@ public class PlayerUIEquipmentManager : MonoBehaviour
             lastSelectedButton.Select();
             lastSelectedButton.OnSelect(null);
         }
+
 
     }
 

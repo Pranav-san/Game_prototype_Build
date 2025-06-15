@@ -16,6 +16,12 @@ public class UndeadDamageCollider : DamageCollider
 
 
     }
+
+    protected override void GetBlockingDotValues(CharacterManager damageTarget)
+    {
+        directionFromAttackToDamageTarget =  aiCharacterManager.transform.position - damageTarget.transform.position;
+        dotvalueFromAttackToDamageTarget = Vector3.Dot(directionFromAttackToDamageTarget, damageTarget.transform.forward);
+    }
     protected override void DamageTarget(CharacterManager damageTarget)
     {
 
@@ -39,6 +45,7 @@ public class UndeadDamageCollider : DamageCollider
         damageEffect.firelDamage = firelDamage;
         damageEffect.lightininglDamage = lightininglDamage;
         damageEffect.contactPoint = contactPoint;
+        damageEffect.poiseDamage = poiseDamage;
         damageEffect.angleHitFrom = Vector3.SignedAngle(aiCharacterManager.transform.forward, damageTarget.transform.forward, Vector3.up);
 
         damageTarget.characterEffectsManager.ProcessInstantEffect(damageEffect);

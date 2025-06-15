@@ -5,6 +5,13 @@ using UnityEngine;
 public class AICharacterCombatManager : CharacterCombatManager
 {
 
+    protected AICharacterManager aiCharacter;
+
+    [Header("Damage")]
+     protected int baseDamage = 25;
+     protected int basePoiseDamage = 25;
+    
+
     [Header("Target Onformation")]
     public float distanceFromTarget;
     public float viewableAngle;
@@ -21,6 +28,15 @@ public class AICharacterCombatManager : CharacterCombatManager
 
     [Header("Attack Rotation Speed")]
     public float attackRotationSpeed = 25;
+
+    protected override void Awake()
+    {
+        base.Awake();
+
+        aiCharacter = GetComponent<AICharacterManager>();
+
+        
+    }
 
     public void FindTargetViaLineOfSight(AICharacterManager aiCharacter)
     {
@@ -78,38 +94,38 @@ public class AICharacterCombatManager : CharacterCombatManager
     {
         if (aiCharacter.isPerformingAction)
             return;
-        //if(viewableAngle>=20 && viewableAngle<=60)
-        //{
-        //    //aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Turn Right 90", true);
-        //    Debug.Log("45 degree Right");
-        //}
-        //else if(viewableAngle <= -20 && viewableAngle >= -60)
-        //{
-        //    //aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Turn Left 90", true);
-        //    Debug.Log("45 degree left");
+        if (viewableAngle>=20 && viewableAngle<=60)
+        {
+            aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Turn Right 45 ", true);
+            Debug.Log("45 degree Right");
+        }
+        else if (viewableAngle <= -20 && viewableAngle >= -60)
+        {
+            aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Turn Left 45 ", true);
+            Debug.Log("45 degree left");
 
-        //}
-        //if (viewableAngle >= 61 && viewableAngle <= 110)
-        //{
-        //    aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Turn Right 90", true);
+        }
+        if (viewableAngle >= 61 && viewableAngle <= 110)
+        {
+            aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Turn Right 90", true);
 
-        //}
-        //else if (viewableAngle <= -61 && viewableAngle >= -110)
-        //{
-        //    aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Turn Left 90", true);
+        }
+        else if (viewableAngle <= -61 && viewableAngle >= -110)
+        {
+            aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Turn Left 90", true);
 
-        //}
+        }
 
-        //if(viewableAngle >= 146 && viewableAngle <= 180)
-        //{
-        //    aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Right Turn180", true);
+        if (viewableAngle >= 146 && viewableAngle <= 180)
+        {
+            aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Turn Right 180", true);
 
-        //}
-        //else if(viewableAngle <= -146 && viewableAngle >= -180)
-        //{
-        //    aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Left Turn180", true);
+        }
+        else if (viewableAngle <= -146 && viewableAngle >= -180)
+        {
+            aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Turn Left 180", true);
 
-        //}
+        }
 
 
     }
@@ -129,27 +145,14 @@ public class AICharacterCombatManager : CharacterCombatManager
     public void RotateTowardsAgent(AICharacterManager aiCharacter)
     {
         //Sebbs Logic
-        //if(aiCharacter.isMoving)
-        //{
-        //aiCharacter.transform.rotation = aiCharacter.navMeshAgent.transform.rotation;
-        //}
-
-
-
-        if (currentTarget == null) return;  // Ensure there is a target
-
-        Vector3 directionToTarget = currentTarget.transform.position - aiCharacter.transform.position;
-        directionToTarget.y = 0; // Keep rotation in the horizontal plane
-        directionToTarget.Normalize();
-
-        if (directionToTarget == Vector3.zero)
+        if(aiCharacter.isMoving)
         {
-            directionToTarget = aiCharacter.transform.forward;
+        aiCharacter.transform.rotation = aiCharacter.navMeshAgent.transform.rotation;
         }
 
-        // Rotate smoothly towards the player
-        Quaternion targetRotation = Quaternion.LookRotation(directionToTarget);
-        aiCharacter.transform.rotation = Quaternion.Slerp(aiCharacter.transform.rotation, targetRotation, attackRotationSpeed * Time.deltaTime);
+
+
+       
     }
 
     public void RotateTowardsTargetWhilestAttacking(AICharacterManager aiCharacter)
@@ -160,8 +163,9 @@ public class AICharacterCombatManager : CharacterCombatManager
         if(!aiCharacter.canRotate)
             return;
 
-        if(!aiCharacter.isPerformingAction)
-            return;
+        
+
+        
 
         Vector3 targetDirection = currentTarget.transform.position - aiCharacter.transform.position;
         targetDirection.y = 0;
@@ -174,7 +178,9 @@ public class AICharacterCombatManager : CharacterCombatManager
         Quaternion targetRotation = Quaternion.LookRotation(targetDirection);
 
         aiCharacter.transform.rotation = Quaternion.Slerp(aiCharacter.transform.rotation, targetRotation, attackRotationSpeed * Time.deltaTime);
-        
+
+        Debug.Log("Rotate While Attacking");
+
 
     }
 

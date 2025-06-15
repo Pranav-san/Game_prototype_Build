@@ -85,6 +85,13 @@ public class CharacterAnimatorManager : MonoBehaviour
 
     }
 
+
+    public void SetAnimatorMovementParameters(float horizontalMovement, float verticalMovement)
+    {
+        character.animator.SetFloat(vertical, verticalMovement, 0.1f, Time.deltaTime);
+        character.animator.SetFloat(horizontal, horizontalMovement, 0.1f, Time.deltaTime);
+    }
+
     public virtual void PlayTargetActionAnimation(
         string targetAnimation, 
         bool isPerformingAction, 
@@ -102,7 +109,8 @@ public class CharacterAnimatorManager : MonoBehaviour
 
     }
 
-    public virtual void PlayTargetAttackActionAnimation( AttackType attackType,
+    public virtual void PlayTargetAttackActionAnimation(WeaponItem weapon, 
+        AttackType attackType,
        string targetAnimation,
        bool isPerformingAction,
        bool applyRootMotion = true,
@@ -111,6 +119,7 @@ public class CharacterAnimatorManager : MonoBehaviour
     {
         character.characterCombatManager.currentAttackType = attackType;
         character.characterCombatManager.lastAttackAnimationPerformed=targetAnimation;
+        UpdateAnimatorController(weapon.weaponAnimator);
         character.applyRootMotion = applyRootMotion;
         character.animator.CrossFade(targetAnimation, 0.2f);
 
@@ -128,6 +137,12 @@ public class CharacterAnimatorManager : MonoBehaviour
 
     public virtual void DisableCanDoCombo()
     {
+
+    }
+
+    public void UpdateAnimatorController(AnimatorOverrideController weaponController)
+    {
+        character.animator.runtimeAnimatorController = weaponController;
 
     }
 

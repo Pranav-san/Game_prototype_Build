@@ -5,7 +5,9 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using System.Threading;
 using static UnityEngine.GraphicsBuffer;
-using UnityEngine.Playables;
+using TMPro;
+
+
 
 public class TitleScreenManager : MonoBehaviour
 {
@@ -23,6 +25,7 @@ public class TitleScreenManager : MonoBehaviour
     [SerializeField] GameObject titleScreenMainMenu;
     [SerializeField] GameObject titleScreenLoadMenu;
     [SerializeField] GameObject SettingsMenu;
+    [SerializeField] GameObject titleScreenCharacterCreationMenu;
 
 
     [Header("Buttons")]
@@ -32,6 +35,22 @@ public class TitleScreenManager : MonoBehaviour
     [SerializeField] Button SettingsMenuButton;
     [SerializeField] Button deleteCharacterPopUpConfirmbutton;
 
+    [Header("Character Creation Main panel Buttions")]
+    [SerializeField] Button characterNameButton;
+    [SerializeField] Button characterClassButton;
+    [SerializeField] Button startGameButton;
+
+    [Header("Character Creation Secondary panel Buttons")]
+    [SerializeField] GameObject characterClassMenu;
+    [SerializeField] GameObject characterNameMenu;
+    [SerializeField] TMP_InputField characterNameInputField;
+
+
+    [Header("Character Creation Main panel Buttons")]
+    
+    [SerializeField] Button[] characterClassButtons;
+   
+
     [Header("PoPups")]
     [SerializeField] GameObject noCharacterSlotPopUp;
     [SerializeField] Button noCharacterSlotPopUpOkaybutton;
@@ -39,6 +58,11 @@ public class TitleScreenManager : MonoBehaviour
 
     [Header("Character SLots")]
     public CharacterSlot currentSelectedCharacterSlot = CharacterSlot.N0_SLOT;
+
+    [Header("Classes")]
+    public CharacterClass[] startingClasses;
+
+
 
     
 
@@ -79,13 +103,32 @@ public class TitleScreenManager : MonoBehaviour
         }
     }
 
+    public void AttemptToCreateNewCharacter()
+    {
+        if (WorldSaveGameManager.instance.HasFreeCharacterSlot())
+        {
+            OpenCharacterCreationMenu();
+
+
+        }
+        else
+        {
+            DisplayNoFreeCharacterSlots();
+        }
+
+    }
+
     public void StartNewGame()
     {
-        
+       
 
         WorldSaveGameManager.instance.AttemptCreateNewGame();
+        CloseCharacterCreationMenu();
 
-        
+
+
+
+
 
 
 
@@ -94,6 +137,73 @@ public class TitleScreenManager : MonoBehaviour
     {
         Debug.Log("Quit");
         Application.Quit();
+    }
+
+    public void OpenCharacterCreationMenu()
+    {
+        titleScreenCharacterCreationMenu.SetActive(true);
+
+    }
+    public void CloseCharacterCreationMenu()
+    {
+        titleScreenCharacterCreationMenu.SetActive(false);
+
+    }
+
+    public void OpenChooseCharacterClassSubMenu()
+    {
+        ToggleCharacterCreationScreenMainMenuButtons(false);
+        characterClassMenu.SetActive(true);
+
+        if(characterClassButtons.Length > 0)
+        {
+            characterClassButtons[0].Select();
+            characterClassButtons[0].OnSelect(null);
+        }
+
+    }
+    public void CloseChooseCharacterClassSubMenu()
+    {
+        ToggleCharacterCreationScreenMainMenuButtons(true);
+        characterClassMenu.SetActive(false);
+
+        characterClassButton.Select();
+        characterClassButton.OnSelect(null);
+
+    }
+
+    public void OpenChooseNameSubMenu()
+    {
+        ToggleCharacterCreationScreenMainMenuButtons(false);
+
+        characterNameButton.gameObject.SetActive(false);
+        characterNameMenu.SetActive(true);
+
+        characterNameInputField.Select();
+
+    }
+
+    public void CloseChooseNameSubMenu()
+    {
+        ToggleCharacterCreationScreenMainMenuButtons(true);
+
+        characterNameButton.gameObject.SetActive(true);
+        characterNameMenu.SetActive(false);
+
+        characterNameButton.Select();
+
+        playerManager player = WorldSaveGameManager.instance.player;
+
+        player.characterName = characterNameInputField.text;
+
+    }
+
+    private void ToggleCharacterCreationScreenMainMenuButtons(bool status)
+    {
+        characterNameButton.enabled = status;
+        characterClassButton.enabled=status;
+        startGameButton.enabled = status;
+
     }
 
     public void OpenLoadGameMenu()
@@ -200,9 +310,97 @@ public class TitleScreenManager : MonoBehaviour
 
     }
 
+    public void SelectClass (int ClassID)
+    {
+        playerManager player = WorldSaveGameManager.instance.player;
+
+        if (startingClasses.Length<=0)
+            return;
+        startingClasses[ClassID].SetClass(player);
+        CloseChooseCharacterClassSubMenu();
+    }
+    public void PreviewClass(int ClassID)
+    {
+        playerManager player = WorldSaveGameManager.instance.player;
+
+        if (startingClasses.Length<=0)
+            return;
+        startingClasses[ClassID].SetClass(player);
+    }
+    public void SetCharacterClass(playerManager player, int vitality, int stamina, int mind, int strength, 
+        int dexterity, int faith, WeaponItem[] mainHandWeapons, WeaponItem[]offHandWeapons, HeadEquipmentItem headEquipment,
+        BodyEquipmentItem bodyEquipment, LegEquipmentItem legEquipment, HandEquipmentItem handEquipment)
+    {
+        //Set Stats
+        player.playerStatsManager.vitality = vitality;
+        player.playerStatsManager.stamina = stamina;
+        player.playerStatsManager.mind = mind;
+        player.playerStatsManager.strength = strength;
+        player.playerStatsManager.dexterity = dexterity;
+        player.playerStatsManager.faith = faith;
+
+        //Set Weapons
+        player.playerInventoryManager.weaponsInRightHandSlot[0]=Instantiate(mainHandWeapons[0]);
+        player.playerInventoryManager.weaponsInRightHandSlot[0]=Instantiate(mainHandWeapons[1]);
+        player.playerInventoryManager.weaponsInRightHandSlot[0]=Instantiate(mainHandWeapons[2]);
+        player.playerInventoryManager.currentRightHandWeapon = player.playerInventoryManager.weaponsInRightHandSlot[0];
+
+        player.playerInventoryManager.weaponsInLeftHandSlot[0]=Instantiate(offHandWeapons[0]);
+        player.playerInventoryManager.weaponsInLeftHandSlot[0]=Instantiate(offHandWeapons[1]);
+        player.playerInventoryManager.weaponsInLeftHandSlot[0]=Instantiate(offHandWeapons[2]);
+        player.playerInventoryManager.currentLeftHandWeapon = player.playerInventoryManager.weaponsInLeftHandSlot[0];
+
+        //Set Armor
+        if(headEquipment !=null)
+        {
+            HeadEquipmentItem equipment = Instantiate(headEquipment);
+            player.playerInventoryManager.headEquipment = equipment;
+            player.playerEquipmentManager.LoadHeadEquipment(equipment);
+        }
+        else
+        {
+            player.playerInventoryManager.headEquipment = null; 
+        }
+        if (bodyEquipment !=null)
+        {
+            BodyEquipmentItem equipment = Instantiate(bodyEquipment);
+            player.playerInventoryManager.bodyEquipment = equipment;
+        }
+        else
+        {
+            player.playerInventoryManager.bodyEquipment = null;
+        }
+        if (legEquipment !=null)
+        {
+            LegEquipmentItem equipment = Instantiate(legEquipment);
+            player.playerInventoryManager.legEquipment = equipment;
+            player.playerEquipmentManager.LoadLegEquipment(equipment);
+        }
+        else
+        {
+            player.playerInventoryManager.legEquipment = null;
+        }
+        if (handEquipment !=null)
+        {
+            HandEquipmentItem equipment = Instantiate(handEquipment);
+            player.playerInventoryManager.handEquipment = equipment;
+            
+        }
+        else
+        {
+            player.playerInventoryManager.handEquipment = null;
+        }
+
+        
 
 
-    
+
+    }
+
+
+
+
+
 
 
 }

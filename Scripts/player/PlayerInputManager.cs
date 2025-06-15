@@ -15,6 +15,8 @@ public class PlayerInputManager : MonoBehaviour
     public float cameraHorizontalInput;
     [SerializeField] Vector2 cameraInput;
 
+    
+
     [Header("Lock On")]
     [SerializeField] bool LockOn_Input;
     [SerializeField] bool LockOn_Left_Input;
@@ -32,9 +34,18 @@ public class PlayerInputManager : MonoBehaviour
     [SerializeField] bool dodgeInput = false;
     [SerializeField] bool sprintInput = false;
     [SerializeField] bool jumpInput = false;
-    [SerializeField] bool RB_Input = false;
+   
     [SerializeField] bool Switch_Right_Weapon_Input = false;
     [SerializeField] bool Switch_Left_Weapon_Input = false;
+
+    [Header("Bumper Input")]
+    [SerializeField] bool RB_Input = false;
+    [SerializeField] bool LB_Input = false;
+
+    [Header("Trigger Input")]
+    [SerializeField] bool RT_Input = false;
+    [SerializeField] bool Hold_RT_Input = false;
+
 
     [SerializeField] bool interaction_Input = false;
     [SerializeField] bool cameraSwitch_Input = false;
@@ -42,13 +53,22 @@ public class PlayerInputManager : MonoBehaviour
     [Header("UI Inputs")]
     [SerializeField] bool openCharacterMenuInput = false;
     [SerializeField] bool closeMenuInput = false;
+    [SerializeField] bool openSurvivalWheelInput = false;
 
 
-    
+    [Header("Qued Inputs")]
+    private bool is_Input_Que_Active = false;
+    [SerializeField] float default_Que_Input_Time = 0.35f;
+    [SerializeField] float qued_Input_Timer = 0;
+    [SerializeField] bool que_RB_Input = false;
 
 
 
-    
+
+
+
+
+
 
 
     private void Awake()
@@ -106,10 +126,19 @@ public class PlayerInputManager : MonoBehaviour
             playerControls.PlayerActions.SwitchLeftWeapon.performed += i => Switch_Left_Weapon_Input = true;
             
             playerControls.PlayerActions.InteractionKey.performed += i => interaction_Input = true;
-           
 
-
+            //Bumpers
             playerControls.PlayerActions.RB.performed += i => RB_Input = true;
+            playerControls.PlayerActions.LB.performed += i => LB_Input = true;
+            playerControls.PlayerActions.LB.canceled += i => player.isBlocking = false;
+            
+            playerControls.PlayerActions.RT.performed += i => RT_Input = true;
+
+            
+
+            //Triggers
+            playerControls.PlayerActions.HoldRT.performed += i => Hold_RT_Input = true;
+            playerControls.PlayerActions.HoldRT.canceled += i => Hold_RT_Input = false;
 
             //Lock On
             playerControls.PlayerActions.LockOn.performed += i => LockOn_Input = true;
@@ -124,6 +153,12 @@ public class PlayerInputManager : MonoBehaviour
 
             //UI Inputs
             playerControls.PlayerActions.OpenCharacterMenu.performed += i => openCharacterMenuInput = true;
+            //playerControls.PlayerActions.OpenSurvivalWheel.performed += i => openSurvivalWheelInput = true;
+            playerControls.PlayerActions.OpenSurvivalWheel.performed += i => openSurvivalWheelInput = true;
+            playerControls.PlayerActions.OpenSurvivalWheel.canceled += i => openSurvivalWheelInput = false;
+
+            //Qued Inputs
+            playerControls.PlayerActions.QueRB.performed += i => QueInput(ref que_RB_Input);
 
 
 
@@ -148,21 +183,64 @@ public class PlayerInputManager : MonoBehaviour
     private void HandleAllInputs()
     {
 
+        HandleAllQuedInput();
+
         HandlePlayerMovementInput();
 
 
         HandleCameraMovementInput();
         HandleDodgeInput();
         HandleSprinting();
+        
         HandleRBInput();
+        HandleLBInput();
+
         HandleSwitchRightWeaponInput();
         HandleSwitchLefttWeaponInput();
         HandleLockOnInput();
         HandleLockOnSwitchTargetInput();
         HandleInteractionInput();
         HandleOpenCharacterMenuInput();
+        HandleOpenSurvivalWheelInput();
         HandleCameraSwitch();
+        HandleRTInput();
+        HandleChargeRTInput();
 
+    }
+
+    private void HandleAllQuedInput()
+    {
+        if(is_Input_Que_Active)
+        {
+            if (qued_Input_Timer>0)
+            {
+                qued_Input_Timer -= Time.deltaTime;
+                ProcessQuedInput();
+            }
+            else
+            {
+                //Reset All Input
+                que_RB_Input =false;
+
+
+                qued_Input_Timer = 0;
+            }
+        }
+
+    }
+
+    private void ProcessQuedInput()
+    {
+
+        if(player.isDead) 
+            return;
+
+
+        if (que_RB_Input)
+        {
+            RB_Input = true;
+
+        }
     }
 
     private void HandleLockOnInput()
@@ -384,6 +462,76 @@ public class PlayerInputManager : MonoBehaviour
         }
 
     }
+
+    private void QueInput(ref bool  quedInput)
+    {
+        que_RB_Input = false;
+
+
+        if(player.isPerformingAction)
+        {
+            quedInput = true;
+            qued_Input_Timer = default_Que_Input_Time;
+            is_Input_Que_Active = true;
+            
+
+        }
+
+    }
+
+    private void HandleRTInput()
+    {
+        if (RT_Input)
+        {
+            RT_Input = false;
+            player.isUsingRightHand = true;
+
+            player.playerCombatManager.PerformWeaponBasedAction(player.playerInventoryManager.currentRightHandWeapon.OH_RT_Action, player.playerInventoryManager.currentRightHandWeapon);
+
+            player.isUsingRightHand = false;
+
+
+
+        }
+
+    }
+
+    private void HandleLBInput()
+    {
+        if (LB_Input == true)
+        {
+            LB_Input = false;
+            player.isUsingLeftHand = true;
+
+            player.playerCombatManager.PerformWeaponBasedAction(player.playerInventoryManager.currentLeftHandWeapon.OH_LB_Action, player.playerInventoryManager.currentLeftHandWeapon);
+
+            player.isUsingLeftHand = false;
+
+
+
+        }
+
+    }
+
+    private void HandleChargeRTInput()
+    {
+        if(Hold_RT_Input)
+        {
+            
+            
+              player.isChargingAttack = Hold_RT_Input;
+               
+
+                
+
+            
+        }
+        else
+        {
+            player.isChargingAttack = Hold_RT_Input;
+        }
+
+    }
     private void HandleSwitchRightWeaponInput()
     {
         if (Switch_Right_Weapon_Input)
@@ -415,7 +563,7 @@ public class PlayerInputManager : MonoBehaviour
 
     private void HandleInteractionInput()
     {
-        if (interaction_Input)
+        if (interaction_Input && !player.playerInteractionManager.isInspectingObject)
         {
             interaction_Input = false;
 
@@ -446,6 +594,25 @@ public class PlayerInputManager : MonoBehaviour
           }
         }
     }
+
+    private void HandleOpenSurvivalWheelInput()
+    {
+        if (openSurvivalWheelInput)
+        {
+            openSurvivalWheelInput = true;
+
+            PlayerUIManager.instance.playerUICharacterMenuManager.OpenSurvivalWheel();
+
+        }
+        else
+        {
+            openSurvivalWheelInput= false;
+            PlayerUIManager.instance.playerUICharacterMenuManager.CloseSurvivalWheel();
+        }
+           
+
+        }
+    
 
     private void HandleCameraSwitch()
     {

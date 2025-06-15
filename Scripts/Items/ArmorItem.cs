@@ -5,14 +5,19 @@ using UnityEngine;
 
 public class ArmorItem : EquipmentItem
 {
+    
+
+
     [Header("Equipment Absorption")]
     public float physicalDamageAbsorption;
     public float magicDamageAbsorption;
     public float fireDamageAbsorption;
-    public float lightiningDamageAbsorption;
+    public float lightningDamageAbsorption;
 
     [Header("Equipment  REsistance")]
-    public float imunnity;
+    public float immunity;
     public float robustness;
+
+    public EquipmentModel[] equipmentModels;
 
 }

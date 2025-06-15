@@ -24,11 +24,19 @@ public enum CharacterSlot
 public enum WeaponModelSlot{
 
     RightHand,
-    LeftHand,
+    LeftHandWeaponSlot,
+    LeftHandShieldSlot,
+
     //RightHip
     //LeftHip
     //Back
 
+}
+
+public enum WeaponModelType
+{
+    Weapon,
+    Shield,
 }
 
 public enum CharacterGroup
@@ -41,6 +49,19 @@ public enum AttackType
 {
     LightAttack01,
     LightAttack02,
+
+    HeavyAttack01,
+    ChargedAttack01,
+    ChargedAttack02,
+}
+
+public enum DamageIntensity
+{
+    Ping,
+    Light,
+    Medium,
+    Heavy,
+    Collasal
 }
 
 public enum EquipmentType
@@ -52,11 +73,82 @@ public enum EquipmentType
     leftWeapon01,//3
     leftWeapon02,//4
     leftWeapon03,//5
+
+    Head,        //6
+    Body,        //7
+    Leg,         //8
+    Hand,        //9
+}
+
+public enum SurvivalItemType
+{
+    medicItem,
+    DrinkableItem,
+    foodItems,
+    Spell_Throwables,
+    campFire_Rest_item,
+    lightSourceItem,
+
+
+
+}
+
+public enum EquipmentModelType
+{
+    FullHelmet, //Hide Face, Hair...ETC
+    Hat,//Hide Hair
+    Hood,////    Hide Hair,
+    RightShoulder,
+    RightUpperArm,
+    RightElbow,
+    RightLowerArm,
+    LeftHand,
+    LeftShoulder,
+    LeftUpperArm,
+    LeftElbow,
+    LeftLowerArm,
+    RightHand,
+
+    Torso,
+    Back,
+    Hips,
+
+    RightLeg,
+    RightKnee,
+    LeftLeg,
+    LeftKnee,
+}
+public enum HeadEquipmentType
+{
+    FullHelmet, // HIDE ENTIRE HEAD + FEATURES
+    Hat, // DOES NOT HIDE ANYTHING
+    Hood, // HIDES HAIR
+    FaceCover // HIDES BEARD
 }
 
 
+//Used to Determine Which Item is Needed to Cast Spell
+public enum SpellClass
+{
+    Incantation,
+    Sorcery
+
+}
+
+
+//Used To Determine Pick Up Item Type
 public enum ItemPickUpType
 {
     WorldSpwan,
     CharacterDrop
 }
+
+//AI States
+
+public enum IdleStateMode
+{
+    Idle,
+    Patrol
+}
+
+

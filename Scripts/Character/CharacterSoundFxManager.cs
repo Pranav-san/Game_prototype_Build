@@ -6,6 +6,8 @@ public class CharacterSoundFxManager : MonoBehaviour
 {
      public AudioSource audioSource;
 
+    [Header("AttackDamage FX")]
+    [SerializeField]protected AudioClip[] attackDamageSFX;
 
     protected virtual void Awake()
     {
@@ -26,6 +28,19 @@ public class CharacterSoundFxManager : MonoBehaviour
         {
             audioSource.pitch +=Random.Range(-pitchRandom, pitchRandom);
         }
+
+    }
+
+    public virtual void playBlockSoundfx()
+    {
+
+    }
+
+    public virtual void PlayAttackDamageSfx()
+    {
+
+        PlaySoundfx(WorldSoundFXManager.instance.ChooseRandomSoundFxFromArray(attackDamageSFX));
+
 
     }
 }

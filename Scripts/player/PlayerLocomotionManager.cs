@@ -18,6 +18,8 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
     [SerializeField] float runningSpeed = 5;
     [SerializeField] float sprintingSpeed = 7;
     [SerializeField] float rotationSpeed = 15;
+    [SerializeField] float strafeWalkingSpeed = 1.5f;
+    [SerializeField] float strafeRunningspeed = 3.5f;
     private Vector3 moveDirection;
     private Vector3 targetRotationDirection;
 
@@ -40,7 +42,16 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
     public void HandleAllMovement()
     {
         HandleGroundedMovement();
-        HandleRotation();
+        if (PlayerCamera.instance.FPCameraSwitch)
+        {
+            HandleFirstPersonRotation();
+        }
+        else
+        {
+            HandleRotation();
+
+        }
+       
 
     }
 
@@ -54,18 +65,35 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
     {
         GetVerticalAndHorizontalInputs();
 
-        if (!player.canMove)
+        if (!player.canMove || player.playerInteractionManager.isInspectingObject)
             return;
         // Our MovementDirection is based on Cameras Perspective
         moveDirection = PlayerCamera.instance.transform.forward* verticalMovement;
         moveDirection += moveDirection +PlayerCamera.instance.transform.right* horizontalMovement;
         moveDirection.Normalize();
         moveDirection.y = 0;
+        
 
         if (characterManager.isSprinting)
         {
             player.characterController.Move(moveDirection * sprintingSpeed * Time.deltaTime);
         }
+        else if (player.playerCombatManager.isLockedOn)
+        {
+            if (PlayerInputManager.Instance.moveAmount > 0.5f)
+            {
+                //Move At StrafeRunning Speed
+                player.characterController.Move(moveDirection * strafeRunningspeed * Time.deltaTime);
+            }
+            else if (PlayerInputManager.Instance.moveAmount <= 0.5f)
+            {
+                //Move At StrafeWalking Speed
+                player.characterController.Move(moveDirection * strafeWalkingSpeed * Time.deltaTime);
+            }
+
+        }
+
+
         else
         {
             if (PlayerInputManager.Instance.moveAmount > 0.5f)
@@ -79,11 +107,14 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
                 player.characterController.Move(moveDirection * walkingSpeed * Time.deltaTime);
             }
 
+
+
         }
 
 
     }
 
+    //Third Person
     private void HandleRotation()
     {
         if(player.isDead) 
@@ -158,6 +189,20 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
         
     }
 
+    //First Person
+    private void HandleFirstPersonRotation()
+    {
+        // Apply camera input for first-person rotation
+        float cameraHorizontalInput = PlayerInputManager.Instance.cameraHorizontalInput;
+        float cameraVerticalInput = PlayerInputManager.Instance.cameraVerticalInput;
+
+        // Adjust the player's rotation based on the camera input
+        Quaternion cameraRotation = Quaternion.Euler(0, cameraHorizontalInput * rotationSpeed * Time.deltaTime, 0);
+        transform.rotation *= cameraRotation; // Rotate player based on camera horizontal input
+
+        // You can also handle vertical rotation if needed, but this is usually handled by the camera itself
+    }
+
     public void AttemptToPerformDodge()
     {
         if (player.isPerformingAction)
@@ -165,7 +210,7 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
         if (!player.isGrounded)
             return;
 
-        if (PlayerInputManager.Instance.moveAmount > 0)
+        if (PlayerInputManager.Instance.moveAmount > 0 && !player.playerCombatManager.isLockedOn)
         {
             rollDirection = PlayerCamera.instance.cameraObject.transform.forward * PlayerInputManager.Instance.verticalInput;
             rollDirection += PlayerCamera.instance.cameraObject.transform.right *  PlayerInputManager.Instance.horizontalInput;
@@ -185,6 +230,34 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
         {
             //Backstep ANimation
 
+        }
+
+        //OmniDirectional Dodge when player is Locked ON
+        if (PlayerInputManager.Instance.moveAmount > 0 && player.playerCombatManager.isLockedOn)
+        {
+            float horizontal = PlayerInputManager.Instance.horizontalInput;
+            float vertical = PlayerInputManager.Instance.verticalInput;
+
+            if (vertical > 0.5f)
+            {
+                player.playerAnimatorManager.PlayTargetActionAnimation("Roll Forward", true, true);
+
+            }
+               
+            else if (vertical < -0.5f)
+            {
+                player.playerAnimatorManager.PlayTargetActionAnimation("Roll Backward", true, true);
+
+            }
+                
+            else if (horizontal > 0.5f)
+            {
+                player.playerAnimatorManager.PlayTargetActionAnimation("Roll Right", true, true);
+            }
+            else if (horizontal < -0.5f)
+            {
+                player.playerAnimatorManager.PlayTargetActionAnimation("Roll Left", true, true);
+            }
         }
 
 

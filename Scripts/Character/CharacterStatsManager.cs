@@ -16,8 +16,25 @@ public class CharacterStatsManager : MonoBehaviour
     public CharacterManager character;
     public UI_Character_HP_Bar uI_Character_HP_Bar;
 
+    [Header("Blocking Absorption")]
+    public float blockingPhysicalAbsorption;
+    public float blockingFireAbsorption;
+    public float blockingLightningAbsorption;
+    public float blockingMagicAbsorption;
 
-    private void Awake()
+
+    [Header("Armor Absorption")]
+    public float ArmorPhysicalDamageAbsorption;
+    public float ArmorMagicDamageAbsorption;
+    public float ArmorFireDamageAbsorption;
+    public float ArmorLightningDamageAbsorption;
+
+    [Header("Resistance")]
+    public float ArmorImmunity;
+    public float ArmorRobustness;
+
+
+    protected virtual void Awake()
     {
         character = GetComponent<CharacterManager>();
         uI_Character_HP_Bar = GetComponentInChildren<UI_Character_HP_Bar>();
@@ -48,6 +65,7 @@ public class CharacterStatsManager : MonoBehaviour
         {
             PlayerUIManager.instance.UpdateStaminaBar(Mathf.RoundToInt(currentStamina));
             PlayerUIManager.instance.UpdateHealthBar(currentHealth);
+            
         }
     }
     
@@ -58,6 +76,8 @@ public class CharacterStatsManager : MonoBehaviour
         {
             RegenerateStamina(10);
         }
+
+        
 
     }
 
@@ -101,6 +121,7 @@ public class CharacterStatsManager : MonoBehaviour
         {
             PlayerUIManager.instance.UpdateHealthBar(Mathf.RoundToInt(currentHealth));
         }
+        
 
 
 
@@ -120,6 +141,8 @@ public class CharacterStatsManager : MonoBehaviour
             currentStamina -= amount;
         }
     }
+
+    
 
     public void RegenerateStamina(float amountPerSecond)
     {

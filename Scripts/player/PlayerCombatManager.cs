@@ -28,11 +28,11 @@ public class PlayerCombatManager : CharacterCombatManager
 
     public void PerformWeaponBasedAction(WeaponItemBasedAction weaponAction, WeaponItem WeaponPerformiingAction)
     {
-        if (weaponAction == null || WeaponPerformiingAction == null)
-        {
-            Debug.LogError("One of the parameters is null.");
-            return;
-        }
+        //if (weaponAction == null || WeaponPerformiingAction == null)
+        //{
+        //    Debug.LogError("One of the parameters is null.");
+        //    return;
+        //}
 
         weaponAction.AttemptToPerformAction(player, WeaponPerformiingAction);
     }

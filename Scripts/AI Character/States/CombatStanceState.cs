@@ -13,7 +13,7 @@ public class CombatStanceState : AIState
     protected List<AICharacterAttackAction> potentialAttacks;// All Attacks Possible in This situation (based on, Angle, Distance, etc)
     private AICharacterAttackAction choosenAttack;
     private AICharacterAttackAction previousAttack;
-    protected bool hasAttack= false;
+    protected bool hasAttack = false;
 
 
     [Header("combos")]
@@ -21,8 +21,19 @@ public class CombatStanceState : AIState
     [SerializeField] protected int chanceToPerformCombo = 25;
     [SerializeField] protected bool hasRolledForComboChance = false;
 
+    [Header("Enable Pivot")]
+    [SerializeField] protected bool enablePivot;
+
     [Header("Engagement Distance")]
-    [SerializeField] public  float maximumEngagementDistance = 5f; //The distance we have to be away from the target to enter Pursue State
+    [SerializeField] public float maximumEngagementDistance = 5f; //The distance we have to be away from the target to enter Pursue State
+
+    [Header("Circling")]
+    [SerializeField] bool willCircleTarget = false;
+    private bool hasChoosenCirclePath = false;
+    [SerializeField] float strafeMoveAmount = 0;
+
+
+
 
     public override AIState Tick(AICharacterManager aiCharacter)
     {
@@ -32,20 +43,25 @@ public class CombatStanceState : AIState
         if (!aiCharacter.navMeshAgent.enabled)
             aiCharacter.navMeshAgent.enabled = true;
 
+        if (enablePivot)
+        {
+            if (!aiCharacter.isMoving)
+            {
+                if (aiCharacter.aiCharacterCombatManager.viewableAngle<-30 || aiCharacter.aiCharacterCombatManager.viewableAngle > 30)
+                {
+                    aiCharacter.aiCharacterCombatManager.PivotTowardsTarget(aiCharacter);
+                }
+            }
+
+        }
+
 
 
 
         //If you want your Ai character to turn and Face towards its target when its outside of its FOV
-        if (!aiCharacter.isMoving)
-        {
-            if(aiCharacter.aiCharacterCombatManager.viewableAngle<-30 || aiCharacter.aiCharacterCombatManager.viewableAngle > 30)
-            {
-                aiCharacter.aiCharacterCombatManager.PivotTowardsTarget(aiCharacter);
-            }
-        }
+       
 
-        //Rotate to Face our target 
-
+        //Rotate to Face our target
         aiCharacter.aiCharacterCombatManager.RotateTowardsAgent(aiCharacter);
 
         //If Target is No Longer Present, Switch to Idle State
@@ -53,6 +69,9 @@ public class CombatStanceState : AIState
         {
             SwitchState(aiCharacter, aiCharacter.idle);
         }
+
+        if(willCircleTarget)
+            SetCirclePath(aiCharacter);
 
         //If we dont have an Attack get one
         if(!hasAttack)
@@ -167,7 +186,51 @@ public class CombatStanceState : AIState
         
         hasAttack = false;
         hasRolledForComboChance = false;
+        strafeMoveAmount = 0;
    
+    }
+
+    protected virtual void SetCirclePath(AICharacterManager aiCharacter)
+    {
+
+        if(Physics.CheckSphere(aiCharacter.aiCharacterCombatManager.LockOnTransform.position, aiCharacter.characterController.radius+ 0.25f, WorldUtilityManager.Instance.GetEnviroLayer()))
+        {
+            //Stop Strafing/Circling Because We've Hit Something, Instead path Towards Enemy
+            Debug.Log("AI Colliding with something, Ended Strafe");
+            aiCharacter.characterAnimatorManager.SetAnimatorMovementParameters(0, Mathf.Abs(strafeMoveAmount));
+
+            return;
+        }
+
+        //Strafe
+        Debug.Log("AI STRAFING");
+        aiCharacter.characterAnimatorManager.SetAnimatorMovementParameters(strafeMoveAmount, 0);
+
+        if (hasChoosenCirclePath)
+        {
+            return;
+        }
+
+
+
+        //Strafe Left or Right
+        hasChoosenCirclePath = true;
+
+        int leftOrRightIndex = Random.Range(0, 100);
+
+        if(leftOrRightIndex >= 60)
+        {
+            //Left
+            strafeMoveAmount = -0.5f;
+        }
+
+        else
+        {
+            //Right
+            strafeMoveAmount = 0.5f;
+        }
+
+
     }
 
 }

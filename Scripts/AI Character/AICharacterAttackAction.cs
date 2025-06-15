@@ -25,8 +25,11 @@ public class AICharacterAttackAction : ScriptableObject
 
     public void AttemptToPerformAction(AICharacterManager aiCharacter)
     {
+        //If Ai character Attack animation is Purely Equipment/Weapon Based, If so use PlayTargetAttackActionAnimation()
+        //aiCharacter.characterAnimatorManager.PlayTargetAttackActionAnimation(attackType, attackAnimation,true);
 
-        aiCharacter.characterAnimatorManager.PlayTargetAttackActionAnimation(attackType, attackAnimation,true);
+        //If Ai character Attack is Purely Animation based, & not Equipment/Weapon Based, If so use PlayTargetActionAnimation()
+        aiCharacter.characterAnimatorManager.PlayTargetActionAnimation(attackAnimation, true);
 
 
     }

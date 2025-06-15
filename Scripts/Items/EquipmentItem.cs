@@ -5,6 +5,6 @@ using UnityEngine;
 public class EquipmentItem : Item
 {
     [Header("Item Weight")]
-    float itemWeight = 0f;
+    [SerializeField]float itemWeight = 0f;
    
 }

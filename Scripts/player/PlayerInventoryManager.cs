@@ -14,9 +14,19 @@ public class PlayerInventoryManager : CharacterInventoryManager
     public int rightHandWeaponIndex = 0;
     public int leftHandWeaponIndex = 0;
 
+    public SpellItem currentSpell;
+
     [Header("Equipment")]
     public int currentRightHandWeaponID = 0;
     public int currentLeftHandWeaponID = 0;
+    public int currentSpellID=0;
+  
+
+    [Header("Aromo/OutFit Equipment")]
+    public HeadEquipmentItem headEquipment;
+    public BodyEquipmentItem bodyEquipment;
+    public LegEquipmentItem legEquipment;
+    public HandEquipmentItem handEquipment;
 
     [Header("Inventory")]
     public List<Item> itemsInInventory;
@@ -31,6 +41,9 @@ public class PlayerInventoryManager : CharacterInventoryManager
         OnCurrentRightHandWeaponIDChange(0, currentRightHandWeaponID);
         OnCurrentLeftHandWeaponIDChange(0, currentLeftHandWeaponID);
         OnCurrentHandWeaponBeingUsedIDChange(0, currentRightHandWeaponID);
+        OnCurrentSpellIDChange(0, currentSpellID);
+
+        player= GetComponent<playerManager>();
     }
 
     public void OnCurrentRightHandWeaponIDChange(int oldID, int newID)
@@ -52,6 +65,34 @@ public class PlayerInventoryManager : CharacterInventoryManager
 
 
         PlayerUIManager.instance.playerUIHUDManager.SetLeftweaponQuickSlotIcon(newID);
+    }
+
+    public void OnCurrentSpellIDChange(int oldID, int newID)
+    {
+        SpellItem newSpell = Instantiate(WorldItemDatabase.instance.GetSpellByID(newID));
+        currentSpell= newSpell;
+       
+        
+
+        
+    }
+
+    public void OnHeadEquipmentModelChanged(int oldValue, int newValue)
+    {
+       HeadEquipmentItem equipment = WorldItemDatabase.instance.GetHeadEquipmentByID(newValue);
+
+        if(headEquipment != null)
+        {
+            player.playerEquipmentManager.LoadHeadEquipment(Instantiate(equipment));
+
+        }
+        else
+        {
+            player.playerEquipmentManager.LoadHeadEquipment(null);
+        }
+
+        player.playerEquipmentManager.OnHeadEquipmentValueChanged(oldValue, newValue);
+
     }
     public void OnCurrentHandWeaponBeingUsedIDChange(int oldID, int newID)
     {

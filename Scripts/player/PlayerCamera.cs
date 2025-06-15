@@ -9,12 +9,15 @@ public class PlayerCamera : MonoBehaviour
     public Camera cameraObject;
     public Camera FPCameraObject;
     public Transform cameraPivotTransform;
+    public GameObject inspectionPoint;
+    public GameObject FPInspectionPoint;
     public playerManager player;
     
     public PlayerLocomotionManager playerLocomotionManager;
 
     [Header("Camera Settings")]
     public float cameraSmoothSpeed = 1;
+    public float cameraRotateSpeedWhenPlayerIsTurning = 1;
     public float leftAndRightRotationSpeed = 220;
     public float upAndDownRotationSpeed = 220;
     public float minimumpivot = -30;
@@ -41,12 +44,13 @@ public class PlayerCamera : MonoBehaviour
    
     [SerializeField] float cameraZPosition;
     private float targetCameraZPosition;
-    private float cameraPivotAngle;
-    float leftAndRightLookAngle;
-    float upAndDownLookAngle;
+    public float cameraPivotAngle;
+    public float leftAndRightLookAngle;
+    public float upAndDownLookAngle;
 
    [Header("Mobile")]
-    private TouchField touchField;
+    public TouchField touchField;
+    public TouchField inspectObjectTouchField;
     public float touchSensitivity = 1f;
 
     
@@ -92,7 +96,8 @@ public class PlayerCamera : MonoBehaviour
     {
         DontDestroyOnLoad(gameObject);
         cameraZPosition = cameraObject.transform.localPosition.z;
-        touchField = FindObjectOfType<TouchField>();
+        //touchField = FindObjectOfType<TouchField>();
+        inspectObjectTouchField = PlayerUIManager.instance.inspectObjectTouchField.GetComponent<TouchField>();
         
 
         
@@ -109,9 +114,21 @@ public class PlayerCamera : MonoBehaviour
     {
         isInputActive = PlayerInputManager.Instance.cameraHorizontalInput != 0 || PlayerInputManager.Instance.cameraVerticalInput != 0;
 
-        if (touchField != null)
+        if (touchField != null && !player.playerInteractionManager.isInspectingObject)
         {
             isInputActive = isInputActive || touchField.SwipeDelta != Vector2.zero;
+        }
+        if(player.playerInteractionManager.isInspectingObject)
+        {
+            inspectObjectTouchField.enabled = true;
+            touchField.enabled = false;
+
+            isInputActive = isInputActive || inspectObjectTouchField.SwipeDelta != Vector2.zero;
+        }
+        else
+        {
+            inspectObjectTouchField.enabled=false;
+            touchField.enabled = true;  
         }
     }
 
@@ -132,6 +149,7 @@ public class PlayerCamera : MonoBehaviour
             }
             else
             {
+                
 
                 
                 HandleAllFPCameraActions();
@@ -148,12 +166,21 @@ public class PlayerCamera : MonoBehaviour
         cameraObject.fieldOfView = CameraFOV;
 
 
-        Vector3 targetCameraPosition = Vector3.SmoothDamp(transform.position, player.transform.position, ref cameraVelocity, cameraSmoothSpeed * Time.deltaTime);
+        Vector3 targetCameraPosition = Vector3.SmoothDamp(transform.position, player.transform.position, ref cameraVelocity, cameraSmoothSpeed);
         transform.position = targetCameraPosition;
     }
 
     private void HandleRotation()
     {
+        
+        if (player.playerInteractionManager.isInspectingObject & player.playerInteractionManager.currentInteractable!=null)
+        {
+            GameObject parentObject = player.playerInteractionManager.currentInteractable.transform.parent.gameObject;
+            player.playerInteractionManager.RotateObject(parentObject);
+            return;
+            
+
+        }
         //IF Locked on Force Rotation towards target 
         if (player.playerCombatManager.isLockedOn)
         {
@@ -219,12 +246,12 @@ public class PlayerCamera : MonoBehaviour
                         // Lock the camera to the player's direction
                         Vector3 direction = player.transform.forward;
                         Quaternion targetRotation = Quaternion.LookRotation(direction);
-                        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, cameraSmoothSpeed * Time.deltaTime);
+                        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, cameraRotateSpeedWhenPlayerIsTurning * Time.deltaTime);
                     }
                     else
                     {
                         // Allow free look when moving backward or when no input is present
-                        transform.rotation = Quaternion.Slerp(transform.rotation, transform.rotation, cameraSmoothSpeed * Time.deltaTime);
+                        transform.rotation = Quaternion.Slerp(transform.rotation, transform.rotation, cameraRotateSpeedWhenPlayerIsTurning * Time.deltaTime);
                     }
                 }
                 else
@@ -477,6 +504,14 @@ public class PlayerCamera : MonoBehaviour
 
     public void FPHandleRotation()
     {
+        if (player.playerInteractionManager.isInspectingObject & player.playerInteractionManager.currentInteractable!=null)
+        {
+            GameObject parentObject = player.playerInteractionManager.currentInteractable.transform.parent.gameObject;
+            player.playerInteractionManager.RotateObject(parentObject);
+            return;
+
+
+        }
         if (isInputActive)
         {
             leftAndRightLookAngle = (PlayerInputManager.Instance.cameraHorizontalInput * leftAndRightRotationSpeed) * Time.deltaTime;

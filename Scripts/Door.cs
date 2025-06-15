@@ -8,9 +8,11 @@ public class Door : Interactable
 
     [SerializeField] bool isDoorOpen = false;
 
+    
+
     private void Awake()
     {
-        animator = GetComponent<Animator>();
+        animator = GetComponentInParent<Animator>();
     }
 
     public override void Interact(playerManager player)

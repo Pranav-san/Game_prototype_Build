@@ -7,12 +7,15 @@ public class PickUpItemInteractable : Interactable
 
     public ItemPickUpType pickUpType;
 
+    [Header("Survival Item Type")]
+    public SurvivalItemType ItemType;
+
     [Header("Item")]
-    [SerializeField] Item item;//Pick up Item
+    [SerializeField] public Item item;//Pick up Item
 
     [Header("World Spwan Pickup")]
-    [SerializeField] int itemID;
-    [SerializeField] bool hasBeenLooted;
+    [SerializeField] public int itemID;
+    [SerializeField] public bool hasBeenLooted;
 
 
 
@@ -54,32 +57,63 @@ public class PickUpItemInteractable : Interactable
     {
         base.Interact(player);
 
-        //Play pickUp Sfx
-        player.characterSoundFxManager.PlaySoundfx(WorldSoundFXManager.instance.pickUpItemSfx);
-
-        //Add item to Inventory
-        player.playerInventoryManager.AddItemToInventory(item);
-
-        //Display a Ui PopUp SHowing item Name & Icon
-        PlayerUIManager.instance.playerUIPopUPManager.SendItemPopUp(item, 1);
-
-        //Save Loot Status If its a World Spwan
-
-        if (pickUpType == ItemPickUpType.WorldSpwan)
+        if (isRayCastInteractable)
         {
-            if (WorldSaveGameManager.instance.currentCharacterData.worldItemsLooted.ContainsKey((int)itemID))
+            player.characterSoundFxManager.PlaySoundfx(WorldSoundFXManager.instance.pickUpItemSfx);
+
+            //Add item to Inventory
+            //player.playerInventoryManager.AddItemToInventory(item);
+
+            //Display a Ui PopUp SHowing item Name & Icon
+            PlayerUIManager.instance.playerUIPopUPManager.SendItemPopUp(item, 1);
+
+            //Save Loot Status If its a World Spwan
+
+            if (pickUpType == ItemPickUpType.WorldSpwan)
             {
-                WorldSaveGameManager.instance.currentCharacterData.worldItemsLooted.Remove(itemID);
+                if (WorldSaveGameManager.instance.currentCharacterData.worldItemsLooted.ContainsKey((int)itemID))
+                {
+                    WorldSaveGameManager.instance.currentCharacterData.worldItemsLooted.Remove(itemID);
+
+                }
+                WorldSaveGameManager.instance.currentCharacterData.worldItemsLooted.Add(itemID, true);
 
             }
-            WorldSaveGameManager.instance.currentCharacterData.worldItemsLooted.Add(itemID, true);
+
+            //Destroy(gameObject);
 
         }
+        else
+        {
+            //Play pickUp Sfx
+            player.characterSoundFxManager.PlaySoundfx(WorldSoundFXManager.instance.pickUpItemSfx);
 
-        Destroy(gameObject);
+            //Add item to Inventory
+            player.playerInventoryManager.AddItemToInventory(item);
+
+            //Display a Ui PopUp SHowing item Name & Icon
+            PlayerUIManager.instance.playerUIPopUPManager.SendItemPopUp(item, 1);
+
+            //Save Loot Status If its a World Spwan
+
+            if (pickUpType == ItemPickUpType.WorldSpwan)
+            {
+                if (WorldSaveGameManager.instance.currentCharacterData.worldItemsLooted.ContainsKey((int)itemID))
+                {
+                    WorldSaveGameManager.instance.currentCharacterData.worldItemsLooted.Remove(itemID);
+
+                }
+                WorldSaveGameManager.instance.currentCharacterData.worldItemsLooted.Add(itemID, true);
+
+            }
+
+            Destroy(gameObject);
+        }
 
     }
 
+   
+    
 
 
 }

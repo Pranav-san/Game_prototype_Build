@@ -61,17 +61,19 @@ public class CharacterLocomotionManager : MonoBehaviour
         character.isGrounded = Physics.CheckSphere(character.transform.position, groundCheckSphereRadius, groundLayer);
     }
 
-    /*protected void OnDrawGizmosSelected()
+    protected void OnDrawGizmosSelected()
     {
         Gizmos.DrawSphere(character.transform.position, groundCheckSphereRadius);
-    }*/
+    }
 
     public void EnableCanRotate()
     {
+        
         character.canRotate = true;
     }
     public void DisbaleCanRotate()
     {
+        
         character.canRotate = false;
     }
 }

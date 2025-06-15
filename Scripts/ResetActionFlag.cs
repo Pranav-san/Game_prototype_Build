@@ -18,6 +18,10 @@ public class ResetActionFlag : StateMachineBehaviour
         character.applyRootMotion = false;
         character.characterAnimatorManager.DisableCanDoCombo();
         character.characterLocomotionManager.isRolling = false;
+        character.isAttacking = false;
+        character.isInvulnerable = false;
+
+        
         
 
         //This is called when an Action Ends, And the state returns to "Empty"

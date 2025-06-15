@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -8,6 +7,9 @@ public class PlayerUICharacterMenuManager : MonoBehaviour
 {
     [Header("Menu")]
     [SerializeField] GameObject menu;
+
+    [Header("Survival Wheel")]
+    [SerializeField] GameObject survivalWheel;
     
 
     public void OpenCharacterMenu()
@@ -23,7 +25,21 @@ public class PlayerUICharacterMenuManager : MonoBehaviour
 
     }
 
-    
+    public void OpenSurvivalWheel()
+    {
+        PlayerUIManager.instance.survivalWheelOpen =true;
+        survivalWheel.SetActive(true);
+
+    }
+    public void CloseSurvivalWheel()
+    {
+        PlayerUIManager.instance.survivalWheelOpen =false;
+        survivalWheel.SetActive(false);
+
+    }
+   
+
+
 
 
 

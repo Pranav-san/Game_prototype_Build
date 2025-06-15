@@ -28,15 +28,27 @@ public class CharacterSaveData
     public int vitality;
 
     [Header("Bosses")]
+    public SerializableDictionary<int, bool> bossesAwakened;
+    public SerializableDictionary<int, bool> bossesDefeated;
+
+    [Header("Sites Of Grace")]
+    public SerializableDictionary<int, bool> sitesOfGrace; //Int is SiteOfGrace ID, Bool Is Activation Status
 
 
-    
+
+
     [Header("Items")]
     public SerializableDictionary<int, bool> worldItemsLooted; //int is the Item ID, Bool is The Looted Status
 
 
     public CharacterSaveData()
     {
+
+        bossesAwakened = new SerializableDictionary<int, bool>();
+        bossesDefeated = new SerializableDictionary<int, bool>();
+
+
+        sitesOfGrace = new SerializableDictionary<int, bool>();
         worldItemsLooted = new SerializableDictionary<int, bool>();
     }
 

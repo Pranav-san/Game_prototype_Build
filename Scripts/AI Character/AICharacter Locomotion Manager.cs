@@ -8,6 +8,8 @@ public class AICharacterLocomotionManager : CharacterLocomotionManager
 {
     [Header("Rotation Settings")]
     public float rotationSpeed = 5f;
+
+    AICharacterManager aiCharacter;
     public void RotateTowardsagent(AICharacterManager aiCharacter)
     {
         if (aiCharacter.isMoving)
@@ -39,6 +41,24 @@ public class AICharacterLocomotionManager : CharacterLocomotionManager
                 aiCharacter.transform.rotation = Quaternion.Slerp(aiCharacter.transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
             }
         }
+
+
+    }
+
+    protected override void Awake()
+    {
+        base.Awake();
+
+        aiCharacter = GetComponent<AICharacterManager>();
+    }
+
+
+    protected override void Update()
+    {
+        base.Update();
+
+
+        
     }
 
 }

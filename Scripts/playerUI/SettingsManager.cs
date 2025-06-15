@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
+using UnityEngine.Rendering;
 using UnityEngine.UI;
 
 public class SettingsManager : MonoBehaviour
@@ -9,9 +11,16 @@ public class SettingsManager : MonoBehaviour
     
     public Slider touchSensitivitySlider;
     public Slider fovSlider;
+    public Slider renderScaleSlider;
+
+
     private const string sensitivityKey = "TouchSensitivity";
     private const string fovKey = "FOV";
+    private const string renderScaleKey = "RenderScale";
+
+
     [SerializeField] TextMeshProUGUI fovText;
+    [SerializeField] TextMeshProUGUI renderScaleText;
 
 
     //[Header("Settings_Limitations")]
@@ -23,6 +32,8 @@ public class SettingsManager : MonoBehaviour
     private void Start()
     {
         StartCoroutine(UpdateFOVTextCoroutine(0.05f));
+        StartCoroutine(UpdateRenderScaleTextCoroutine(0.05f));
+
 
 
         // Load the saved sensitivity value or set a default value
@@ -44,6 +55,9 @@ public class SettingsManager : MonoBehaviour
         {
             fovSlider.value = 68f;
         }
+        renderScaleSlider.value = PlayerPrefs.GetFloat(renderScaleKey, 1f);
+
+        renderScaleSlider.onValueChanged.AddListener(OnRenderScaleChanged);
 
         // Add listener to handle slider value change
         touchSensitivitySlider.onValueChanged.AddListener(OnSensitivityChanged);
@@ -60,6 +74,15 @@ public class SettingsManager : MonoBehaviour
         PlayerPrefs.SetFloat(fovKey, value);
        
     }
+
+    private void OnRenderScaleChanged(float value)
+    {
+        PlayerPrefs.SetFloat(renderScaleKey, value);
+
+        // Update render scale in URP settings
+        UniversalRenderPipelineAsset urpAsset = (UniversalRenderPipelineAsset)GraphicsSettings.defaultRenderPipeline;
+        urpAsset.renderScale = value;
+    }
     private IEnumerator UpdateFOVTextCoroutine(float delay)
     {
         while (true)
@@ -70,4 +93,13 @@ public class SettingsManager : MonoBehaviour
         }
     }
 
+    private IEnumerator UpdateRenderScaleTextCoroutine(float delay)
+    {
+        while (true)
+        {
+            float currentRenderScale = renderScaleSlider.value;
+            renderScaleText.text = $"Render Scale: {currentRenderScale:F2}";
+            yield return new WaitForSeconds(delay);
+        }
+    }
 }

@@ -11,6 +11,12 @@ public class PlayerUIHUDManager : MonoBehaviour
     public UI_StatBar staminaBar;
     public UI_StatBar healthBar;
 
+    [Header("Survial Stats")]
+    //public UI_StatBar bodyTemperatureMeter;
+    //public UI_StatBar thirst;
+    //public UI_StatBar Hunger;
+    //public UI_StatBar fatigue;
+
     [Header("Quick Slots")]
     [SerializeField] Image rightWeaponQuickSlotIcon;
     [SerializeField] Image leftWeaponQuickSlotIcon;
@@ -65,6 +71,8 @@ public class PlayerUIHUDManager : MonoBehaviour
 
 
     }
+
+
 
     public void SetRightweaponQuickSlotIcon(int weaponID)
     {

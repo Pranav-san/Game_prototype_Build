@@ -16,7 +16,7 @@ public class TakeDamageEffect : InstantCharacterEffect
     private int finalDamageDealt = 0;
 
     [Header("Poise")]
-    public float poise = 0;
+    public float poiseDamage = 0;
     public bool poiseIsBroken = false;
 
     [Header("Animation")]
@@ -33,6 +33,11 @@ public class TakeDamageEffect : InstantCharacterEffect
     public Vector3 contactPoint;
     public override void ProcessEffect(CharacterManager character)
     {
+
+        if(character.isInvulnerable) 
+            return;
+
+
         base.ProcessEffect(character);
 
         if(character.isDead)
@@ -45,7 +50,10 @@ public class TakeDamageEffect : InstantCharacterEffect
             PlayDirectionalBasedDamageAnimation(character);
 
         }
-        
+        PlayeDamageVFX(character);
+        playDamageSFX(character);
+
+
 
     }
     private void CalculateDamage(CharacterStatsManager character)
@@ -61,6 +69,20 @@ public class TakeDamageEffect : InstantCharacterEffect
         Debug.Log("FinalDamage: "+ finalDamageDealt); 
         character.ConsumeHealth(finalDamageDealt);
 
+        
+
+
+    }
+
+    private void PlayeDamageVFX(CharacterManager character)
+    {
+        character.characterEffectsManager.PlayBloodSplatterVFX(contactPoint);
+
+    }
+
+    private void playDamageSFX(CharacterManager character)
+    {
+        character.characterSoundFxManager.PlayAttackDamageSfx();
 
     }
 

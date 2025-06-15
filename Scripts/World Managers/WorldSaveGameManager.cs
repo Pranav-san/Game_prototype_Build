@@ -1,19 +1,22 @@
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Loading;
-using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class WorldSaveGameManager : MonoBehaviour
 {
 
-    [SerializeField] playerManager player;
+    [SerializeField] public  playerManager player;
 
     [Header("Save/load")]
     [SerializeField] bool saveGame;
     [SerializeField] bool loadGame;
+    [SerializeField] UniversalRenderPipelineAsset urpAsset;
+
 
     [Header("Loading Screen UI")]
     [SerializeField] GameObject loadingScreen;
@@ -80,8 +83,49 @@ public class WorldSaveGameManager : MonoBehaviour
     private void Start()
     {
         DontDestroyOnLoad(gameObject);
-        TitleScreen = TitleScreenManager.Instance.GameObject();  
+        TitleScreen = TitleScreenManager.Instance.gameObject;
+        urpAsset = (UniversalRenderPipelineAsset)GraphicsSettings.defaultRenderPipeline;
         LoadAllCharacterProfiles();
+    }
+
+    public bool HasFreeCharacterSlot()
+    {
+        saveFileDataWriter = new SaveFileDataWriter();
+        saveFileDataWriter.saveDataDirectoryPath = Application.persistentDataPath;
+
+        saveFileDataWriter.saveFileName = DecideCharacterFileNamebasedOnCharacterSlotBeingUsed(CharacterSlot.CharacterSlot_01);
+
+        if (!saveFileDataWriter.CheckToSeeIfFileExists())
+        return true;
+
+
+        //Check to see if we can crate a Create a New Game File
+
+        saveFileDataWriter.saveFileName = DecideCharacterFileNamebasedOnCharacterSlotBeingUsed(CharacterSlot.CharacterSlot_02);
+
+
+        if (!saveFileDataWriter.CheckToSeeIfFileExists())
+            return true;
+
+
+        saveFileDataWriter.saveFileName = DecideCharacterFileNamebasedOnCharacterSlotBeingUsed(CharacterSlot.CharacterSlot_03);
+
+        if (!saveFileDataWriter.CheckToSeeIfFileExists())
+            return true;
+
+        saveFileDataWriter.saveFileName = DecideCharacterFileNamebasedOnCharacterSlotBeingUsed(CharacterSlot.CharacterSlot_04);
+
+        if (!saveFileDataWriter.CheckToSeeIfFileExists())
+            return true;
+        
+        saveFileDataWriter.saveFileName = DecideCharacterFileNamebasedOnCharacterSlotBeingUsed(CharacterSlot.CharacterSlot_05);
+
+        if (!saveFileDataWriter.CheckToSeeIfFileExists())
+            return true;
+       
+
+        return false;
+
     }
 
     public string DecideCharacterFileNamebasedOnCharacterSlotBeingUsed(CharacterSlot characterSlot)
@@ -140,6 +184,11 @@ public class WorldSaveGameManager : MonoBehaviour
         {
             PlayerCamera.instance.CameraFOV = PlayerPrefs.GetFloat("FOV");
             
+        }
+        if (PlayerPrefs.HasKey("RenderScale"))
+        {
+            float renderScale = PlayerPrefs.GetFloat("RenderScale");
+            urpAsset.renderScale = Mathf.Clamp(renderScale, 0.1f, 2f); // Clamp between 0.1 and 2 for safety
         }
 
 

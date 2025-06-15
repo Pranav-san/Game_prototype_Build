@@ -47,14 +47,29 @@ public class AICharacterManager : CharacterManager
     {
         base.Update();
 
+        if (navMeshAgent==null)
+            return;
+        
+
+       
+
+        
+
         aiCharacterCombatManager.HandleActionRecovery(this);
+        ProcessStateMachine();
+
+        if (!navMeshAgent.enabled)
+            return;
+
+        Vector3 positiondifference = navMeshAgent.transform.position-transform.position;
+
+        if (positiondifference.magnitude>0.2)
+            navMeshAgent.transform.localPosition=Vector3.zero;
+        
+
     }
 
-    protected override void FixedUpdate()
-    {
-        base.FixedUpdate();
-        ProcessStateMachine();
-    }
+
 
     private void ProcessStateMachine()
     {

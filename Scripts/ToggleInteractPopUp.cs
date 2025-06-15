@@ -12,7 +12,7 @@ public class ToggleInteractPopUp : MonoBehaviour
     }
     public void ToggleInteractPopUpButton()
     {
-        if (PlayerUIManager.instance.playerUIPopUPManager.popUpMessageGameObject.activeSelf)
+        if (PlayerUIManager.instance.playerUIPopUPManager.interactUIGameObject.activeSelf )
         {
             // If the Interact popUp is active, disable LightAttack_RB_Input
             LightAttack_RB_Input.SetActive(false);

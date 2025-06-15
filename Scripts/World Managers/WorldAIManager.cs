@@ -11,24 +11,17 @@ public class WorldAIManager : MonoBehaviour
     [SerializeField] bool deSpawnedCharacters = false;
     [SerializeField] bool reSpawnedCharacters = false;
 
-    
+
     [Header("Ai Characters")]
-    [SerializeField] GameObject[] aiCharacters;
+    [SerializeField] List<AICharacterSpawner> aICharacterSpawners;
+
+    [Header("Patrol Paths")]
+    [SerializeField] List<AIPatrolPath> aiPatrolPaths;
+
+    
     [SerializeField] List<GameObject> spawnedInCharacters;
 
-    public void Update()
-    {
-        if (reSpawnedCharacters)
-        {
-            reSpawnedCharacters = false ;
-            SpawnAllCharacters();
-        }
-        if (deSpawnedCharacters)
-        {
-            deSpawnedCharacters = false ;
-            DeSpawnAllCharacters();
-        }
-    }
+    
 
     public void Awake()
     {
@@ -44,29 +37,16 @@ public class WorldAIManager : MonoBehaviour
 
     public void Start()
     {
-        StartCoroutine(waitForSceneToLoadThenSpawnAICharacters());
+        
         
     }
 
-    private IEnumerator waitForSceneToLoadThenSpawnAICharacters()
+   
+
+    public void SpawnCharacter(AICharacterSpawner aiCharacterSpawner)
     {
-        while (!SceneManager.GetActiveScene().isLoaded) 
-        { 
-            yield return null;
-        }
-
-        SpawnAllCharacters();
-
-    }
-
-    private void SpawnAllCharacters()
-    {
-        foreach (var character in aiCharacters)
-        {
-            GameObject instantiatedCharacter = Instantiate(character);
-            spawnedInCharacters.Add(instantiatedCharacter);
-            
-        }
+        aICharacterSpawners.Add(aiCharacterSpawner);
+        aiCharacterSpawner.AttemptToSpwanCharacter();
 
     }
     public void DeSpawnAllCharacters()
@@ -77,8 +57,48 @@ public class WorldAIManager : MonoBehaviour
             {
                 Destroy(character); // Only destroy the instantiated objects, not the original assets
             }
+
+            
         }
+        spawnedInCharacters.Clear();
+
+
+    }
+
+    public void ResetAllCharacters()
+    {
+        DeSpawnAllCharacters();
+
+        reSpawnedCharacters = true;
+       
+
+       
+
         
+
+    }
+
+
+    //Patrol Paths
+    public void AddPatrolPathToList(AIPatrolPath patrolPath)
+    {
+        if (aiPatrolPaths.Contains(patrolPath))
+        return;
+
+        aiPatrolPaths.Add(patrolPath);
+        
+    }
+
+    public AIPatrolPath GetAIPatrolPathByID(int patrolPathID)
+    {
+        AIPatrolPath patrolPath = null;
+
+        for (int i = 0; i < aiPatrolPaths.Count; i++ )
+        {
+            if (aiPatrolPaths[i].patrolpathID == patrolPathID)
+            patrolPath= aiPatrolPaths[i];
+        }
+        return patrolPath;
 
     }
 }

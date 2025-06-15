@@ -5,8 +5,9 @@ using UnityEngine;
 public class Interactable : MonoBehaviour
 {
     public string interactableText;
-    [SerializeField]protected Collider interactableCollider;
+    [SerializeField]public Collider interactableCollider;
     [SerializeField] protected bool hostOnlyInteractable;
+    [SerializeField] public bool isRayCastInteractable;
 
     protected virtual void Awake()
     {
@@ -29,15 +30,28 @@ public class Interactable : MonoBehaviour
 
         Debug.Log("You Have Interacted");
 
-        //interactableCollider.enabled = false;
+        interactableCollider.enabled = false;
 
         player.playerInteractionManager.RemoveInteractionFromList(this);
-
         
+
+
+
+
         PlayerUIManager.instance.playerUIPopUPManager.CloseAllPopUpWindow();
 
         
+        
 
+
+    }
+
+    public virtual void OnRayCastHit(playerManager player)
+    {
+        if(player!=null)
+        {
+
+        }
 
     }
 
@@ -49,6 +63,7 @@ public class Interactable : MonoBehaviour
         {
             player.playerInteractionManager.AddInteractionToList(this);
         }
+        
 
     }
     public virtual void OnTriggerExit(Collider other)

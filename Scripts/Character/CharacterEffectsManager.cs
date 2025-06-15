@@ -10,6 +10,10 @@ public class CharacterEffectsManager : MonoBehaviour
 
     CharacterManager character;
 
+    [Header("VFX")]
+    [SerializeField] GameObject bloodSplatterVFX;
+    [SerializeField] GameObject blockedVFX;
+
     protected virtual void Awake()
     {
         character = GetComponent<CharacterManager>();
@@ -19,6 +23,32 @@ public class CharacterEffectsManager : MonoBehaviour
         effect.ProcessEffect(character);
 
     }
-    
-   
+
+    public void PlayBloodSplatterVFX(Vector3 contactPoint)
+    {
+        if(bloodSplatterVFX != null)
+        {
+            GameObject bloodSplatter = Instantiate(bloodSplatterVFX,contactPoint,Quaternion.identity);
+        }
+        else
+        {
+            GameObject bloodSplatter = Instantiate(WorldCharacterEffectsManager.instance.bloodSplatterVFX, contactPoint, Quaternion.identity);
+        }
+
+    }
+
+    public void PlayBlockedVFX(Vector3 contactPoint)
+    {
+        if (blockedVFX != null)
+        {
+            GameObject bloodSplatter = Instantiate(blockedVFX, contactPoint, Quaternion.identity);
+        }
+        else
+        {
+            GameObject bloodSplatter = Instantiate(WorldCharacterEffectsManager.instance.bloodSplatterVFX, contactPoint, Quaternion.identity);
+        }
+
+    }
+
+
 }

@@ -9,14 +9,18 @@ public class PlayerUIManager : MonoBehaviour
     public PlayerUIHUDManager playerUIHUDManager;
     [HideInInspector]public PlayerUICharacterMenuManager playerUICharacterMenuManager;
     [HideInInspector]public PlayerUIEquipmentManager playerUIEquipmentManager;
+    [HideInInspector]public PlayerUISiteOfGraceManager playerUISiteOfGraceManager;
+    [HideInInspector]public PlayerUITeleportLocationManager playerUITeleportLocationManager;
 
 
-    [SerializeField] UI_StatBar staminaBar;
-    [SerializeField] UI_StatBar healthBar;
+    //[SerializeField] UI_StatBar staminaBar;
+    //[SerializeField] UI_StatBar healthBar;
 
     [Header("Menu Window open")]
     public bool menuWindowOpen=false; //Inventory Screen Containing Equipment menu, etc
     public bool popUpWindowIsOpen=false;//Item Pick up, Dialogue Pop Up, etc
+    public bool survivalWheelOpen = false;
+    [SerializeField] public GameObject inspectObjectTouchField;
 
     private void Awake()
     {
@@ -33,6 +37,8 @@ public class PlayerUIManager : MonoBehaviour
         playerUIHUDManager = GetComponentInChildren<PlayerUIHUDManager>();
         playerUICharacterMenuManager = GetComponentInChildren<PlayerUICharacterMenuManager>();
         playerUIEquipmentManager = GetComponentInChildren<PlayerUIEquipmentManager>();
+        playerUISiteOfGraceManager = GetComponentInChildren<PlayerUISiteOfGraceManager>();
+        playerUITeleportLocationManager = GetComponentInChildren<PlayerUITeleportLocationManager>();
     }
 
     private void Start()
@@ -42,39 +48,49 @@ public class PlayerUIManager : MonoBehaviour
 
     public void SetNewStaminaValue(int oldValue, float newValue)
     {
-        staminaBar.SetStat((int)newValue);
+        playerUIHUDManager.staminaBar.SetStat((int)newValue);
     }
 
     public void SetMaxStaminaValue(int maxStamina)
     {
-        staminaBar.SetStat(maxStamina);
+        playerUIHUDManager.staminaBar.SetStat(maxStamina);
     }
 
-    public void UpdateStaminaBar(int currentStamina)
-    {
-        staminaBar.SetStat(currentStamina);
-    }
+    
 
     // Health Bar
     public void SetNewHealthValue(int oldValue, float newValue)
     {
-        healthBar.SetStat((int)newValue);
+        playerUIHUDManager.healthBar.SetStat((int)newValue);
     }
 
     public void SetMaxHealthValue(int maxHealth)
     {
-        healthBar.SetMaxStat(maxHealth);
+        playerUIHUDManager.healthBar.SetMaxStat(maxHealth);
     }
 
     public void UpdateHealthBar(int currentHealth)
     {
-        healthBar.SetStat(currentHealth);
+        playerUIHUDManager.healthBar.SetStat(currentHealth);
     }
+
+    public void UpdateStaminaBar(int currentStamina)
+    {
+        playerUIHUDManager.staminaBar.SetStat(currentStamina);
+    }
+
+    ////public void UpdateTemperatureBar(int currentTemperature)
+    ////{
+    ////    playerUIHUDManager.bodyTemperatureMeter.SetStat(currentTemperature);
+    ////}
 
     public void CloseAllMenu()
     {
         playerUICharacterMenuManager.CloseCharacterMenu();
         playerUIEquipmentManager.CloseEquipmentManagerMenu();
+        playerUICharacterMenuManager.CloseSurvivalWheel();
+        playerUISiteOfGraceManager.CloseSiteOfGraceManagerMenu();
+        playerUITeleportLocationManager.CloseTeleportLocationManagerMenu();
 
 
     }

@@ -7,6 +7,11 @@ public class playerManager : CharacterManager
 {
     public static playerManager instance;
 
+    [Header("Character name")]
+    public string characterName = "Character";
+
+    
+
     [Header("Debug Menu")]
     [SerializeField] bool ReSpwanCharacter = false;
     [SerializeField] bool switchRightWeapon = false;
@@ -20,8 +25,10 @@ public class playerManager : CharacterManager
     [HideInInspector] public PlayerEquipmentManager playerEquipmentManager;
     [HideInInspector] public PlayerCombatManager playerCombatManager;
     [HideInInspector] public PlayerInteractionManager playerInteractionManager;
-    [HideInInspector] public CharacterSoundFxManager characterSoundFxManager;
-   
+    [HideInInspector] public PlayerStatsManager playerStatsManager;
+    [HideInInspector]public PlayerBodyManager playerBodyManager;
+
+
     public PlayerUIHUDManager playerUIHUDManager;
 
     public float sprintingStaminaCost = 0.2f;
@@ -51,6 +58,8 @@ public class playerManager : CharacterManager
         playerCombatManager = GetComponent<PlayerCombatManager>();
         playerInteractionManager = GetComponent<PlayerInteractionManager>();  
         characterSoundFxManager = GetComponent<CharacterSoundFxManager>();
+        playerStatsManager = GetComponent<PlayerStatsManager>();
+        playerBodyManager = GetComponent<PlayerBodyManager>();
     }
 
     protected override void Update()
@@ -58,8 +67,12 @@ public class playerManager : CharacterManager
         base.Update();
         playerLocomotionManager.HandleAllMovement();
 
+        
+
         DebugMenu();
     }
+
+   
 
     protected override void LateUpdate()
     {
@@ -75,8 +88,9 @@ public class playerManager : CharacterManager
 
     public void SaveGameDataToCurrentCharacterData(ref CharacterSaveData currentCharacterData)
     {
+        currentCharacterData.characterName= characterName; // Assign player name
         currentCharacterData.sceneIndex = SceneManager.GetActiveScene().buildIndex;
-        currentCharacterData.characterName = "Character"; // Assign player name
+        
         currentCharacterData.timePlayed = Time.time;
 
         // Save player position
@@ -91,7 +105,7 @@ public class playerManager : CharacterManager
     }
     public void LoadGameDataToCharacterData(ref CharacterSaveData currentCharacterData)
     {
-        currentCharacterData.characterName = "Character";
+        currentCharacterData.characterName = characterName;
 
         // Example: Load and assign position
         Vector3 myPosition = new Vector3(currentCharacterData.xPosition, currentCharacterData.yPosition, currentCharacterData.zPosition);
@@ -135,5 +149,17 @@ public class playerManager : CharacterManager
             playerEquipmentManager.SwitchLeftWeapon();
         }
         
+    }
+
+    
+
+    public override void OnIsBlocking(bool Status)
+    {
+        base.OnIsBlocking(Status);
+
+        playerStatsManager.blockingPhysicalAbsorption = playerCombatManager.currentWeaponBeingUsed.physicalBaseDamageAbsorption;
+        playerStatsManager.blockingFireAbsorption = playerCombatManager.currentWeaponBeingUsed.fireBaseDamageAbsorption;
+        playerStatsManager.blockingMagicAbsorption = playerCombatManager.currentWeaponBeingUsed.magicBaseDamageAbsorption;
+        playerStatsManager.blockingLightningAbsorption = playerCombatManager.currentWeaponBeingUsed.lightningBaseDamageAbsorption;
     }
 }

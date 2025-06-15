@@ -18,7 +18,10 @@ public class WeaponManager : MonoBehaviour
         meleeDamageCollider.magicDamage = weapon.magicDamage;
         meleeDamageCollider.firelDamage = weapon.fireDamage;
         meleeDamageCollider.lightininglDamage =weapon.lightiningDamage;
+        meleeDamageCollider.poiseDamage=weapon.PoiseDamage;
 
         meleeDamageCollider.light_Attack_01_Modifier = weapon.light_attack_01_Modifier;
+        meleeDamageCollider.Heavy_Attack_01_Modifier = weapon.heavy_attack_01_Modifier;
+        meleeDamageCollider.Charged_Attack__Modifier = weapon.charged_attack_01_Modifier;
     }
 }

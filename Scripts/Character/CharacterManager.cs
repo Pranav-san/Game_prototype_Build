@@ -1,6 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
+
 using UnityEngine;
 
 public class CharacterManager : MonoBehaviour
@@ -11,6 +11,7 @@ public class CharacterManager : MonoBehaviour
     [HideInInspector]public CharacterCombatManager characterCombatManager;
     [HideInInspector]public CharacterLocomotionManager characterLocomotionManager;
     public CharacterStatsManager characterStatsManager;
+    [HideInInspector] public CharacterSoundFxManager characterSoundFxManager;
 
     public bool isDead;
 
@@ -39,6 +40,17 @@ public class CharacterManager : MonoBehaviour
     public bool isMoving = false;
 
     public bool isSprinting = false;
+
+    public bool isChargingAttack = false;
+
+    public bool isBlocking = false;
+    public bool isAttacking = false;
+    public bool isInvulnerable = false;
+
+
+
+    
+
     protected virtual void Awake()
     {
         DontDestroyOnLoad(this);
@@ -49,8 +61,14 @@ public class CharacterManager : MonoBehaviour
         characterStatsManager = GetComponent<CharacterStatsManager>();
         characterCombatManager = GetComponent<CharacterCombatManager>(); 
         characterLocomotionManager= GetComponent<CharacterLocomotionManager>(); 
+        characterSoundFxManager = GetComponent<CharacterSoundFxManager>();
         
         
+    }
+
+    public void OnIsChargingAttack( bool Status)
+    {
+        animator.SetBool("isChargingAttack", isChargingAttack);
     }
     protected virtual void Update()
     {
@@ -58,9 +76,18 @@ public class CharacterManager : MonoBehaviour
         animator.SetBool("IsGrounded", isGrounded);
         animator.SetBool("isMoving", isMoving);
 
+        OnIsChargingAttack(isChargingAttack);
+        OnIsBlocking(isBlocking);
+
+    }
+
+    public virtual void OnIsBlocking( bool Status)
+    {
+        animator.SetBool("isBlocking", isBlocking);
     }
     protected virtual void LateUpdate()
     {
+        
 
     }
 

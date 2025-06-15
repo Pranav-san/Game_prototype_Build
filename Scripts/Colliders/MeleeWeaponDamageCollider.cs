@@ -12,6 +12,8 @@ public class MeleeWeaponDamageCollider : DamageCollider
 
     [Header("Weapon Attack Modifier")]
     public float light_Attack_01_Modifier;
+    public float Heavy_Attack_01_Modifier;
+    public float Charged_Attack__Modifier;
 
     protected override void Awake()
     {
@@ -50,6 +52,7 @@ public class MeleeWeaponDamageCollider : DamageCollider
         damageEffect.firelDamage = firelDamage;
         damageEffect.lightininglDamage = lightininglDamage;
         damageEffect.contactPoint = contactPoint;
+        damageEffect.poiseDamage = poiseDamage;
         damageEffect.angleHitFrom = Vector3.SignedAngle(characterCausingDamage.transform.forward, damageTarget.transform.forward, Vector3.up);
 
         switch(characterCausingDamage.characterCombatManager.currentAttackType)
@@ -58,10 +61,23 @@ public class MeleeWeaponDamageCollider : DamageCollider
                 ApplyAttackDamageModifiers(light_Attack_01_Modifier, damageEffect);
 
                 break;
+            case AttackType.HeavyAttack01:
+                ApplyAttackDamageModifiers(Heavy_Attack_01_Modifier, damageEffect);
+                break;
+            case AttackType.ChargedAttack01:
+                ApplyAttackDamageModifiers(Charged_Attack__Modifier, damageEffect);
+
+                break;
         }
 
         damageTarget.characterEffectsManager.ProcessInstantEffect(damageEffect);
 
+    }
+
+    protected override void GetBlockingDotValues(CharacterManager damageTarget)
+    {
+        directionFromAttackToDamageTarget = characterCausingDamage.transform.position - damageTarget.transform.position;
+        dotvalueFromAttackToDamageTarget = Vector3.Dot(directionFromAttackToDamageTarget, damageTarget.transform.forward);
     }
 
     private void ApplyAttackDamageModifiers(float modifier, TakeDamageEffect damage)

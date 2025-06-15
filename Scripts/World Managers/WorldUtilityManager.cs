@@ -78,4 +78,28 @@ public class WorldUtilityManager : MonoBehaviour
         }
         return viewableAngle;
     }
+
+    public DamageIntensity GetDamageIntensityBasedOnPoiseDamage(float poiseDamage)
+    {
+        //Throwing Daggers, stones
+        DamageIntensity damageIntensity = DamageIntensity.Ping;
+
+        //
+        if(poiseDamage >=25)
+            damageIntensity = DamageIntensity.Light;
+
+        if(poiseDamage>=60)
+            damageIntensity = DamageIntensity.Medium;
+
+        if(poiseDamage >=70) 
+            damageIntensity = DamageIntensity.Heavy;
+
+        if(poiseDamage >= 120)
+            damageIntensity = DamageIntensity.Collasal;
+
+        return damageIntensity;
+
+
+
+    }
 }
