@@ -8,6 +8,7 @@ public class PlayerInventoryManager : CharacterInventoryManager
     [SerializeField] playerManager player;
     public WeaponItem currentRightHandWeapon;
     public WeaponItem currentLeftHandWeapon;
+    public WeaponItem currentTwoHandWeapon;
 
     [Header("Quick Slots")]
     public WeaponItem[] weaponsInRightHandSlot = new WeaponItem[3];
@@ -20,6 +21,7 @@ public class PlayerInventoryManager : CharacterInventoryManager
     public int currentRightHandWeaponID = 0;
     public int currentLeftHandWeaponID = 0;
     public int currentSpellID=0;
+    public int currentMainProjectileID=0;
   
 
     [Header("Aromo/OutFit Equipment")]
@@ -27,6 +29,12 @@ public class PlayerInventoryManager : CharacterInventoryManager
     public BodyEquipmentItem bodyEquipment;
     public LegEquipmentItem legEquipment;
     public HandEquipmentItem handEquipment;
+
+    [Header("Projectiles")]
+    public RangedProjectileItem mainProjectile;
+    public RangedProjectileItem secondaryProjectile;
+    public bool hasArrowNotched = false;
+    public bool isHoldingArrow = false;
 
     [Header("Inventory")]
     public List<Item> itemsInInventory;
@@ -42,6 +50,7 @@ public class PlayerInventoryManager : CharacterInventoryManager
         OnCurrentLeftHandWeaponIDChange(0, currentLeftHandWeaponID);
         OnCurrentHandWeaponBeingUsedIDChange(0, currentRightHandWeaponID);
         OnCurrentSpellIDChange(0, currentSpellID);
+        OnMainProjectileIDChange(0, currentMainProjectileID);
 
         player= GetComponent<playerManager>();
     }
@@ -77,6 +86,38 @@ public class PlayerInventoryManager : CharacterInventoryManager
         
     }
 
+    public void OnMainProjectileIDChange(int oldID, int newID)
+    {
+
+        RangedProjectileItem newProjectile = null;
+
+        if (WorldItemDatabase.instance.GetProjectileByID(newID))
+            newProjectile = Instantiate(WorldItemDatabase.instance.GetProjectileByID(newID));
+
+        if (newProjectile != null)
+            player.playerInventoryManager.mainProjectile = newProjectile;
+       
+
+
+
+    }
+
+    public void OnSecondaryProjectileIDChange(int oldID, int newID)
+    {
+
+        RangedProjectileItem newProjectile = null;
+
+        if (WorldItemDatabase.instance.GetProjectileByID(newID))
+            newProjectile = Instantiate(WorldItemDatabase.instance.GetProjectileByID(newID));
+
+        if (newProjectile != null)
+            player.playerInventoryManager.mainProjectile = newProjectile;
+
+
+
+
+    }
+
     public void OnHeadEquipmentModelChanged(int oldValue, int newValue)
     {
        HeadEquipmentItem equipment = WorldItemDatabase.instance.GetHeadEquipmentByID(newValue);
@@ -100,6 +141,8 @@ public class PlayerInventoryManager : CharacterInventoryManager
         player.playerCombatManager.currentWeaponBeingUsed = newWeapon;
         
     }
+
+    
 
     public void PerformWeaponBasedAction(int actionID, int weaponID)
     {

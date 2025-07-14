@@ -32,6 +32,8 @@ public class ManualDamageCollider : DamageCollider
         {
             return;
         }
+        if (damageTarget.characterGroup == characterCausingDamage.characterGroup)
+            return;
 
         if (charactersDamaged.Contains(damageTarget))
         {

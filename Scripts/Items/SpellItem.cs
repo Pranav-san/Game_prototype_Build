@@ -40,12 +40,12 @@ public class SpellItem : Item
 
     }
 
-    protected virtual void InstantiateWarmUpSpellFX(playerManager player)
+    public virtual void InstantiateWarmUpSpellFX(playerManager player)
     {
 
     }
 
-    protected virtual void InstantiateReleaseFX(playerManager player)
+    public virtual void InstantiateReleaseFX(playerManager player)
     {
 
     }

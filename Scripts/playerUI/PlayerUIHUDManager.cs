@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,13 +12,15 @@ public class PlayerUIHUDManager : MonoBehaviour
     public UI_StatBar staminaBar;
     public UI_StatBar healthBar;
 
-    [Header("Survial Stats")]
-    //public UI_StatBar bodyTemperatureMeter;
-    //public UI_StatBar thirst;
-    //public UI_StatBar Hunger;
-    //public UI_StatBar fatigue;
+    [Header("Runes")]
+    [SerializeField] float runeUpdateCountDelayTimer = 2.5f;
+    private int PendingRunesToAdd = 0;
+    private Coroutine waitThenAddRunesCoroutine;
+    [SerializeField] TextMeshProUGUI runesToAddText;
+    [SerializeField] TextMeshProUGUI runesCountText;
 
     [Header("Quick Slots")]
+    
     [SerializeField] Image rightWeaponQuickSlotIcon;
     [SerializeField] Image leftWeaponQuickSlotIcon;
 
@@ -32,6 +35,44 @@ public class PlayerUIHUDManager : MonoBehaviour
     {
 
         healthBar.SetMaxStat(maxHealth);
+
+    }
+
+    public void SetRunesCount(int runesToAdd)
+    {
+        PendingRunesToAdd += runesToAdd;
+
+        if(waitThenAddRunesCoroutine != null)
+            StopCoroutine(waitThenAddRunesCoroutine);
+
+        waitThenAddRunesCoroutine = StartCoroutine(waitThenUpdateRuneCount());
+        
+    }
+
+    private IEnumerator waitThenUpdateRuneCount()
+    {
+        //Wait for timer to reach 0, Increase more runes qued up
+        float timer = runeUpdateCountDelayTimer;
+        int runesToAdd = PendingRunesToAdd;
+        runesToAddText.text = "+" + runesToAdd.ToString();
+        runesToAddText.enabled = true;
+        while(timer > 0)
+        {
+            timer -=Time.deltaTime;
+
+            //If more runes are QuedUp, Re-Update Total New rune Count
+            if(runesToAdd != PendingRunesToAdd)
+            {
+                runesToAdd = PendingRunesToAdd;
+                runesToAddText.text = "+" + runesToAdd.ToString();
+            }
+            yield return null;
+        }
+        // Update Rune Count, Reset pending Runes Count and Hide Pending Runes Text
+        runesToAddText.enabled= false;
+        PendingRunesToAdd = 0;
+        runesCountText.text = PlayerUIManager.instance.playerStatsManager.runes.ToString();
+        yield return null;
 
     }
 

@@ -27,6 +27,7 @@ public class PlayerAnimatorManager : CharacterAnimatorManager
         if (player.isUsingRightHand)
         {
             player.playerCombatManager.canComboWithMainHandleWeapon = true;
+            player.isUsingRightHand = true;
         }
         else
         {

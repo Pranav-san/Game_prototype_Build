@@ -18,6 +18,8 @@ public class AICharacterCombatManager : CharacterCombatManager
     public Vector3 targetDirection;
 
 
+
+
     [Header("Detection")]
     [SerializeField] float detectionRadius = 15f;
     public float minimumDetectionFOV = -35f;
@@ -36,6 +38,15 @@ public class AICharacterCombatManager : CharacterCombatManager
         aiCharacter = GetComponent<AICharacterManager>();
 
         
+    }
+
+    public void AwardRunesOnDeath(playerManager player)
+    {
+        if (player.characterGroup == CharacterGroup.Team02)
+            return;
+
+        player.playerStatsManager.AddRunes(aiCharacter.characterStatsManager.runesDroppedOnDeath);
+
     }
 
     public void FindTargetViaLineOfSight(AICharacterManager aiCharacter)

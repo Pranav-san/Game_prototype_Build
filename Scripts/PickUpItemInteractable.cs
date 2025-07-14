@@ -7,8 +7,7 @@ public class PickUpItemInteractable : Interactable
 
     public ItemPickUpType pickUpType;
 
-    [Header("Survival Item Type")]
-    public SurvivalItemType ItemType;
+   
 
     [Header("Item")]
     [SerializeField] public Item item;//Pick up Item

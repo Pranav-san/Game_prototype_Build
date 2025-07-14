@@ -8,6 +8,8 @@ public class UI_StatBar : MonoBehaviour
     
     public Slider slider;
 
+    public GameObject lockOnUI;
+
     //[Header("Bar Options")]
     //[SerializeField]protected bool scaleBarLengthWithStats = true;
     //[SerializeField] protected float widthScaleMultiplier = 1;

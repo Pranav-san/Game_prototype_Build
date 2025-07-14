@@ -19,7 +19,12 @@ public class OffHandMeleeAction : WeaponItemBasedAction
         }
         if(playerPerformingAction.isBlocking)
             return;
+        if(playerPerformingAction.playerInventoryManager.currentLeftHandWeapon.weaponClass != WeapomClass.Shield)
+            return;
+
         playerPerformingAction.isBlocking = true;
+
+
     }
 
 

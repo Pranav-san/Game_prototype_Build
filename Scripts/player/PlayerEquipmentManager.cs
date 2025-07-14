@@ -19,6 +19,13 @@ public class PlayerEquipmentManager : CharacterEquipmentManager
     [Header("Debug Delete Later")]
     [SerializeField] bool equipNewItem = false;
 
+    [Header("Two Handing")]
+    [SerializeField]  public bool isTwoHandingWeapon = false;
+    [SerializeField] public int currentWeaponBeingTwoHanded;
+
+    [Header("Notched Arrow")]
+    public GameObject notchedArrow;
+
 
     [Header("General Equipments Models")]
     [HideInInspector]public GameObject HatsObject;
@@ -639,4 +646,138 @@ public class PlayerEquipmentManager : CharacterEquipmentManager
 
         }
     }
+
+    //Two Hand
+    public void UnTwoHandWeapon()
+    {
+        WeaponItem weapon = player.playerInventoryManager.currentTwoHandWeapon;
+        isTwoHandingWeapon = false;
+        
+        
+        if (weapon.weaponClass == WeapomClass.Bow)
+        {
+            leftHandWeaponSlot.UnLoadWeapon();
+            if (leftHandWeaponModel != null)
+                Destroy(leftHandWeaponModel);
+
+            rightHandWeaponModel = Instantiate(weapon.weaponModel);
+            rightHandSlot.LoadWeaponModel(rightHandWeaponModel);
+
+            rightWeaponManager = rightHandWeaponModel.GetComponent<WeaponManager>();
+            rightWeaponManager.SetWeaponDamage(player, weapon);
+        }
+
+        //Update Animator Controller To Current Main Hand Weapon
+        player.playerAnimatorManager.UpdateAnimatorController(player.playerInventoryManager.currentRightHandWeapon.weaponAnimator);
+
+        rightHandSlot.LoadWeaponModel(rightHandWeaponModel);
+
+        rightWeaponManager.SetWeaponDamage(player, player.playerInventoryManager.currentRightHandWeapon);
+
+        player.animator.SetBool("isTwoHandingWeapon", isTwoHandingWeapon);
+
+    }
+    public void TwoHandRightWeapon()
+    {
+        WeaponItem weapon = player.playerInventoryManager.currentRightHandWeapon;
+
+        //Check For UnTwoHandable Item (Like Unarmed)
+        if (player.playerInventoryManager.currentRightHandWeapon == WorldItemDatabase.instance.unArmedWeapon)
+        {
+
+            isTwoHandingWeapon = false;
+            return;
+
+        }
+
+        if (weapon.weaponClass == WeapomClass.Bow)
+        {
+            isTwoHandingWeapon = true;
+            
+            currentWeaponBeingTwoHanded = weapon.itemID;
+            player.playerInventoryManager.currentTwoHandWeapon = weapon;
+
+            // Remove from right hand
+            rightHandSlot.UnLoadWeapon();
+            if (rightHandWeaponModel != null)
+                Destroy(rightHandWeaponModel);
+            //if(leftHandWeaponModel != null) Destroy(leftHandWeaponModel);
+
+            // Instantiate into LEFT hand
+            leftHandWeaponModel = Instantiate(weapon.weaponModel);
+
+            
+
+
+
+
+            leftHandWeaponSlot.LoadWeaponModel(leftHandWeaponModel);
+
+            leftWeaponManager = leftHandWeaponModel.GetComponent<WeaponManager>();
+            leftWeaponManager.SetWeaponDamage(player, weapon);
+
+            player.playerAnimatorManager.UpdateAnimatorController(weapon.weaponAnimator);
+            player.animator.SetBool("isTwoHandingWeapon", true);
+        }
+
+        //Update Animator Controller
+        player.playerAnimatorManager.UpdateAnimatorController(player.playerInventoryManager.currentRightHandWeapon.weaponAnimator);
+
+        rightHandSlot.LoadWeaponModel(rightHandWeaponModel);
+
+        rightWeaponManager.SetWeaponDamage(player, player.playerInventoryManager.currentRightHandWeapon);
+
+
+
+
+    }
+
+    public void DrawProjectile(int projectileID)
+    {
+        Animator bowAnimator;
+        bowAnimator = player.playerInventoryManager.currentRightHandWeapon.weaponModel.GetComponentInChildren<Animator>();
+
+        if (bowAnimator == null)
+            return;
+
+
+
+
+
+        //Animate The Bow
+        bowAnimator.SetBool("isDrawn", true);
+        bowAnimator.Play("Bow_Draw_01");
+
+        //Instantiate Arrow
+
+        notchedArrow = Instantiate(WorldItemDatabase.instance.GetProjectileByID(projectileID).drawProjectileModel, 
+            player.playerEquipmentManager.rightHandSlot.transform);
+       
+
+
+
+
+
+    }
+    public void OnIsTwoHandingRightWeapon(bool oldstatus, bool newstatus)
+    {
+
+       
+        currentWeaponBeingTwoHanded = player.playerInventoryManager.currentRightHandWeaponID;
+        isTwoHandingWeapon = true;
+        player.playerInventoryManager.currentTwoHandWeapon = player.playerInventoryManager.currentRightHandWeapon;
+        TwoHandRightWeapon();
+
+        player.animator.SetBool("isTwoHandingWeapon", isTwoHandingWeapon);
+
+    }
+
+    public void OnIsTwoHandingWeapon(bool oldstatus, bool newstatus)
+    {
+        if(!isTwoHandingWeapon) 
+            UnTwoHandWeapon();
+
+      
+    }
+    
 }

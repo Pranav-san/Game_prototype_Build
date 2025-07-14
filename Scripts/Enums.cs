@@ -26,6 +26,7 @@ public enum WeaponModelSlot{
     RightHand,
     LeftHandWeaponSlot,
     LeftHandShieldSlot,
+    leftHandBowSlot,
 
     //RightHip
     //LeftHip
@@ -80,19 +81,6 @@ public enum EquipmentType
     Hand,        //9
 }
 
-public enum SurvivalItemType
-{
-    medicItem,
-    DrinkableItem,
-    foodItems,
-    Spell_Throwables,
-    campFire_Rest_item,
-    lightSourceItem,
-
-
-
-}
-
 public enum EquipmentModelType
 {
     FullHelmet, //Hide Face, Hair...ETC
@@ -135,6 +123,29 @@ public enum SpellClass
 
 }
 
+public enum WeapomClass
+{
+    Sword,
+    spear,
+    Bow,
+    Fist,
+    Shield
+}
+
+public enum ProjectileClass
+{
+    Arrow,
+    Bolt
+
+}
+
+public enum ProjectileSlot
+{
+    Main,
+    Secondary,
+
+}
+
 
 //Used To Determine Pick Up Item Type
 public enum ItemPickUpType
@@ -150,5 +161,7 @@ public enum IdleStateMode
     Idle,
     Patrol
 }
+
+
 
 

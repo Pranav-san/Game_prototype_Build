@@ -16,7 +16,7 @@ public class PursueTargetState : AIState
         //Check If AI is Performing An Action 
         if (aiCharacter.isPerformingAction)
         {
-            aiCharacter.characterAnimatorManager.SetAnimatorMovementParameters(0, 1);
+            aiCharacter.characterAnimatorManager.SetAnimatorMovementParameters(0, 0);
             return this;
         }
         aiCharacter.characterAnimatorManager.SetAnimatorMovementParameters(0, 1);

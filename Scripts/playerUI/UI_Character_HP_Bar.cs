@@ -38,6 +38,8 @@ public class UI_Character_HP_Bar : UI_StatBar
     {
         // Make sure the HP bar always faces the camera
         transform.LookAt(transform.position + Camera.main.transform.forward);
+        
+        
 
         // Hide the HP bar after the timer runs out
         if (hideTimer > 0)
@@ -79,4 +81,7 @@ public class UI_Character_HP_Bar : UI_StatBar
 
         characterDamage.enabled = true;  // Enable the damage text
     }
+
+    
+
 }

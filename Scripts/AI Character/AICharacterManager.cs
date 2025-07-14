@@ -26,6 +26,8 @@ public class AICharacterManager : CharacterManager
     public CombatStanceState combatStance;
     public AttackState attackState;
 
+   
+
     protected override void Awake()
     {
         
@@ -118,5 +120,23 @@ public class AICharacterManager : CharacterManager
         animator.SetBool("isMoving", isMoving);
     }
 
-    
+    public override IEnumerator ProcessDeathEvent(bool manuallySelectDeathAnimation = false)
+    {
+        characterStatsManager.currentHealth =0;
+        characterStatsManager.isDead = true;
+
+
+        if (!manuallySelectDeathAnimation)
+        {
+            characterAnimatorManager.PlayTargetActionAnimation("Dead_01", true);
+            PlayerCamera.instance.player.playerCombatManager.CheckIfTargetIsDead(PlayerCamera.instance.player.playerCombatManager.currentTarget);
+            aiCharacterCombatManager.AwardRunesOnDeath(PlayerCamera.instance.player);
+
+        }
+
+        yield return new WaitForSeconds(5);
+
+    }
+
+
 }

@@ -35,10 +35,12 @@ public class CharacterCombatManager : MonoBehaviour
         if (newTarget != null)
         {
             currentTarget = newTarget;
+            
         }
         else
         {
             currentTarget = null;
+           
         }
 
     }

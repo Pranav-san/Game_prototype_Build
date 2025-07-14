@@ -187,6 +187,7 @@ public class CombatStanceState : AIState
         hasAttack = false;
         hasRolledForComboChance = false;
         strafeMoveAmount = 0;
+        hasChoosenCirclePath = false;
    
     }
 
@@ -222,12 +223,14 @@ public class CombatStanceState : AIState
         {
             //Left
             strafeMoveAmount = -0.5f;
+            Debug.Log("Chosen strafe direction: " + strafeMoveAmount);
         }
 
         else
         {
             //Right
             strafeMoveAmount = 0.5f;
+            Debug.Log("Chosen strafe direction: " + strafeMoveAmount);
         }
 
 

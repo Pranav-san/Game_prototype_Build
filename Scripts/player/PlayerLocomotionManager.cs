@@ -117,7 +117,7 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
     //Third Person
     private void HandleRotation()
     {
-        if(player.isDead) 
+        if(player.playerStatsManager.isDead) 
             return;
 
 

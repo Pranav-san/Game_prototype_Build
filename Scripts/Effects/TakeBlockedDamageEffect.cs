@@ -37,7 +37,7 @@ public class TakeBlockedDamageEffect : InstantCharacterEffect
 
         Debug.Log("Hit was blocked");
 
-        if (character.isDead)
+        if (character.characterStatsManager.isDead)
         {
             return;
         }
@@ -80,7 +80,7 @@ public class TakeBlockedDamageEffect : InstantCharacterEffect
 
     private void PlayDirectionalBasedBlockingAnimation(CharacterManager character)
     {
-        if (character.isDead)
+        if (character.characterStatsManager.isDead)
             return;
 
         DamageIntensity damageIntensity = WorldUtilityManager.Instance.GetDamageIntensityBasedOnPoiseDamage(poiseDamage);

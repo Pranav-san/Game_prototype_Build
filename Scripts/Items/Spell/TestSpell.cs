@@ -32,14 +32,14 @@ public class TestSpell : SpellItem
         Debug.Log("Casted Spell");
     }
 
-    protected override void InstantiateWarmUpSpellFX(playerManager player)
+    public override void InstantiateWarmUpSpellFX(playerManager player)
     {
         base.InstantiateWarmUpSpellFX(player);
 
         Debug.Log("Instantiated FX");
     }
 
-    protected override void InstantiateReleaseFX(playerManager player)
+    public override void InstantiateReleaseFX(playerManager player)
     {
         base.InstantiateReleaseFX(player);
 
@@ -53,7 +53,7 @@ public class TestSpell : SpellItem
             return false;
         if(player.isJumping)
             return false;
-        if(player.isDead)
+        if(player.playerStatsManager.isDead)
             return false;
         if(player.isAttacking)
             return false;

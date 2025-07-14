@@ -54,7 +54,7 @@ public class IdleState : AIState
         if (aiCharacter.characterCombatManager.currentTarget!=null)
         {
             //Return Pursue Target State
-            Debug.Log("AI Has a Target");
+            //Debug.Log("AI Has a Target");
 
             return SwitchState(aiCharacter, aiCharacter.pursueTarget);
 
@@ -63,7 +63,7 @@ public class IdleState : AIState
         else
         {
             //Return This State, To Continually Search For a Target
-            Debug.Log("Searching for Target");
+            //Debug.Log("Searching for Target");
 
 
             return this;

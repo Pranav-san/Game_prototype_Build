@@ -261,6 +261,15 @@
                     "initialStateCheck": false
                 },
                 {
+                    "name": "Two Hand Weapon",
+                    "type": "Button",
+                    "id": "e089b1f1-7909-494b-ba7e-8b14f2232207",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "Que RB",
                     "type": "Button",
                     "id": "53dd41a2-8fc3-4e5c-86d2-43480c9030c1",
@@ -447,6 +456,28 @@
                 },
                 {
                     "name": "",
+                    "id": "7dd46276-9c5c-491f-8e91-815bcfb59f42",
+                    "path": "<Gamepad>/buttonNorth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Two Hand Weapon",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "d05a4af3-11c9-4892-9bb0-ac0590289d12",
+                    "path": "<Keyboard>/f",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Two Hand Weapon",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "549bb76a-6e1b-4039-ae44-8940d06b55b8",
                     "path": "<Gamepad>/rightShoulder",
                     "interactions": "",
@@ -503,7 +534,7 @@
                 {
                     "name": "",
                     "id": "baf30042-2c09-4fbd-8c53-1ee09c7b1e1e",
-                    "path": "<Keyboard>/f",
+                    "path": "<Keyboard>/c",
                     "interactions": "",
                     "processors": "",
                     "groups": "",

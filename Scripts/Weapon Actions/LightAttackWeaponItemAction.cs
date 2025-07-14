@@ -27,10 +27,14 @@ public class LightAttackWeaponItemAction : WeaponItemBasedAction
         if (playerPerformingAction.playerCombatManager.canComboWithMainHandleWeapon&&playerPerformingAction.isPerformingAction)
         {
             playerPerformingAction.playerCombatManager.canComboWithMainHandleWeapon = false;
+            playerPerformingAction.isUsingRightHand = true;
+
 
             if (playerPerformingAction.characterCombatManager.lastAttackAnimationPerformed==light_Attack_01)
             {
+               
                 playerPerformingAction.playerAnimatorManager.PlayTargetAttackActionAnimation(WeaponPerformingAction, AttackType.LightAttack02, light_Attack_02, true);
+                
 
             }
             else

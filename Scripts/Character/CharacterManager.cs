@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 using UnityEngine;
+using UnityEngine.TextCore.Text;
 
 public class CharacterManager : MonoBehaviour
 {
@@ -13,7 +14,7 @@ public class CharacterManager : MonoBehaviour
     public CharacterStatsManager characterStatsManager;
     [HideInInspector] public CharacterSoundFxManager characterSoundFxManager;
 
-    public bool isDead;
+    //public bool isDead;
 
     public float maxHealth = 100;
     public float currentHealth = 100;   
@@ -24,6 +25,8 @@ public class CharacterManager : MonoBehaviour
 
     [Header("Character Group")]
     public CharacterGroup characterGroup;
+
+    
 
 
 
@@ -95,10 +98,12 @@ public class CharacterManager : MonoBehaviour
     {
         characterStatsManager.currentHealth =0;
         characterStatsManager.isDead = true;
+        
 
         if (!manuallySelectDeathAnimation)
         {
             characterAnimatorManager.PlayTargetActionAnimation("Dead_01",true);
+            PlayerCamera.instance.player.playerCombatManager.CheckIfTargetIsDead(PlayerCamera.instance.player.playerCombatManager.currentTarget);
 
         }
 

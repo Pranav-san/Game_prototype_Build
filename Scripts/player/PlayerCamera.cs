@@ -310,7 +310,7 @@ public class PlayerCamera : MonoBehaviour
                 float viewableAngle = Vector3.Angle(lockOnTargetDirection, cameraObject.transform.forward);
 
                 //If Target is dead, Check for next potential Target
-                if (lockOnTarget.isDead)
+                if (lockOnTarget.characterStatsManager.isDead)
                 {
                     continue;
                 }

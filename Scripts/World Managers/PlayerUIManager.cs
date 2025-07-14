@@ -11,6 +11,7 @@ public class PlayerUIManager : MonoBehaviour
     [HideInInspector]public PlayerUIEquipmentManager playerUIEquipmentManager;
     [HideInInspector]public PlayerUISiteOfGraceManager playerUISiteOfGraceManager;
     [HideInInspector]public PlayerUITeleportLocationManager playerUITeleportLocationManager;
+    [SerializeField] public PlayerStatsManager playerStatsManager;
 
 
     //[SerializeField] UI_StatBar staminaBar;
@@ -39,11 +40,13 @@ public class PlayerUIManager : MonoBehaviour
         playerUIEquipmentManager = GetComponentInChildren<PlayerUIEquipmentManager>();
         playerUISiteOfGraceManager = GetComponentInChildren<PlayerUISiteOfGraceManager>();
         playerUITeleportLocationManager = GetComponentInChildren<PlayerUITeleportLocationManager>();
+       
     }
 
     private void Start()
     {
         DontDestroyOnLoad(gameObject);
+        playerStatsManager = playerManager.instance.playerStatsManager;
     }
 
     public void SetNewStaminaValue(int oldValue, float newValue)

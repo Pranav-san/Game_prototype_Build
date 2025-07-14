@@ -6,6 +6,8 @@ public class PlayerStatsManager : CharacterStatsManager
 {
     playerManager player;
 
+    public int runes = 0;
+
 
     [Header("Stats")]
     public int vitality = 10;
@@ -81,6 +83,12 @@ public class PlayerStatsManager : CharacterStatsManager
             ArmorImmunity += player.playerInventoryManager.legEquipment.immunity;
 
         }
+    }
+
+    public void AddRunes(int runesToAdd)
+    {
+        runes += runesToAdd;
+        PlayerUIManager.instance.playerUIHUDManager.SetRunesCount(runes);
     }
 
     

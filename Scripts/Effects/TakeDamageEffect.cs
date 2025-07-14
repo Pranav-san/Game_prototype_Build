@@ -40,7 +40,7 @@ public class TakeDamageEffect : InstantCharacterEffect
 
         base.ProcessEffect(character);
 
-        if(character.isDead)
+        if(character.characterStatsManager.isDead)
         {
             return;
         }
@@ -50,6 +50,7 @@ public class TakeDamageEffect : InstantCharacterEffect
             PlayDirectionalBasedDamageAnimation(character);
 
         }
+        
         PlayeDamageVFX(character);
         playDamageSFX(character);
 

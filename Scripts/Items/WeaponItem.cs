@@ -16,6 +16,9 @@ public class WeaponItem : EquipmentItem
     [Header("Model Instantiation")]
     public WeaponModelType weaponModelType;
 
+    [Header("Weapon Class")]
+    public WeapomClass weaponClass;
+
     [Header("Weapon Requirements")]
     public int strengthREQ = 0;
     public int dexhREQ = 0;

@@ -40,7 +40,13 @@ public class PlayerInputManager : MonoBehaviour
 
     [Header("Bumper Input")]
     [SerializeField] bool RB_Input = false;
+    [SerializeField] bool Hold_RB_Input = false;
     [SerializeField] bool LB_Input = false;
+    [SerializeField] bool Hold_LB_Input = false;
+
+    [Header("Two Hand Input")]
+    [SerializeField] public bool Two_Hand_Input = false;
+   
 
     [Header("Trigger Input")]
     [SerializeField] bool RT_Input = false;
@@ -127,6 +133,10 @@ public class PlayerInputManager : MonoBehaviour
             
             playerControls.PlayerActions.InteractionKey.performed += i => interaction_Input = true;
 
+            playerControls.PlayerActions.TwoHandWeapon.performed += i => Two_Hand_Input = true;
+
+          
+
             //Bumpers
             playerControls.PlayerActions.RB.performed += i => RB_Input = true;
             playerControls.PlayerActions.LB.performed += i => LB_Input = true;
@@ -134,7 +144,13 @@ public class PlayerInputManager : MonoBehaviour
             
             playerControls.PlayerActions.RT.performed += i => RT_Input = true;
 
-            
+            playerControls.PlayerActions.RB.performed += i => Hold_RB_Input = true;
+            playerControls.PlayerActions.RB.canceled += i => Hold_RB_Input = false;
+
+            playerControls.PlayerActions.LB.performed += i => Hold_LB_Input = true;
+            playerControls.PlayerActions.LB.canceled += i => Hold_LB_Input = false;
+
+
 
             //Triggers
             playerControls.PlayerActions.HoldRT.performed += i => Hold_RT_Input = true;
@@ -190,10 +206,15 @@ public class PlayerInputManager : MonoBehaviour
 
         HandleCameraMovementInput();
         HandleDodgeInput();
+        HandleJumpInput();
         HandleSprinting();
         
         HandleRBInput();
         HandleLBInput();
+
+        HandleTwoHandInput();
+
+        HandleHoldRBInput();
 
         HandleSwitchRightWeaponInput();
         HandleSwitchLefttWeaponInput();
@@ -232,7 +253,7 @@ public class PlayerInputManager : MonoBehaviour
     private void ProcessQuedInput()
     {
 
-        if(player.isDead) 
+        if(player.playerStatsManager.isDead) 
             return;
 
 
@@ -301,6 +322,48 @@ public class PlayerInputManager : MonoBehaviour
         }
     }
 
+    private void HandleTwoHandInput()
+    {
+        if (Two_Hand_Input == true)
+        {
+            Two_Hand_Input = false;
+
+
+
+            if (player.playerEquipmentManager.isTwoHandingWeapon)
+            {
+                //IF WE ARE TWO HANDING A WEAPON ALREADY, CHANGE THE IS TWOHANDING WEAPON BOOL FALSE WHICH TRIGGERS AN "ONVALUECHANGED" FUNCTION, WHICH UNTWO HANDS CURRENT WEAPON
+                player.playerEquipmentManager.isTwoHandingWeapon = false;
+                player.playerEquipmentManager.UnTwoHandWeapon();
+                player.playerInventoryManager.currentTwoHandWeapon = null;
+                return;
+            }
+            else
+            {
+                //IF WE ARE NOT ALREADY TWO HANDING A WEAPON, CHANGE THE ISTWOHANDING WEAPON BOOL TO TRUE, WHICH TRIGGERS ONVALUE CHANGE FUNCTION
+                //THIS FUNCTION TWO HANDS RIGHT WEAPON
+                player.playerEquipmentManager.isTwoHandingWeapon = true;
+                player.playerEquipmentManager.OnIsTwoHandingRightWeapon(false,true);
+               
+            }
+
+
+
+        }
+    }
+
+    private void HandleJumpInput()
+    {
+
+        if (jumpInput)
+        {
+            jumpInput = false;
+
+            player.playerLocomotionManager.Atte
+        }
+
+    }
+
     private void HandleLockOnSwitchTargetInput()
     {
         if(LockOn_Left_Input)
@@ -341,6 +404,10 @@ public class PlayerInputManager : MonoBehaviour
 
         moveAmount = Mathf.Clamp01(Mathf.Abs(verticalInput)+ Mathf.Abs(horizontalInput));
 
+        if(!player.canMove)
+            return;
+
+        
         if (moveAmount<=0.5 && moveAmount > 0)
         {
             moveAmount = 0.5f;
@@ -432,6 +499,7 @@ public class PlayerInputManager : MonoBehaviour
             jumpInput= false;
 
 
+           
             player.playerLocomotionManager.AttemptToPerformJump();
 
         }
@@ -455,7 +523,7 @@ public class PlayerInputManager : MonoBehaviour
 
             player.playerCombatManager.PerformWeaponBasedAction(player.playerInventoryManager.currentRightHandWeapon.OH_RB_Action,player.playerInventoryManager.currentRightHandWeapon);
 
-            player.isUsingRightHand = false;
+            
 
 
 
@@ -541,7 +609,30 @@ public class PlayerInputManager : MonoBehaviour
             if (PlayerUIManager.instance.menuWindowOpen)
                 return;
 
+            if (player.playerEquipmentManager.isTwoHandingWeapon)
+            {
+                player.playerEquipmentManager.isTwoHandingWeapon = false;
+                player.playerEquipmentManager.UnTwoHandWeapon();
+                
+                if (player.playerInventoryManager.currentRightHandWeapon.weaponClass == WeapomClass.Bow)
+                {
+                    player.playerInventoryManager.currentTwoHandWeapon = null;
+                    
+                    player.playerEquipmentManager.rightHandSlot.UnLoadWeapon();
+                    player.playerEquipmentManager.SwitchRightWeapon();
+
+                }
+                else
+                {
+                    player.playerEquipmentManager.SwitchRightWeapon();
+                }
+                
+            }
+            
             player.playerEquipmentManager.SwitchRightWeapon();
+
+
+           
         }
 
 
@@ -555,7 +646,30 @@ public class PlayerInputManager : MonoBehaviour
             if (PlayerUIManager.instance.menuWindowOpen)
                 return;
 
+             if (player.playerEquipmentManager.isTwoHandingWeapon)
+            {
+                player.playerEquipmentManager.isTwoHandingWeapon = false;
+                player.playerEquipmentManager.UnTwoHandWeapon();
+                
+                if (player.playerInventoryManager.currentTwoHandWeapon.weaponClass == WeapomClass.Bow)
+                {
+                    player.playerInventoryManager.currentTwoHandWeapon = null;
+                    
+                    player.playerEquipmentManager.rightHandSlot.UnLoadWeapon();
+                    player.playerEquipmentManager.SwitchRightWeapon();
+
+                }
+                else
+                {
+                    player.playerEquipmentManager.SwitchRightWeapon();
+                }
+                
+            }
+
+
+
             player.playerEquipmentManager.SwitchLeftWeapon();
+            
         }
 
 
@@ -637,5 +751,20 @@ public class PlayerInputManager : MonoBehaviour
 
 
         }
+    }
+
+    private void HandleHoldRBInput()
+    {
+        if (Hold_RB_Input)
+        {
+            player.playerInventoryManager.isHoldingArrow = true;
+            player.animator.SetBool("isHoldingArrow", player.playerInventoryManager.isHoldingArrow);
+        }
+        else
+        {
+            player.playerInventoryManager.isHoldingArrow=false;
+            player.animator.SetBool("isHoldingArrow", player.playerInventoryManager.isHoldingArrow);
+        }
+
     }
 }

@@ -33,6 +33,9 @@ public class CharacterStatsManager : MonoBehaviour
     public float ArmorImmunity;
     public float ArmorRobustness;
 
+    [Header("Runes")]
+    public int runesDroppedOnDeath = 50;
+
 
     protected virtual void Awake()
     {
@@ -87,6 +90,8 @@ public class CharacterStatsManager : MonoBehaviour
         {
             isDead = true;
             StartCoroutine(character.ProcessDeathEvent());
+            
+            
         }
     }
 

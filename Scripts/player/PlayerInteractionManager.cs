@@ -85,7 +85,7 @@ public class PlayerInteractionManager : MonoBehaviour
 
     private void CheckForInteractableUsingRayCast()
     {
-        if (player.isDead|| player.isSprinting||player.isPerformingAction||player.playerCombatManager.isLockedOn || isInspectingObject)
+        if (player.playerStatsManager.isDead|| player.isSprinting||player.isPerformingAction||player.playerCombatManager.isLockedOn || isInspectingObject)
             return;
 
         
