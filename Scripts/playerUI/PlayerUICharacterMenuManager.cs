@@ -8,8 +8,7 @@ public class PlayerUICharacterMenuManager : MonoBehaviour
     [Header("Menu")]
     [SerializeField] GameObject menu;
 
-    [Header("Survival Wheel")]
-    [SerializeField] GameObject survivalWheel;
+    
     
 
     public void OpenCharacterMenu()
@@ -25,18 +24,8 @@ public class PlayerUICharacterMenuManager : MonoBehaviour
 
     }
 
-    public void OpenSurvivalWheel()
-    {
-        PlayerUIManager.instance.survivalWheelOpen =true;
-        survivalWheel.SetActive(true);
-
-    }
-    public void CloseSurvivalWheel()
-    {
-        PlayerUIManager.instance.survivalWheelOpen =false;
-        survivalWheel.SetActive(false);
-
-    }
+   
+  
    
 
 
@@ -45,19 +34,52 @@ public class PlayerUICharacterMenuManager : MonoBehaviour
 
     public void ReturnToMainMenu()
     {
-        
-        CloseCharacterMenu();
 
+        StartCoroutine(ReturnToMainMenuRoutine());
+
+
+
+
+
+
+
+
+    }
+
+    private IEnumerator ReturnToMainMenuRoutine()
+    {
+        PlayerUIManager.instance.CloseAllMenu();
+
+        WorldSaveGameManager.instance.DisableMobileControlsOnSceneChange();
+        
+
+        // 1. Activate loading screen
+        PlayerUIManager.instance.playerUILoadingScreenManager.ActivateLoadingScreen();
+        yield return new WaitForSeconds(0.2f); // small delay to let screen appear
+
+        // 2. Close menu
+        
+
+        // 3. Despawn AI characters
         WorldAIManager.instance.DeSpawnAllCharacters();
 
+        // 4. Wait for characters to finish despawning
+        while (WorldAIManager.instance.isPerformingLoadingOperation)
+        {
+            yield return null;
+        }
 
-        // Load the Title Screen Scene (replace "TitleScreenScene" with the actual name of your title screen scene)
+        // 5. (Optional) Reset character position if needed
+        PlayerInputManager.Instance.player.transform.position = PlayerInputManager.Instance.player.defaultPlayerposition;
+        PlayerInputManager.Instance.player.transform.rotation = Quaternion.identity;
+
+        PlayerCamera.instance.transform.rotation = Quaternion.identity;
+        PlayerCamera.instance.cameraPivotTransform.transform.rotation = Quaternion.identity;
+
+        // 6. Load Main Menu scene
         SceneManager.LoadScene("Main menu");
-        WorldSaveGameManager.instance.TitleScreen.SetActive(true);
 
-        
-
-       
+        // 7. No need to manually deactivate the loading screen — it's handled in OnSceneChanged
     }
 
     public void CloseCharacterMenuAfterFixedUpdtate()

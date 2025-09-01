@@ -11,20 +11,40 @@ public class PlayerInventoryManager : CharacterInventoryManager
     public WeaponItem currentTwoHandWeapon;
 
     [Header("Quick Slots")]
-    public WeaponItem[] weaponsInRightHandSlot = new WeaponItem[3];
+    public WeaponItem[] weaponsInRightHandSlot = new WeaponItem[2];
     public int rightHandWeaponIndex = 0;
+    public WeaponItem[] weaponsInLeftHandSlot = new WeaponItem[2];
     public int leftHandWeaponIndex = 0;
 
+    [Header("Flasks Item")]
+    public int remainingHealthFlasks = 3;
+    public int maximunFlasks = 3;
+
+    [Header("Bomb Items")]
+    public int remainingBombs = 5;
+
+
+    public WeaponItem[] weaponsInTwoHandSlot = new WeaponItem[1];
+    public int twoHandWeaponIndex = 0;
+
+
+
+    public QuickSlotItem[] QuickSlotItemsInQuickSlot = new QuickSlotItem[2];
+    public int quickSlotItemIndex = 0;
+
     public SpellItem currentSpell;
+    public QuickSlotItem currentQuickSlotItem;
 
     [Header("Equipment")]
     public int currentRightHandWeaponID = 0;
     public int currentLeftHandWeaponID = 0;
+    public int currentTwoHandWeaponID;
     public int currentSpellID=0;
     public int currentMainProjectileID=0;
+    public int currentQuickSlotItemID=0;
   
 
-    [Header("Aromo/OutFit Equipment")]
+    [Header("Armor /OutFit Equipment")]
     public HeadEquipmentItem headEquipment;
     public BodyEquipmentItem bodyEquipment;
     public LegEquipmentItem legEquipment;
@@ -33,16 +53,14 @@ public class PlayerInventoryManager : CharacterInventoryManager
     [Header("Projectiles")]
     public RangedProjectileItem mainProjectile;
     public RangedProjectileItem secondaryProjectile;
-    public bool hasArrowNotched = false;
-    public bool isHoldingArrow = false;
+    public bool FireBullet = false;
 
     [Header("Inventory")]
     public List<Item> itemsInInventory;
     
 
 
-    public WeaponItem[] weaponsInLeftHandSlot = new WeaponItem[3];
-    public int rightLeftWeaponIndex = 0;
+   
 
     private void Start()
     {
@@ -50,6 +68,7 @@ public class PlayerInventoryManager : CharacterInventoryManager
         OnCurrentLeftHandWeaponIDChange(0, currentLeftHandWeaponID);
         OnCurrentHandWeaponBeingUsedIDChange(0, currentRightHandWeaponID);
         OnCurrentSpellIDChange(0, currentSpellID);
+         OnQuickSlotItemIDChange(0, currentQuickSlotItemID);
         OnMainProjectileIDChange(0, currentMainProjectileID);
 
         player= GetComponent<playerManager>();
@@ -76,14 +95,38 @@ public class PlayerInventoryManager : CharacterInventoryManager
         PlayerUIManager.instance.playerUIHUDManager.SetLeftweaponQuickSlotIcon(newID);
     }
 
+    public void OnCurrentTwoHandWeaponIDChange(int oldID,int newID)
+    {
+        WeaponItem newWeapon = Instantiate(WorldItemDatabase.instance.GetWeaponByID(newID));
+        currentLeftHandWeapon = newWeapon;
+        currentRightHandWeapon = newWeapon;
+        currentTwoHandWeapon = newWeapon;
+        player.playerEquipmentManager.LoadTwoHandWeapon();
+
+
+        PlayerUIManager.instance.playerUIHUDManager.SetLeftweaponQuickSlotIcon(newID);
+
+    }
+
     public void OnCurrentSpellIDChange(int oldID, int newID)
     {
-        SpellItem newSpell = Instantiate(WorldItemDatabase.instance.GetSpellByID(newID));
-        currentSpell= newSpell;
-       
-        
+        //SpellItem newSpell = Instantiate(WorldItemDatabase.instance.GetSpellByID(newID));
+        //currentSpell= newSpell;
 
-        
+
+        SpellItem newSpell = null;
+
+        if (WorldItemDatabase.instance.GetProjectileByID(newID))
+            newSpell = Instantiate(WorldItemDatabase.instance.GetSpellByID(newID));
+
+        if (newSpell != null)
+            player.playerInventoryManager.currentSpell = newSpell;
+
+
+
+
+
+
     }
 
     public void OnMainProjectileIDChange(int oldID, int newID)
@@ -97,6 +140,25 @@ public class PlayerInventoryManager : CharacterInventoryManager
         if (newProjectile != null)
             player.playerInventoryManager.mainProjectile = newProjectile;
        
+
+
+
+    }
+
+    public void OnQuickSlotItemIDChange(int oldID, int newID)
+    {
+
+        QuickSlotItem newQuickslotItem = null;
+
+        if (WorldItemDatabase.instance.GetQuickSlotItemByID(newID))
+            newQuickslotItem = Instantiate(WorldItemDatabase.instance.GetQuickSlotItemByID(newID));
+
+        if (newQuickslotItem != null)
+            player.playerInventoryManager.currentQuickSlotItem = newQuickslotItem;
+
+
+        PlayerUIManager.instance.playerUIHUDManager.SetQuickSlotItemQuickSlotIcon(newID);
+
 
 
 
@@ -161,6 +223,25 @@ public class PlayerInventoryManager : CharacterInventoryManager
 
     public void AddItemToInventory(Item item)
     {
+
+        if(item is RangedProjectileItem)
+        {
+            RangedProjectileItem rangedProjectileItem = item as RangedProjectileItem;
+
+            if(rangedProjectileItem.projectileClass == ProjectileClass.ShotgunShells)
+            {
+                foreach (var invItem in itemsInInventory)
+                {
+                    if (invItem is RangedProjectileItem existingProjectile &&
+                        existingProjectile.projectileClass == ProjectileClass.ShotgunShells)
+                    {
+                        // Add the picked-up amount to the existing stack
+                        existingProjectile.currentAmmoAmount += rangedProjectileItem.pickUpAmount;
+                        return; // Stop, don't add a duplicate
+                    }
+                }
+            }
+        }
         itemsInInventory.Add(item);
 
     }

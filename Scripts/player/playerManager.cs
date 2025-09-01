@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -9,6 +8,13 @@ public class playerManager : CharacterManager
 
     [Header("Character name")]
     public string characterName = "Character";
+
+    [Header("Default Player Position")]
+    public Vector3 defaultPlayerposition;
+
+    [Header("Sex, HairID")]
+    public bool ismale = true;
+    public int hairID;
 
     
 
@@ -27,11 +33,15 @@ public class playerManager : CharacterManager
     [HideInInspector] public PlayerInteractionManager playerInteractionManager;
     [HideInInspector] public PlayerStatsManager playerStatsManager;
     [HideInInspector]public PlayerBodyManager playerBodyManager;
+    [HideInInspector] public PlayerRespawnManager playerRespawnManager;
+    [HideInInspector] public PlayerEffectsManager playerEffectsManager;
+   
 
 
     public PlayerUIHUDManager playerUIHUDManager;
 
     public float sprintingStaminaCost = 0.2f;
+    public float jumpStaminaCost = 10f;
 
     protected override void Awake()
     {
@@ -60,6 +70,8 @@ public class playerManager : CharacterManager
         characterSoundFxManager = GetComponent<CharacterSoundFxManager>();
         playerStatsManager = GetComponent<PlayerStatsManager>();
         playerBodyManager = GetComponent<PlayerBodyManager>();
+        playerRespawnManager = GetComponent<PlayerRespawnManager>();
+        playerEffectsManager = GetComponent<PlayerEffectsManager>();
     }
 
     protected override void Update()
@@ -83,17 +95,43 @@ public class playerManager : CharacterManager
     public override IEnumerator ProcessDeathEvent(bool manuallySelectDeathAnimation = false)
     {
         PlayerUIManager.instance.playerUIPopUPManager.SendYouDiedPopUp();
-        return base.ProcessDeathEvent(manuallySelectDeathAnimation);
+        
+        isMoving = false;
+        canMove = false;
+        PlayerInputManager.Instance.player.playerCombatManager.isLockedOn = false;
+        PlayerInputManager.Instance.player.playerCombatManager.currentTarget = null;
+        PlayerUIManager.instance.SetLockOnTarget(null);
+       
+
+        playerAnimatorManager.PlayTargetActionAnimation("Dead_01", true);
+
+        PlayerCamera.instance.SetLockCameraHeight();
+        PlayerCamera.instance.ClearLockOnTargets();
+
+        yield return new WaitForSeconds(4.5f); // Wait for animation or death screen
+
+        playerRespawnManager.RespawnPlayer(this);
+
+        playerStatsManager.isDead = false;
+
+        
+
+
     }
 
     public void SaveGameDataToCurrentCharacterData(ref CharacterSaveData currentCharacterData)
     {
-        currentCharacterData.characterName= characterName; // Assign player name
+        currentCharacterData.characterName= characterName; // Assign character name
         currentCharacterData.sceneIndex = SceneManager.GetActiveScene().buildIndex;
         
         currentCharacterData.timePlayed = Time.time;
 
-        // Save player position
+        //Save Sex, Name and hairId 
+
+        currentCharacterData.isMale = ismale;
+        currentCharacterData.hairStyleID = hairID;
+
+        // Save character position
         currentCharacterData.xPosition = transform.position.x;
         currentCharacterData.yPosition = transform.position.y;
         currentCharacterData.zPosition = transform.position.z;
@@ -102,22 +140,62 @@ public class playerManager : CharacterManager
         currentCharacterData.currentStamina = characterStatsManager.currentStamina;
         currentCharacterData.currentHealth = characterStatsManager.currentHealth;
 
+        //Equipment
+        currentCharacterData.rightWeaponIndex = playerInventoryManager.rightHandWeaponIndex;
+        currentCharacterData.rightWeapon_01 = WorldSaveGameManager.instance.GetSerializableWeaponFromWeaponItem(playerInventoryManager.weaponsInRightHandSlot[0]);
+        currentCharacterData.rightWeapon_02 = WorldSaveGameManager.instance.GetSerializableWeaponFromWeaponItem(playerInventoryManager.weaponsInRightHandSlot[1]);
+
+        currentCharacterData.leftWeaponIndex = playerInventoryManager.leftHandWeaponIndex;
+        currentCharacterData.leftWeapon_01 = WorldSaveGameManager.instance.GetSerializableWeaponFromWeaponItem(playerInventoryManager.weaponsInLeftHandSlot[0]);
+        currentCharacterData.leftWeapon_02 = WorldSaveGameManager.instance.GetSerializableWeaponFromWeaponItem(playerInventoryManager.weaponsInLeftHandSlot[1]);
+
+
     }
-    public void LoadGameDataToCharacterData(ref CharacterSaveData currentCharacterData)
+    public void LoadGameDataToCharacterData(ref CharacterSaveData currentCharacterSaveData)
     {
-        currentCharacterData.characterName = characterName;
+        //Load Character Sex, Name, HairID
+        characterName = currentCharacterSaveData.characterName;
+        playerBodyManager.ToggleBodyType(currentCharacterSaveData.isMale);
+        playerBodyManager.ToggleHairType(currentCharacterSaveData.hairStyleID);
+
 
         // Example: Load and assign position
-        Vector3 myPosition = new Vector3(currentCharacterData.xPosition, currentCharacterData.yPosition, currentCharacterData.zPosition);
+        Vector3 myPosition = new Vector3(currentCharacterSaveData.xPosition, currentCharacterSaveData.yPosition, currentCharacterSaveData.zPosition);
         transform.position = myPosition;
 
         //Load Player StatBars
-        characterStatsManager.currentStamina= currentCharacterData.currentStamina;
-        characterStatsManager.currentHealth= currentCharacterData.currentHealth;
+        characterStatsManager.currentStamina= currentCharacterSaveData.currentStamina;
+        characterStatsManager.currentHealth= currentCharacterSaveData.currentHealth;
 
         //Update UI
         PlayerUIManager.instance.UpdateStaminaBar(Mathf.RoundToInt(characterStatsManager.currentStamina));
         PlayerUIManager.instance.UpdateHealthBar(characterStatsManager.currentHealth);
+
+        //Load Equipments
+        playerInventoryManager.currentRightHandWeapon =  playerInventoryManager.weaponsInRightHandSlot[currentCharacterSaveData.rightWeaponIndex];
+        playerInventoryManager.weaponsInRightHandSlot[0]= currentCharacterSaveData.rightWeapon_01.GetWeapon();
+        playerInventoryManager.weaponsInRightHandSlot[1]= currentCharacterSaveData.rightWeapon_02.GetWeapon();
+        playerInventoryManager.rightHandWeaponIndex = currentCharacterSaveData.rightWeaponIndex;
+        playerEquipmentManager.LoadRightWeapon();
+
+      
+        playerInventoryManager.weaponsInLeftHandSlot[0]= currentCharacterSaveData.leftWeapon_01.GetWeapon();
+        playerInventoryManager.weaponsInLeftHandSlot[1]= currentCharacterSaveData.leftWeapon_02.GetWeapon();
+        playerInventoryManager.leftHandWeaponIndex = currentCharacterSaveData.leftWeaponIndex;
+        playerInventoryManager.currentLeftHandWeapon =  playerInventoryManager.weaponsInLeftHandSlot[currentCharacterSaveData.leftWeaponIndex];
+        playerEquipmentManager.LoadLeftWeapon();
+
+        if(currentCharacterSaveData.rightWeaponIndex >= 0)
+        {
+            playerInventoryManager.currentRightHandWeapon =  playerInventoryManager.weaponsInRightHandSlot[currentCharacterSaveData.rightWeaponIndex];
+            playerInventoryManager.rightHandWeaponIndex =  playerInventoryManager.weaponsInRightHandSlot[currentCharacterSaveData.rightWeaponIndex].itemID;
+        }
+        if (currentCharacterSaveData.leftWeaponIndex >= 0)
+        {
+            playerInventoryManager.currentLeftHandWeapon =  playerInventoryManager.weaponsInLeftHandSlot[currentCharacterSaveData.leftWeaponIndex];
+            playerInventoryManager.leftHandWeaponIndex =  playerInventoryManager.weaponsInLeftHandSlot[currentCharacterSaveData.leftWeaponIndex].itemID;
+        }
+
 
     }
 
@@ -151,7 +229,29 @@ public class playerManager : CharacterManager
         
     }
 
-    
+    public void HideWeaponmodel()
+    {
+        if(playerInventoryManager.currentRightHandWeapon != null)
+           playerEquipmentManager.rightHandWeaponModel.SetActive(false);
+
+        if (playerInventoryManager.currentLeftHandWeapon != null)
+            playerEquipmentManager.leftHandWeaponModel.SetActive(false);
+
+
+    }
+
+    public void UnHideWeaponmodel()
+    {
+        if (playerInventoryManager.currentRightHandWeapon != null)
+            playerEquipmentManager.rightHandWeaponModel.SetActive(true);
+
+        if (playerInventoryManager.currentLeftHandWeapon != null)
+            playerEquipmentManager.leftHandWeaponModel.SetActive(true);
+
+
+    }
+
+
 
     public override void OnIsBlocking(bool Status)
     {

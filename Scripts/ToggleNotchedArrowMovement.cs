@@ -20,6 +20,9 @@ public class ToggleNotchedArrowMovement : StateMachineBehaviour
         player.canMove = allowMovement;
         player.canRotate = allowMovement;
         player.isPerformingAction = !allowMovement;
+        player.canRun = !allowMovement;
+        player.isReloadedWeapon = false;
+        
 
 
         

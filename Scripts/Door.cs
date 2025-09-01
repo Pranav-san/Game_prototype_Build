@@ -8,19 +8,58 @@ public class Door : Interactable
 
     [SerializeField] bool isDoorOpen = false;
 
-    
 
-    private void Awake()
+    [Header("Lock/Passcode")]
+    [SerializeField] public bool isLocked = false;
+    [SerializeField] public bool requireKey = false;
+    [SerializeField] string passCode = "123";
+    [SerializeField] public int keyID = -1;
+    [SerializeField] public string keyName = "Door Key";
+
+
+
+
+    public override void Awake()
     {
-        animator = GetComponentInParent<Animator>();
+        base.Awake(); 
+        
+        animator = GetComponentInChildren<Animator>();
     }
+    
+    
 
     public override void Interact(playerManager player)
     {
+
+        if(isLocked)
+        {
+            
+                PlayerUIManager.instance.doorLockManager.OpenDoorlockUI(this, player);
+                return;
+           
+        }
+
+
+
+
         DoorAnimation();
 
         PlayerUIManager.instance.playerUIPopUPManager.CloseAllPopUpWindow();
 
+
+    }
+
+    public  string GetDoorPassCode()
+    {
+        return passCode;
+    }
+
+    public void UnlockDoor()
+    {
+        isLocked = false;
+        requireKey = false;
+
+        DoorAnimation();
 
     }
 

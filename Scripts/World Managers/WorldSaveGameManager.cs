@@ -11,6 +11,7 @@ public class WorldSaveGameManager : MonoBehaviour
 {
 
     [SerializeField] public  playerManager player;
+    [SerializeField] public CanvasGroup[] mobileControls;
 
     [Header("Save/load")]
     [SerializeField] bool saveGame;
@@ -19,9 +20,6 @@ public class WorldSaveGameManager : MonoBehaviour
 
 
     [Header("Loading Screen UI")]
-    [SerializeField] GameObject loadingScreen;
-    [SerializeField] public GameObject TitleScreen;
-    [SerializeField] Slider loadingSlider;
     
 
 
@@ -80,10 +78,11 @@ public class WorldSaveGameManager : MonoBehaviour
         
     }
 
+   
+
     private void Start()
     {
         DontDestroyOnLoad(gameObject);
-        TitleScreen = TitleScreenManager.Instance.gameObject;
         urpAsset = (UniversalRenderPipelineAsset)GraphicsSettings.defaultRenderPipeline;
         LoadAllCharacterProfiles();
     }
@@ -172,24 +171,15 @@ public class WorldSaveGameManager : MonoBehaviour
 
     public void AttemptCreateNewGame()
     {
-        loadingScreen.SetActive(true);
-        TitleScreen.SetActive(false);
-      
 
-        if (PlayerPrefs.HasKey("TouchSensitivity"))
-        {
-            PlayerCamera.instance.touchSensitivity = PlayerPrefs.GetFloat("TouchSensitivity");
-        }
-        if (PlayerPrefs.HasKey("FOV"))
-        {
-            PlayerCamera.instance.CameraFOV = PlayerPrefs.GetFloat("FOV");
-            
-        }
-        if (PlayerPrefs.HasKey("RenderScale"))
-        {
-            float renderScale = PlayerPrefs.GetFloat("RenderScale");
-            urpAsset.renderScale = Mathf.Clamp(renderScale, 0.1f, 2f); // Clamp between 0.1 and 2 for safety
-        }
+
+
+        PlayerCamera.instance.touchSensitivity = GameSettingsData.TouchSensitivity;
+        PlayerCamera.instance.CameraFOV = GameSettingsData.FOV;
+        
+        float safeRenderScale = Mathf.Clamp(GameSettingsData.RenderScale, 0.1f, 1f);
+        urpAsset.renderScale = safeRenderScale;
+
 
 
 
@@ -208,7 +198,8 @@ public class WorldSaveGameManager : MonoBehaviour
             currentCharacterData = new CharacterSaveData();
             currentCharacterData.currentStamina = player.characterStatsManager.maxStamina; // Initialize to max value
             currentCharacterData.currentHealth = player.characterStatsManager.maxHealth;
-            StartCoroutine(LoadWorldScene());
+            LoadWorldScene();
+            
             return;
         }
 
@@ -224,7 +215,9 @@ public class WorldSaveGameManager : MonoBehaviour
             currentCharacterData = new CharacterSaveData();
             currentCharacterData.currentStamina = player.characterStatsManager.maxStamina; // Initialize to max value
             currentCharacterData.currentHealth = player.characterStatsManager.maxHealth;
-            StartCoroutine(LoadWorldScene());
+            LoadWorldScene();
+           
+
             return;
         }
 
@@ -237,7 +230,8 @@ public class WorldSaveGameManager : MonoBehaviour
             currentCharacterData = new CharacterSaveData();
             currentCharacterData.currentStamina = player.characterStatsManager.maxStamina; // Initialize to max value
             currentCharacterData.currentHealth = player.characterStatsManager.maxHealth;
-            StartCoroutine(LoadWorldScene());
+            LoadWorldScene();
+           
             return;
         }
        
@@ -249,7 +243,8 @@ public class WorldSaveGameManager : MonoBehaviour
             currentCharacterData = new CharacterSaveData();
             currentCharacterData.currentStamina = player.characterStatsManager.maxStamina; // Initialize to max value
             currentCharacterData.currentHealth = player.characterStatsManager.maxHealth;
-            StartCoroutine(LoadWorldScene());
+            LoadWorldScene();
+            
             return;
         }
         saveFileDataWriter.saveFileName = DecideCharacterFileNamebasedOnCharacterSlotBeingUsed(CharacterSlot.CharacterSlot_05);
@@ -260,7 +255,8 @@ public class WorldSaveGameManager : MonoBehaviour
             currentCharacterData = new CharacterSaveData();
             currentCharacterData.currentStamina = player.characterStatsManager.maxStamina; // Initialize to max value
             currentCharacterData.currentHealth = player.characterStatsManager.maxHealth;
-            StartCoroutine(LoadWorldScene());
+            LoadWorldScene();
+           
             return;
         }
         TitleScreenManager.Instance.DisplayNoFreeCharacterSlots();
@@ -278,10 +274,10 @@ public class WorldSaveGameManager : MonoBehaviour
         saveFileDataWriter.saveFileName = saveFileName;
         currentCharacterData = saveFileDataWriter.LoadSaveFile();
 
-        StartCoroutine(LoadWorldScene());
+        LoadWorldScene();
 
-        TitleScreen.SetActive(false);
-        loadingScreen.SetActive(true);
+
+
 
 
     }
@@ -349,31 +345,80 @@ public class WorldSaveGameManager : MonoBehaviour
 
     }
 
-    public IEnumerator LoadWorldScene()
+    public void LoadWorldScene()
     {
+
+        PlayerUIManager.instance.playerUILoadingScreenManager.ActivateLoadingScreen();
+
         AsyncOperation loadOperation = SceneManager.LoadSceneAsync(worldSceneIndex);
-        player.LoadGameDataToCharacterData(ref currentCharacterData);
 
-        loadingSlider.value = 0f;
-
-        while (!loadOperation.isDone)
+        loadOperation.completed += (AsyncOperation op) =>
         {
-            // Progress ranges from 0.0 to 0.9, so normalize it
-            float progress = Mathf.Clamp01(loadOperation.progress / 0.9f);
 
-            // Update the progress bar fill amount
-            loadingSlider.value = progress;
 
-            // Wait for the next frame before continuing the loop
-            yield return null;
+
+
+            if (!saveFileDataWriter.CheckToSeeIfFileExists())
+            {
+                player.transform.position = player.defaultPlayerposition;
+            }
+            else
+            {
+                player.LoadGameDataToCharacterData(ref currentCharacterData);
+
+
+            }
+
+            // When the scene has fully loaded, Enable Mobile Controls
+           
+
+
+
+        };
+       
+    }
+
+    public void DisableMobileControlsOnSceneChange()
+    {
+        for (int i = 0; i <mobileControls.Length; i++)
+        {
+            mobileControls[i].alpha=0;
+            mobileControls[i].interactable = false;
+            mobileControls[i].blocksRaycasts = false;
+
+
         }
 
-        // When the scene has fully loaded, deactivate the loading screen
-        loadingScreen.SetActive(false);
+    }
+
+    public void EnableMobileControlsOnSceneChange()
+    {
+        for (int i = 0; i <mobileControls.Length; i++)
+        {
+            mobileControls[i].alpha=1;
+            mobileControls[i].interactable = true;
+            mobileControls[i].blocksRaycasts = true;
+
+
+        }
+
+
     }
     public int GetWorldSceneIndex()
     {
         return worldSceneIndex;
+    }
+
+    public SerializableWeapon GetSerializableWeaponFromWeaponItem(WeaponItem weapon)
+    {
+        SerializableWeapon serializableWeapon = new SerializableWeapon();
+
+        //Get Weapon ID
+        serializableWeapon.itemID = weapon.itemID;
+
+        return serializableWeapon;
+
+
     }
 
 

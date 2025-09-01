@@ -41,9 +41,9 @@ public class FireProjectileAction : WeaponItemBasedAction
             
         }
 
-        if(!playerPerformingAction.playerInventoryManager.hasArrowNotched)
+        if(!playerPerformingAction.hasArrowNotched)
         {
-            playerPerformingAction.playerInventoryManager.hasArrowNotched = true;
+            playerPerformingAction.hasArrowNotched = true;
 
             bool canIDrawProjectile = CanIFireThisProjectile(weaponPerformingAction, projectileItem);
 

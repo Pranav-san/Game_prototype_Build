@@ -4,11 +4,13 @@ using UnityEngine;
 
 public class ResetActionFlag : StateMachineBehaviour
 {
-    CharacterManager character;
+    [SerializeField]CharacterManager character;
     playerManager player;
     //OnStateEnter is called when a transition starts and the state machine starts to evaluate this state
     override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {
+        //This is called when an Action Ends, And the state returns to "Empty"
+
         if (character == null)
         {
             character= animator.GetComponent<CharacterManager>();
@@ -27,12 +29,32 @@ public class ResetActionFlag : StateMachineBehaviour
         character.characterLocomotionManager.isRolling = false;
         character.isAttacking = false;
         character.isInvulnerable = false;
+        character.isJumping = false;
+        character.canRoll = true;
+        character.characterCombatManager.isRipostable = false;
+        character.isPerformingCriticalAttack = false;
+
+       
+
+
+        character.canRun =true;
+
+        if(character.characterEffectsManager.activeQuickSlotItemFx != null)
+            Destroy(character.characterEffectsManager.activeQuickSlotItemFx);
 
 
         if (player != null)
         {
             player.isUsingRightHand = false;
             player.isUsingLeftHand = false;
+            player.isAiming = false;
+            player.animator.SetBool("isAiming",player.isAiming);
+            PlayerCamera.instance.OnIsAimingChanged(false);
+            player.isGrappled = false;
+            player.playerLocomotionManager.hasPlayedSprintStart = false;
+            player.playerLocomotionManager.isExitingLadder = false;
+            player.playerLocomotionManager.isClimbingLadder = false;
+            player.animator.SetBool("isClimbingLadder", false);
 
         }
            
@@ -40,7 +62,7 @@ public class ResetActionFlag : StateMachineBehaviour
         
         
 
-        //This is called when an Action Ends, And the state returns to "Empty"
+        
 
 
 

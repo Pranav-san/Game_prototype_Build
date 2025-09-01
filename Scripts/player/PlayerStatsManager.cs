@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class PlayerStatsManager : CharacterStatsManager
 {
-    playerManager player;
+    
 
     public int runes = 0;
 
@@ -88,7 +88,7 @@ public class PlayerStatsManager : CharacterStatsManager
     public void AddRunes(int runesToAdd)
     {
         runes += runesToAdd;
-        PlayerUIManager.instance.playerUIHUDManager.SetRunesCount(runes);
+        PlayerUIManager.instance.playerUIHUDManager.SetRunesCount(runesToAdd);
     }
 
     

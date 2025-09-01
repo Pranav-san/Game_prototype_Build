@@ -7,62 +7,123 @@ public class MobileControls : MonoBehaviour
 {
     public static MobileControls instance;
 
+    [Header("Canvas Group")]
+    [SerializeField] CanvasGroup Actionbuttons;
 
-    [SerializeField] GameObject analogStick;
-    [SerializeField] GameObject sprintRollButton;
-    [SerializeField] GameObject LockOnButton;
+    [SerializeField]FloatingJoystick joystick;
+    Canvas canvas;
+
+   
+
+
+
+
+
+    [SerializeField] GameObject floatingJoyStick;
+    
+    
     [SerializeField] GameObject lightAttackButtton;
-    [SerializeField] GameObject HeavyAttackButton;
-    [SerializeField] GameObject itemWheelButton;
-    [SerializeField] GameObject LB_Input_1;
-    [SerializeField] GameObject LB_Input_2;
+   
+    
+    
+    
+    
+    [SerializeField] GameObject TouchField;
+
+    [SerializeField] Image TwoHandIcon;
+    [SerializeField] Image OneHandIcon;
+
+
 
     //[SerializeField] GameObject postProcessingVolumeObject;
 
-    
 
+    private void Start()
+    {
+        //TouchField = GetComponentInChildren<TouchField>().gameObject;
+        joystick = GetComponentInChildren<FloatingJoystick>();
+
+    }
     private void Awake()
     {
         if (instance == null)
         {
             instance = this;
-            
+            DontDestroyOnLoad(gameObject); // Make sure this GameObject is not destroyed when loading new scenes
+
         }
         else
         {
             Destroy(gameObject);
         }
+
+        
+
+        
+        canvas = GetComponentInChildren<Canvas>();
+        
     }
 
     public void DisableMobileControls()
     {
-        analogStick.SetActive(false);
-        sprintRollButton.SetActive(false);
-        LockOnButton.SetActive(false);
-        lightAttackButtton.SetActive(false);
-        HeavyAttackButton.SetActive(false);
-        itemWheelButton.SetActive(false);
-        LB_Input_1.SetActive(false);
-        LB_Input_2.SetActive(false);
+        if (Actionbuttons != null)
+        {
+            Actionbuttons.alpha = 0;
+            Actionbuttons.interactable = false;
+            Actionbuttons.blocksRaycasts = false;
+        }
+
+        if (joystick != null)
+        {
+            joystick.HideJoystickCompletely();
+        }
 
 
 
-        
+
+
+
         //postProcessingVolumeObject.SetActive(true);
 
     }
     public void EnableMobileControls()
     {
-        analogStick.SetActive(true);
-        sprintRollButton.SetActive(true);
-        LockOnButton.SetActive(true);
-        lightAttackButtton.SetActive(true);
-        HeavyAttackButton.SetActive(true);
-        itemWheelButton.SetActive(true);
-        LB_Input_1.SetActive(true);
-        LB_Input_2.SetActive(true);
+        if (Actionbuttons != null)
+        {
+            Actionbuttons.alpha = 1;
+            Actionbuttons.interactable = true;
+            Actionbuttons.blocksRaycasts = true;
+        }
+
+        if (joystick != null)
+        {
+            joystick.UnHideJoystick();
+        }
+
+
 
         //postProcessingVolumeObject.SetActive(false);
+
+    }
+
+
+    public void ToggleTwoHandButtonIcon(bool isTwoHandingWeapon)
+    {
+        if (isTwoHandingWeapon)
+        {
+            TwoHandIcon.enabled = true;
+            TwoHandIcon.gameObject.SetActive(true);
+            OneHandIcon.enabled = false;
+            OneHandIcon.gameObject.SetActive(false) ;
+        }
+        else
+        {
+            TwoHandIcon.enabled = false;
+            TwoHandIcon.gameObject.SetActive(false);
+            OneHandIcon.enabled = true;
+            OneHandIcon.gameObject.SetActive(true);
+        }
+        
 
     }
    

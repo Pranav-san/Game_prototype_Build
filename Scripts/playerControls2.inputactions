@@ -204,7 +204,7 @@
                     "path": "<Mouse>/delta",
                     "interactions": "",
                     "processors": "",
-                    "groups": "",
+                    "groups": "Keyboard and Mouse",
                     "action": "Movement",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -237,24 +237,33 @@
                     "name": "Dodge",
                     "type": "Button",
                     "id": "28594225-3ab3-4cb7-9a4e-28e38f86fed0",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "Tap",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "Jump",
-                    "type": "Button",
-                    "id": "33359997-d940-49c5-bfa2-27d0ee551a58",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
                     "initialStateCheck": false
                 },
                 {
                     "name": "RB",
                     "type": "Button",
                     "id": "61c76238-8aeb-44b3-8090-4aa0c283205d",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "RT",
+                    "type": "Button",
+                    "id": "dadb4bf5-01e2-406a-9179-69c1a94cb5db",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "LB",
+                    "type": "Button",
+                    "id": "2ad02eb0-1e57-435e-b0ec-bc71ab417488",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -274,24 +283,6 @@
                     "type": "Button",
                     "id": "53dd41a2-8fc3-4e5c-86d2-43480c9030c1",
                     "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "LB",
-                    "type": "Button",
-                    "id": "2ad02eb0-1e57-435e-b0ec-bc71ab417488",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "RT",
-                    "type": "Button",
-                    "id": "dadb4bf5-01e2-406a-9179-69c1a94cb5db",
-                    "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -318,7 +309,16 @@
                     "name": "X",
                     "type": "Button",
                     "id": "97cffdad-37a5-42f2-acee-5d39fc41061d",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Jump",
+                    "type": "Button",
+                    "id": "33359997-d940-49c5-bfa2-27d0ee551a58",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -327,7 +327,7 @@
                     "name": "Switch Right Weapon",
                     "type": "Button",
                     "id": "8fa6089b-ceaa-4532-9ebc-dbcf9c5aaf8f",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -336,7 +336,16 @@
                     "name": "Switch Left Weapon",
                     "type": "Button",
                     "id": "cdd4afd0-b866-4db2-90ad-0c8f48f0b5a6",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Switch Quick Slot Item",
+                    "type": "Button",
+                    "id": "14d7a78f-6b4b-4225-8c9c-5f656f55552a",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -351,10 +360,19 @@
                     "initialStateCheck": false
                 },
                 {
+                    "name": "SpringForwardWIthoutMovementInput",
+                    "type": "Button",
+                    "id": "5c8fce97-9494-4c63-85b9-09f06664fa5e",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "Hold",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "Lock On",
                     "type": "Button",
                     "id": "8fcc99f0-bae1-400d-a909-2cdf69affcb8",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -424,7 +442,7 @@
                 {
                     "name": "",
                     "id": "f56e32f3-d902-4724-a993-c9df68b8158e",
-                    "path": "<Keyboard>/alt",
+                    "path": "<Keyboard>/v",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -446,10 +464,10 @@
                 {
                     "name": "",
                     "id": "731cbf35-e8ee-44a8-bb35-c4107be901ab",
-                    "path": "<Keyboard>/e",
+                    "path": "<Mouse>/leftButton",
                     "interactions": "",
                     "processors": "",
-                    "groups": "",
+                    "groups": "Keyboard and Mouse",
                     "action": "RB",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -512,10 +530,10 @@
                 {
                     "name": "",
                     "id": "1676b139-94f3-4510-b269-686ba56b1619",
-                    "path": "<Keyboard>/shift",
+                    "path": "<Mouse>/rightButton",
                     "interactions": "",
                     "processors": "",
-                    "groups": "",
+                    "groups": ";Keyboard and Mouse",
                     "action": "LB",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -534,10 +552,10 @@
                 {
                     "name": "",
                     "id": "baf30042-2c09-4fbd-8c53-1ee09c7b1e1e",
-                    "path": "<Keyboard>/c",
+                    "path": "<Mouse>/middleButton",
                     "interactions": "",
                     "processors": "",
-                    "groups": "",
+                    "groups": ";Keyboard and Mouse",
                     "action": "Lock On",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -583,6 +601,28 @@
                     "processors": "",
                     "groups": "",
                     "action": "Switch Left Weapon",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "3980c159-dafe-4f87-8784-8711f43cca79",
+                    "path": "<Gamepad>/dpad/down",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Switch Quick Slot Item",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "4b8f3c0b-8e07-4d1e-9412-959cf1d8712a",
+                    "path": "<Keyboard>/downArrow",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Switch Quick Slot Item",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -698,6 +738,28 @@
                 },
                 {
                     "name": "",
+                    "id": "7020214a-add2-415a-9a72-e32f411db285",
+                    "path": "<Gamepad>/select",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SpringForwardWIthoutMovementInput",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "d5e5b83a-9a8d-414b-a0b7-d72f7a98eb51",
+                    "path": "<Keyboard>/t",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SpringForwardWIthoutMovementInput",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "64b36d3f-4452-4845-bf2a-296b4748ecd8",
                     "path": "<Gamepad>/leftStickPress",
                     "interactions": "",
@@ -794,7 +856,7 @@
                     "name": "X",
                     "type": "Button",
                     "id": "bc483499-c12d-4ab2-8c76-4752e20b3390",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "Tap",
                     "initialStateCheck": false
@@ -826,5 +888,22 @@
             ]
         }
     ],
-    "controlSchemes": []
+    "controlSchemes": [
+        {
+            "name": "Keyboard and Mouse",
+            "bindingGroup": "Keyboard and Mouse",
+            "devices": [
+                {
+                    "devicePath": "<Keyboard>",
+                    "isOptional": false,
+                    "isOR": false
+                },
+                {
+                    "devicePath": "<Mouse>",
+                    "isOptional": false,
+                    "isOR": false
+                }
+            ]
+        }
+    ]
 }

@@ -8,7 +8,8 @@ public class UI_StatBar : MonoBehaviour
     
     public Slider slider;
 
-    public GameObject lockOnUI;
+    
+
 
     //[Header("Bar Options")]
     //[SerializeField]protected bool scaleBarLengthWithStats = true;
@@ -18,9 +19,14 @@ public class UI_StatBar : MonoBehaviour
     protected virtual void Awake()
     {
         slider = GetComponent<Slider>();
+       
+
+
     }
 
-    protected virtual void Start()
+   
+
+    public virtual void Start()
     {
 
     }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using System.IO.Pipes;
 
 public class PlayerUIPopUPManager : MonoBehaviour
 {
@@ -18,17 +19,35 @@ public class PlayerUIPopUPManager : MonoBehaviour
     [SerializeField] TextMeshProUGUI youDiedPopUPText;
     [SerializeField] CanvasGroup youDiedPopUpCanvasGroup;//Allow us to Set Alpha Fade Over Time
 
+    [Header("Boss Defeated PopUp")]
+    [SerializeField] GameObject BossDefeatedPopUpGameObject;
+    [SerializeField] TextMeshProUGUI BossDefeatedPopUPBackGroundText;
+    [SerializeField] TextMeshProUGUI BossDefeatedPopUPText;
+    [SerializeField] CanvasGroup BossDefeatedPopUpCanvasGroup;
+
     [Header("Item PopUp")]
     [SerializeField] GameObject itemPopUpGameObject;
     [SerializeField] Image itemIcon;
     [SerializeField] TextMeshProUGUI itemName;
     [SerializeField] TextMeshProUGUI itemAmount;
+    [SerializeField] CanvasGroup itemPopUpCanvas;
+   
 
     [Header("Site of Grace Restored Pop Up")]
     [SerializeField] GameObject graceRestoredPopUpGameObject;
     [SerializeField] TextMeshProUGUI graceRestoredPopUpBackGroundText;
     [SerializeField] TextMeshProUGUI graceRestoredPopUpText;
     [SerializeField] CanvasGroup graceRestoredPopUpCanvasGroup;
+
+    [Header("Dialogue")]
+    [SerializeField] private GameObject dialogueBox;
+    [SerializeField] private TextMeshProUGUI npcNameText;
+    [SerializeField] Image NpcImage;
+    [SerializeField] private TextMeshProUGUI dialogueText;
+
+    private string[] currentDialogueLines;
+    private int currentDialogueIndex = 0;
+    private System.Action onDialogueCompleteCallback = null;
 
 
 
@@ -59,6 +78,19 @@ public class PlayerUIPopUPManager : MonoBehaviour
         StartCoroutine(FadeInPopUpOverTime(youDiedPopUpCanvasGroup, 5));
         StartCoroutine(WaitThenFadePopUpOverTime(youDiedPopUpCanvasGroup, 2, 5, youDiedPopUpGameObject));
     }
+
+    public void SendBossDefeatedPopUp(string BossDefeatedMessage)
+    {
+
+        BossDefeatedPopUPBackGroundText.text = BossDefeatedMessage;
+        BossDefeatedPopUPText.text = BossDefeatedMessage;
+
+        BossDefeatedPopUpGameObject.SetActive(true);
+        BossDefeatedPopUPBackGroundText.characterSpacing = 0;
+        StartCoroutine(StretchPopUpTextOverTime(youDiedPopUPBackGroundText, 8, 8.32f));
+        StartCoroutine(FadeInPopUpOverTime(BossDefeatedPopUpCanvasGroup, 5));
+        StartCoroutine(WaitThenFadePopUpOverTime(BossDefeatedPopUpCanvasGroup, 2, 5, youDiedPopUpGameObject));
+    }
     public void SendGraceRestoredPop(string graceRestoredMesage)
     {
         graceRestoredPopUpText.text = graceRestoredMesage;
@@ -70,7 +102,11 @@ public class PlayerUIPopUPManager : MonoBehaviour
         
         StartCoroutine(StretchPopUpTextOverTime(graceRestoredPopUpBackGroundText, 8, 8.32f));
         StartCoroutine(FadeInPopUpOverTime(graceRestoredPopUpCanvasGroup, 5));
-        StartCoroutine(WaitThenFadePopUpOverTime(graceRestoredPopUpCanvasGroup, 2, 5));
+        StartCoroutine(WaitThenFadePopUpOverTime(graceRestoredPopUpCanvasGroup, 2, 5, graceRestoredPopUpGameObject));
+
+        
+
+
     }
 
     public void SendItemPopUp(Item item, int amount)
@@ -81,7 +117,7 @@ public class PlayerUIPopUPManager : MonoBehaviour
 
         if(amount > 1)
         {
-            itemAmount.enabled=true;
+            itemAmount.enabled = true;
             itemAmount.text = "x"+amount.ToString();
 
 
@@ -89,6 +125,10 @@ public class PlayerUIPopUPManager : MonoBehaviour
 
         itemPopUpGameObject .SetActive(true);
         PlayerUIManager.instance.popUpWindowIsOpen=true;
+
+        StartCoroutine(WaitThenFadePopUpOverTime(itemPopUpCanvas, 0.25f,1.5f, itemPopUpGameObject));
+
+       
 
 
 
@@ -172,6 +212,50 @@ public class PlayerUIPopUPManager : MonoBehaviour
         itemPopUpGameObject.SetActive(false);
         PlayerUIManager.instance.popUpWindowIsOpen = false;
 
+    }
+
+    public void StartDialogue(string npcName, string[] lines)
+    {
+        MobileControls.instance.DisableMobileControls();
+        dialogueBox.SetActive(true);
+        currentDialogueLines = lines;
+        currentDialogueIndex = 0;
+       
+
+       
+
+        npcNameText.text = npcName;
+        dialogueText.text = currentDialogueLines[0];
+
+        dialogueBox.SetActive(true);
+        PlayerUIManager.instance.popUpWindowIsOpen = true;
+
+        
+    }
+
+    public void ContinueDialogue()
+    {
+        currentDialogueIndex++;
+
+        if (currentDialogueIndex >= currentDialogueLines.Length)
+        {
+            EndDialogue();
+            return;
+        }
+
+        dialogueText.text = currentDialogueLines[currentDialogueIndex];
+    }
+
+    public void EndDialogue()
+    {
+
+        dialogueBox.SetActive(false);
+        PlayerUIManager.instance.popUpWindowIsOpen = false;
+        MobileControls.instance.EnableMobileControls();
+
+
+        //Delegate Used tor trigger Missions 
+        onDialogueCompleteCallback?.Invoke();
     }
 
 

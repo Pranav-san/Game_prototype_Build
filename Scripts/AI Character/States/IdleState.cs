@@ -12,6 +12,11 @@ public class IdleState : AIState
     [Header("Idle Options")]
     [SerializeField]IdleStateMode idleStateMode;
 
+    [Header("AI Target Check Timer")]
+    float targetCheckTimer = 0f;
+    private float targetCheckInterval = 0.5f;
+
+
     [Header("Patrol Options")]
     public AIPatrolPath aiPatrolPath;
     [SerializeField] bool hasFoundClosestPointNearCharacterSpawn = false;  // IF THE CHARACTER SPAWNS CLOSER TO THE SECOND POINT, START AT THE SECOND POINT
@@ -26,8 +31,16 @@ public class IdleState : AIState
 
     public override AIState Tick(AICharacterManager aiCharacter)
     {
+
+        targetCheckTimer += Time.deltaTime;
+
+        if (targetCheckTimer >= targetCheckInterval)
+        {
+            aiCharacter.aiCharacterCombatManager.FindTargetViaLineOfSight(aiCharacter);
+            targetCheckTimer = 0f;
+        }
+
         
-        aiCharacter.aiCharacterCombatManager.FindTargetViaLineOfSight(aiCharacter);
 
         switch (idleStateMode)
         {

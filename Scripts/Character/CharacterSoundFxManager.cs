@@ -9,6 +9,12 @@ public class CharacterSoundFxManager : MonoBehaviour
     [Header("AttackDamage FX")]
     [SerializeField]protected AudioClip[] attackDamageSFX;
 
+    [Header("Guns")]
+    [SerializeField] protected AudioClip shotGun;
+
+
+
+   
     protected virtual void Awake()
     {
         audioSource = GetComponent<AudioSource>();
@@ -33,6 +39,34 @@ public class CharacterSoundFxManager : MonoBehaviour
 
     public virtual void playBlockSoundfx()
     {
+
+    }
+
+    public virtual void PlayStanceBrokenSFX()
+    {
+        audioSource.PlayOneShot(WorldSoundFXManager.instance.stanceBreakSfx);
+
+    }
+
+    public virtual void PlayShotgunSfx()
+    {
+        audioSource.PlayOneShot(shotGun);
+    }
+
+
+    public virtual void PlayFootstepSfx(SurfaceType surfaceType)
+    {
+        
+
+
+    }
+
+
+
+
+    public virtual void PlayCriticalStrikeSfx()
+    {
+        audioSource.PlayOneShot(WorldSoundFXManager.instance.criticalStrikeSfx);
 
     }
 

@@ -15,6 +15,7 @@ public class WeaponItem : EquipmentItem
 
     [Header("Model Instantiation")]
     public WeaponModelType weaponModelType;
+    public WeaponWieldingType weaponWieldingType;
 
     [Header("Weapon Class")]
     public WeapomClass weaponClass;
@@ -37,6 +38,8 @@ public class WeaponItem : EquipmentItem
     public float light_attack_01_Modifier = 1.1f;
     public float heavy_attack_01_Modifier = 1.4f;
     public float charged_attack_01_Modifier = 2.0f;
+
+
 
 
     [Header("Stamina Costs")]

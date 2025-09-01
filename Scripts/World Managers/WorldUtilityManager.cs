@@ -9,6 +9,10 @@ public class WorldUtilityManager : MonoBehaviour
     [Header("Layers")]
     [SerializeField] LayerMask characterLayers;
     [SerializeField] LayerMask enviroLayers;
+    [SerializeField] LayerMask slipperyEnviroLayers;
+
+    [Header("Force")]
+    public float  slopeSlideForce =-15;
 
 
 
@@ -18,13 +22,14 @@ public class WorldUtilityManager : MonoBehaviour
         if(Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
+            
             
         }
         else
         {
             Destroy(gameObject);
         }
+        DontDestroyOnLoad(gameObject);
     }
 
     public LayerMask GetCharacterLayer()
@@ -35,6 +40,11 @@ public class WorldUtilityManager : MonoBehaviour
     public LayerMask GetEnviroLayer()
     {
         return enviroLayers;
+    }
+
+    public LayerMask GetSlipperyEnviroLayer()
+    {
+        return slipperyEnviroLayers;
     }
 
     public bool CanIDamageThisTarget(CharacterGroup attackingCharacter, CharacterGroup targetCharacter)
@@ -100,6 +110,58 @@ public class WorldUtilityManager : MonoBehaviour
         return damageIntensity;
 
 
+
+    }
+
+    public Vector3 GetRipostingPositionBasedOnWeaponClass( WeapomClass weapomClass)
+    {
+
+        Vector3 position = new Vector3(0.11f, 0, 0.7f);
+        switch(weapomClass)
+        {
+            case WeapomClass.Sword:
+                //Chnage Reposte Position Here
+                position = new Vector3(-0.43f, 0, 0.7f);
+                break;
+
+            case WeapomClass.spear:
+                //Chnage Reposte Position Here
+                position = new Vector3(0.11f, 0, 0.5f);
+                break;
+
+            default:
+                break;
+
+          
+        }
+
+        return position;    
+
+    }
+
+    public Vector3 GetBackStabPositionBasedOnWeaponClass(WeapomClass weapomClass)
+    {
+
+        Vector3 position = new Vector3(0.11f, 0, 0.7f);
+        switch (weapomClass)
+        {
+            case WeapomClass.Sword:
+                //Chnage Reposte Position Here
+                position = new Vector3(0.20f, 0, 0.7f);
+                break;
+
+            case WeapomClass.spear:
+                //Chnage Reposte Position Here
+                position = new Vector3(0.11f, 0, 0.5f);
+                break;
+
+            default:
+                break;
+
+
+        }
+
+        return position;
 
     }
 }

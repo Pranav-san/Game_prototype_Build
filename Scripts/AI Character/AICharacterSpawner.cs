@@ -18,11 +18,12 @@ public class AICharacterSpawner : MonoBehaviour
         
 
         WorldAIManager.instance.SpawnCharacter(this);
-        gameObject.SetActive(false);
+        //gameObject.SetActive(false);
     }
 
     private void Awake()
     {
+
         
 
     }
@@ -41,11 +42,61 @@ public class AICharacterSpawner : MonoBehaviour
             aiCharacter = instantiatedGameObject.GetComponent<AICharacterManager>();
 
 
+            if (aiCharacter!=null)
+            {
+                WorldAIManager.instance.AddCharacterToSpwanedCharacterList(aiCharacter);
+
+            }
+
+
             if (hasPatrolPath)
             {
                 aiCharacter.idle.aiPatrolPath = WorldAIManager.instance.GetAIPatrolPathByID(patrolPathID);
             }
 
+            
+
+            
+
         }
+    }
+
+    public void ResetCharacter()
+    {
+        if(instantiatedGameObject == null)
+            return;
+        if(aiCharacter == null)
+            return;
+
+        if (characterGameObject != null)
+        {
+            aiCharacter.characterController.enabled = true;
+            instantiatedGameObject.transform.position = transform.position;
+            instantiatedGameObject.transform.rotation = transform.rotation;
+            aiCharacter.characterStatsManager.currentHealth = aiCharacter.characterStatsManager.maxHealth;
+            aiCharacter.aiCharacterCombatManager.currentStance = aiCharacter.aiCharacterCombatManager.maxStance;
+            aiCharacter.aiCharacterCombatManager.stanceRegenerationTimer = 0f;
+            aiCharacter.aiCharacterCombatManager.currentTarget = null;
+            aiCharacter.ResetStateMachine();
+
+
+            if (aiCharacter.characterStatsManager.isDead)
+            {
+                aiCharacter.characterStatsManager.isDead = false;
+                aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Empty", false, false, true, true);
+                aiCharacter.isHoldingArrow = false;
+                aiCharacter.ResetStateMachine();
+                aiCharacter.hasExploded = false;
+
+                
+
+
+
+            }
+           
+
+
+        }
+
     }
 }

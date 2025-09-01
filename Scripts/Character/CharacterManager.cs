@@ -16,8 +16,8 @@ public class CharacterManager : MonoBehaviour
 
     //public bool isDead;
 
-    public float maxHealth = 100;
-    public float currentHealth = 100;   
+    //public float maxHealth = 100;
+    //public float currentHealth = 100;   
 
 
 
@@ -26,7 +26,10 @@ public class CharacterManager : MonoBehaviour
     [Header("Character Group")]
     public CharacterGroup characterGroup;
 
-    
+    [Header("NPC")]
+    public bool isFriendly = false;
+
+
 
 
 
@@ -41,6 +44,8 @@ public class CharacterManager : MonoBehaviour
     public bool canRotate = true;
     public bool canMove = true;
     public bool isMoving = false;
+    public bool canRun = true;
+    public bool canRoll = true;
 
     public bool isSprinting = false;
 
@@ -50,9 +55,21 @@ public class CharacterManager : MonoBehaviour
     public bool isAttacking = false;
     public bool isInvulnerable = false;
 
+    public bool isPerformingCriticalAttack =  false;
+
+    public bool isReloadedWeapon = false;
+
+    public bool isGrappled = false;
+
+    [Header("Projectile Flags")]
+    public bool hasArrowNotched = false;
+    public bool isHoldingArrow = false;
+    public bool isAiming = false;
+    public bool FireBullet = false;
 
 
-    
+
+
 
     protected virtual void Awake()
     {
@@ -80,7 +97,7 @@ public class CharacterManager : MonoBehaviour
         animator.SetBool("isMoving", isMoving);
 
         OnIsChargingAttack(isChargingAttack);
-        OnIsBlocking(isBlocking);
+        //OnIsBlocking(isBlocking);
 
     }
 
@@ -120,6 +137,46 @@ public class CharacterManager : MonoBehaviour
     protected virtual void FixedUpdate()
     {
 
+    }
+
+    public void TriggerHitPause(float duration)
+    {
+        StartCoroutine(HitPauseCoroutine(duration));
+    }
+
+    private IEnumerator HitPauseCoroutine(float duration)
+    {
+        Time.timeScale = 0.01f;
+        Time.fixedDeltaTime = 0.01f * 0.02f;
+
+        yield return new WaitForSecondsRealtime(duration);
+
+        Time.timeScale = 1f;
+        Time.fixedDeltaTime = 0.02f;
+    }
+
+    void OnAnimatorMove()
+    {
+        if (applyRootMotion && characterController != null)
+        {
+            // Animation movement this frame
+            Vector3 deltaPosition = animator.deltaPosition;
+
+            deltaPosition +=  characterLocomotionManager.yVelocity * Time.deltaTime;
+
+
+            if (isPerformingAction)
+            {
+                deltaPosition = Vector3.ClampMagnitude(deltaPosition, 0.08f);
+                // 0.08f is max per frame; tweak to match old feel
+            }
+
+            // Move using CharacterController (keeps collisions active)
+            characterController.Move(deltaPosition);
+
+            // Apply animation rotation
+            transform.rotation *= animator.deltaRotation;
+        }
     }
 
 }

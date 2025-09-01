@@ -1,18 +1,23 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem.EnhancedTouch;
+using UnityEngine.InputSystem;
+using ETouch = UnityEngine.InputSystem.EnhancedTouch;
+using static UnityEngine.GraphicsBuffer;
 
 public class PlayerCamera : MonoBehaviour
 {
     public static PlayerCamera instance;
 
     public Camera cameraObject;
-    public Camera FPCameraObject;
+
     public Transform cameraPivotTransform;
-    public GameObject inspectionPoint;
-    public GameObject FPInspectionPoint;
+    public GameObject ProjectileFireDirection;
+
     public playerManager player;
-    
+
     public PlayerLocomotionManager playerLocomotionManager;
 
     [Header("Camera Settings")]
@@ -24,43 +29,40 @@ public class PlayerCamera : MonoBehaviour
     public float maximumpivot = 60;
     public float cameraCollisionRadius = 0.2f;
     public LayerMask collideWithLayers;
-    public float CameraFOV = 68;
+    public float CameraFOV = 60;
 
-    [Header("Camera FP Settings")]
-    public float FPMaximumpivot = 60;
-    public float FPMinimumpivot = -30;
+    [Header("Aim")]
+    public Transform followTransformWhenAiming;
+    public float leftAndRightAimRotationSpeed = 220;
+    public float upAndDownAimRotationSpeed = 220;
+    public float aimedMinimumpivot = -30;
+    public float aimedMaximumpivot = 60;
+    private bool hasInitializedAim = false;
+    [SerializeField] float CameraOffsetLeftRight = 0.76f;
 
 
+    public Vector3 aimDirection;
 
-    [Header("FP Switch Camera")]
-    public bool FPCameraSwitch = false;
-    [SerializeField] GameObject[] fppObjectsToHide;
-
-
+    [Header("Focus")]
+    public bool isInFocusMode = false;
+    [SerializeField] private float inspectRayDistance =7f;
+    [SerializeField] private LayerMask inspectLayerMask;
+    [SerializeField] private Transform currentInspectRoot;
 
     [Header("Camera Values")]
     private Vector3 cameraVelocity;
     private Vector3 cameraObjectPosition;
-   
     [SerializeField] float cameraZPosition;
     private float targetCameraZPosition;
     public float cameraPivotAngle;
     public float leftAndRightLookAngle;
     public float upAndDownLookAngle;
 
-   [Header("Mobile")]
+    [Header("Mobile")]
     public TouchField touchField;
     public TouchField inspectObjectTouchField;
     public float touchSensitivity = 1f;
-
-    
-    
-    
-   
-   
-
-
-    [SerializeField]private bool isInputActive;
+    [SerializeField] private bool isInputActive;
 
     [Header("Lock On")]
     [SerializeField] float lockOnRadius = 20f;
@@ -70,11 +72,8 @@ public class PlayerCamera : MonoBehaviour
     [SerializeField] float unlockedCameraHeight = 1.64f;
     [SerializeField] float lockedCameraHeight = 2.0f;
     [SerializeField] float cameraHeightSpeed = 1f;
-
-
     private Coroutine cameraLockOnCoroutine;
-  
-    private List<CharacterManager> availableTargets= new List<CharacterManager>();
+    private List<CharacterManager> availableTargets = new List<CharacterManager>();
     public CharacterManager nearestLockOnTarget;
     public CharacterManager leftLockOnTarget;
     public CharacterManager RightLockOnTarget;
@@ -98,16 +97,39 @@ public class PlayerCamera : MonoBehaviour
         cameraZPosition = cameraObject.transform.localPosition.z;
         //touchField = FindObjectOfType<TouchField>();
         inspectObjectTouchField = PlayerUIManager.instance.inspectObjectTouchField.GetComponent<TouchField>();
-        
 
-        
+
+
     }
 
     private void Update()
     {
         CheckInputActivity();
         HandleAllCameraActions();
-        
+
+        if (player.playerCombatManager.currentTarget!=null)
+        {
+            PlayerUIManager.instance.UpdateLockOnDotPosition();
+        }
+
+        if (isInFocusMode)
+        {
+            //  Mouse input (Editor/PC)
+            if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+            {
+                InspectObjectBasedOn(Mouse.current.position.ReadValue());
+            }
+
+            //  Touch input (Mobile)
+            foreach (var touch in ETouch.Touch.activeTouches)
+            {
+                if (touch.phase == UnityEngine.InputSystem.TouchPhase.Began)
+                {
+                    InspectObjectBasedOn(touch.screenPosition);
+                }
+            }
+        }
+
     }
 
     private void CheckInputActivity()
@@ -118,7 +140,7 @@ public class PlayerCamera : MonoBehaviour
         {
             isInputActive = isInputActive || touchField.SwipeDelta != Vector2.zero;
         }
-        if(player.playerInteractionManager.isInspectingObject)
+        if (player.playerInteractionManager.isInspectingObject)
         {
             inspectObjectTouchField.enabled = true;
             touchField.enabled = false;
@@ -128,7 +150,7 @@ public class PlayerCamera : MonoBehaviour
         else
         {
             inspectObjectTouchField.enabled=false;
-            touchField.enabled = true;  
+            touchField.enabled = true;
         }
     }
 
@@ -136,52 +158,90 @@ public class PlayerCamera : MonoBehaviour
     {
         if (player != null)
         {
-            if (!FPCameraSwitch)
-            {
 
-               
-                HandleFollowTarget();
-                HandleRotation();
-                HandleCollisions();
-                EnablePlayerObjectsAndActionsDuringTP();
-                
-              
-            }
-            else
-            {
-                
+            if (isInFocusMode)
+                return;
 
-                
-                HandleAllFPCameraActions();
-                DisablePlayerObjectAndActionsDuringFP();
-                
 
-            }
-            
+
+
+            HandleFollowTarget();
+            HandleRotation();
+            HandleCollisions();
+
+
+
+
+
+
         }
     }
 
+
     private void HandleFollowTarget()
     {
-        cameraObject.fieldOfView = CameraFOV;
 
 
-        Vector3 targetCameraPosition = Vector3.SmoothDamp(transform.position, player.transform.position, ref cameraVelocity, cameraSmoothSpeed);
-        transform.position = targetCameraPosition;
+
+        if (player.isAiming)
+        {
+
+            Vector3 targetCameraPosition = Vector3.SmoothDamp(transform.position, followTransformWhenAiming.transform.position, ref cameraVelocity, cameraSmoothSpeed);
+            transform.position = targetCameraPosition;
+
+
+
+        }
+        else if (player.isGrappled)
+        {
+            Vector3 targetCameraPosition = Vector3.SmoothDamp(transform.position, followTransformWhenAiming.transform.position, ref cameraVelocity, cameraSmoothSpeed);
+            transform.position = targetCameraPosition;
+
+        }
+        else
+        {
+
+            cameraObject.fieldOfView = CameraFOV;
+
+
+            Vector3 targetCameraPosition = Vector3.SmoothDamp(transform.position, player.transform.position, ref cameraVelocity, cameraSmoothSpeed);
+            transform.position = targetCameraPosition;
+
+
+        }
+
     }
 
     private void HandleRotation()
     {
-        
-        if (player.playerInteractionManager.isInspectingObject & player.playerInteractionManager.currentInteractable!=null)
+        if (player.isAiming)
         {
-            GameObject parentObject = player.playerInteractionManager.currentInteractable.transform.parent.gameObject;
-            player.playerInteractionManager.RotateObject(parentObject);
-            return;
-            
+            HandndleAimedRotation();
 
         }
+
+        else
+        {
+            HandleStandardRotation();
+
+        }
+
+
+    }
+
+    private void HandleStandardRotation()
+    {
+        //if (character.playerInteractionManager.isInspectingObject & character.playerInteractionManager.currentInteractable!=null)
+        //{
+        //    GameObject parentObject = character.playerInteractionManager.currentInteractable.transform.parent.gameObject;
+        //    character.playerInteractionManager.RotateObject(parentObject);
+        //    return;
+
+
+        //}
         //IF Locked on Force Rotation towards target 
+
+        cameraObject.transform.localRotation = Quaternion.Euler(0, 0, 0);
         if (player.playerCombatManager.isLockedOn)
         {
             Vector3 rotationDirection = player.playerCombatManager.currentTarget.characterCombatManager.LockOnTransform.position - transform.position;
@@ -203,7 +263,7 @@ public class PlayerCamera : MonoBehaviour
             upAndDownLookAngle = transform.eulerAngles.x;
 
         }
-        
+
         //other wise Rotate regularly 
         else
         {
@@ -237,13 +297,13 @@ public class PlayerCamera : MonoBehaviour
             }
             else
             {
-                // Check if the player is moving forward or backward
+                // Check if the character is moving forward or backward
                 if (PlayerInputManager.Instance.movementInput.magnitude > 0.1f)
                 {
-                    // Only lock the camera to the player's direction if moving forward
+                    // Only lock the camera to the character's direction if moving forward
                     if (playerLocomotionManager.verticalMovement > 0)
                     {
-                        // Lock the camera to the player's direction
+                        // Lock the camera to the character's direction
                         Vector3 direction = player.transform.forward;
                         Quaternion targetRotation = Quaternion.LookRotation(direction);
                         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, cameraRotateSpeedWhenPlayerIsTurning * Time.deltaTime);
@@ -256,19 +316,96 @@ public class PlayerCamera : MonoBehaviour
                 }
                 else
                 {
-                    // Allow free look when the player is not moving
+                    // Allow free look when the character is not moving
                     transform.rotation = Quaternion.Slerp(transform.rotation, transform.rotation, cameraSmoothSpeed * Time.deltaTime);
                 }
             }
         }
+
+    }
+
+    private void HandndleAimedRotation()
+    {
+
+        cameraPivotTransform.localRotation = Quaternion.Euler(0, 0, 0);
+        if (!player.isGrounded)
+            player.isAiming = false;
+
+        if (player.isPerformingAction)
+            return;
+
+        aimDirection = cameraObject.transform.forward.normalized;
+
+        if (isInputActive)
+        {
+            //Gather Inputs
+            float horizontal = PlayerInputManager.Instance.cameraHorizontalInput* upAndDownAimRotationSpeed * Time.deltaTime;
+            float vertical = PlayerInputManager.Instance.cameraVerticalInput*leftAndRightAimRotationSpeed * Time.deltaTime;
+
+            if (touchField != null && touchField.SwipeDelta != Vector2.zero)
+            {
+                horizontal = touchField.SwipeDelta.x * touchSensitivity* leftAndRightAimRotationSpeed / Screen.width*Time.deltaTime;
+                vertical = -(touchField.SwipeDelta.y * touchSensitivity * upAndDownAimRotationSpeed / Screen.height) * Time.deltaTime;
+            }
+
+
+            //upAndDownLookAngle = Mathf.Clamp(upAndDownLookAngle, aimedMinimumpivot, aimedMaximumpivot);
+
+            leftAndRightLookAngle += horizontal;
+            upAndDownLookAngle += vertical;
+            upAndDownLookAngle = Mathf.Clamp(upAndDownLookAngle, aimedMinimumpivot, aimedMaximumpivot);
+            // Rotate Cam
+
+
+
+        }
+        transform.rotation = Quaternion.Euler(0, leftAndRightLookAngle, 0);
+        cameraObject.transform.localEulerAngles= new Vector3(upAndDownLookAngle, 0f, 0f);
+
+    }
+
+
+    public void OnIsAimingChanged(bool isAiming)
+    {
+        //Reset Local EulerAngles Of the Camera Object When Not Aiming
+        if (!isAiming)
+        {
+            hasInitializedAim = false;
+            cameraObject.transform.localEulerAngles = new Vector3(0, 0, 0);
+            player.playerAnimatorManager.EnableDisableIK(0, 0);
+            player.playerAnimatorManager.UpdateAimedConstraints();
+
+
+
+
+            Debug.Log("Reset CamObj");
+
+
+        }
+        //Reset Local EulerAngles of CameraPivot And Main Parent Object
+        else
+        {
+
+
+            leftAndRightLookAngle = transform.eulerAngles.y;
+            upAndDownLookAngle = -4f;
+            hasInitializedAim = true;
+            player.playerAnimatorManager.EnableDisableIK(1, 1);
+            player.playerAnimatorManager.UpdateAimedConstraints();
+
+
+            Debug.Log("Reset CamPivot");
+
+        }
+        player.animator.SetBool("isAiming", player.isAiming);
     }
 
 
 
     private void HandleCollisions()
     {
-        
-        
+
+
         targetCameraZPosition = cameraZPosition;
         RaycastHit hit;
         Vector3 direction = cameraObject.transform.position - cameraPivotTransform.position;
@@ -296,15 +433,18 @@ public class PlayerCamera : MonoBehaviour
         float shortestDistanceOfRightTarget = Mathf.Infinity;// Closest Target to the Right Of Current Target(+)
         float shortestDistanceOfLeftTarget = -Mathf.Infinity;//Will be used to determine Shortest distance on one Axis To the Left Of Current Target (Closest Target to the Left Of Current Target(-))
 
-        Collider[] colliders = Physics.OverlapSphere(player.transform.position, lockOnRadius,WorldUtilityManager.Instance.GetCharacterLayer());
+        Collider[] colliders = Physics.OverlapSphere(player.transform.position, lockOnRadius, WorldUtilityManager.Instance.GetCharacterLayer());
 
-        for(int i = 0; i < colliders.Length; i++)
+        for (int i = 0; i < colliders.Length; i++)
         {
             CharacterManager lockOnTarget = colliders[i].GetComponent<CharacterManager>();
 
+            if (lockOnTarget.isFriendly)
+                return;
+
             if (lockOnTarget != null)
             {
-                
+
                 Vector3 lockOnTargetDirection = lockOnTarget.transform.position - player.transform.position;
                 float distancefromTarget = Vector3.Distance(player.transform.position, lockOnTarget.transform.position);
                 float viewableAngle = Vector3.Angle(lockOnTargetDirection, cameraObject.transform.forward);
@@ -317,10 +457,10 @@ public class PlayerCamera : MonoBehaviour
                 // if Target is us, Check for next potential Target 
                 if (lockOnTarget.transform.root==player.transform.root)
                 {
-                    
+
                     continue;
                 }
-                
+
                 //If the target is outside of field of view or blocked by enviro, check next potential Target
                 if (viewableAngle > minimumViewableAngle && viewableAngle <maximumViewableAngle)
                 {
@@ -335,7 +475,7 @@ public class PlayerCamera : MonoBehaviour
                     {
                         //Otherwise Add them to Potential target list 
                         availableTargets.Add(lockOnTarget);
-                        
+
                         //Debug.Log("We made it");
 
 
@@ -349,16 +489,16 @@ public class PlayerCamera : MonoBehaviour
         //Sort through potential targets to see which one to lock onto first
         for (int k = 0; k < availableTargets.Count; k++)
         {
-            if(availableTargets[k] != null)
+            if (availableTargets[k] != null)
             {
                 float distanceFromTarget = Vector3.Distance(player.transform.position, availableTargets[k].transform.position);
-                
+
 
                 if (distanceFromTarget<shortestDistance)
                 {
                     shortestDistance = distanceFromTarget;
                     nearestLockOnTarget = availableTargets[k];
-                    
+
 
                 }
 
@@ -368,18 +508,18 @@ public class PlayerCamera : MonoBehaviour
                     var distanceFromLeftTarget = relativeEnemyPosition.x;
                     var distanceFromRightTarget = relativeEnemyPosition.x;
 
-                    if(availableTargets[k] == player.playerCombatManager.currentTarget)
+                    if (availableTargets[k] == player.playerCombatManager.currentTarget)
                         continue;
 
                     //Check Left Side For Targets 
-                    if(relativeEnemyPosition.x <=0.00 &&  distanceFromLeftTarget > shortestDistanceOfLeftTarget)
+                    if (relativeEnemyPosition.x <=0.00 &&  distanceFromLeftTarget > shortestDistanceOfLeftTarget)
                     {
                         shortestDistanceOfRightTarget = distanceFromLeftTarget;
                         leftLockOnTarget = availableTargets[k];
 
                     }
                     //Check Right side For targets 
-                    else if(relativeEnemyPosition.x >= 00 && distanceFromRightTarget < shortestDistanceOfRightTarget)
+                    else if (relativeEnemyPosition.x >= 00 && distanceFromRightTarget < shortestDistanceOfRightTarget)
                     {
                         shortestDistanceOfRightTarget -= distanceFromRightTarget;
                         RightLockOnTarget = availableTargets[k];
@@ -395,24 +535,35 @@ public class PlayerCamera : MonoBehaviour
         }
     }
 
+
     public void ClearLockOnTargets()
     {
+
+
+
         nearestLockOnTarget = null;
-        leftLockOnTarget = null ;
+        leftLockOnTarget = null;
         RightLockOnTarget = null;
+
+
+
+
+
         availableTargets.Clear();
     }
 
     public void SetLockCameraHeight()
     {
-        if(cameraLockOnCoroutine != null)
+        if(player.playerStatsManager.isDead) 
+            return;
+
+        if (cameraLockOnCoroutine != null)
         {
             StopCoroutine(cameraLockOnCoroutine);
         }
         cameraLockOnCoroutine = StartCoroutine(SetCameraHeight());
 
     }
-
     private IEnumerator SetCameraHeight()
     {
         float duration = 1;
@@ -422,7 +573,7 @@ public class PlayerCamera : MonoBehaviour
         Vector3 newLockedCameraheight = new Vector3(cameraPivotTransform.transform.localPosition.x, lockedCameraHeight);
         Vector3 newUnLockedCameraheight = new Vector3(cameraPivotTransform.transform.localPosition.x, unlockedCameraHeight);
 
-        while(timer < duration)
+        while (timer < duration)
         {
             timer+=Time.deltaTime;
 
@@ -444,15 +595,25 @@ public class PlayerCamera : MonoBehaviour
             }
             yield return null;
         }
-        if(player !=null )
+        if (player !=null)
         {
 
             if (player.playerCombatManager.currentTarget!=null)
             {
                 cameraPivotTransform.transform.localPosition = newLockedCameraheight;
-                cameraPivotTransform.transform.localRotation = Quaternion.Euler(0,0,0);
+                cameraPivotTransform.transform.localRotation = Quaternion.Euler(0, 0, 0);
             }
-            else 
+            else if (!player.playerCombatManager.isLockedOn && player.playerCombatManager.currentTarget!=null)
+            {
+                cameraPivotTransform.transform.localPosition = newUnLockedCameraheight;
+
+            }
+            else if (!player.playerCombatManager.isLockedOn)
+            {
+                cameraPivotTransform.transform.localPosition = newUnLockedCameraheight;
+
+            }
+            else
             {
 
                 cameraPivotTransform.transform.localPosition = newUnLockedCameraheight;
@@ -463,167 +624,77 @@ public class PlayerCamera : MonoBehaviour
 
 
     }
-
-
-
     public IEnumerator WaitThenfindNewTarget()
     {
         while (player.isPerformingAction)
         {
             yield return null;
         }
-        ClearLockOnTargets ();
+        ClearLockOnTargets();
         HandleLocatingLockOnTarget();
 
-        if(nearestLockOnTarget != null)
+        if (nearestLockOnTarget != null)
         {
             player.playerCombatManager.SetTarget(nearestLockOnTarget);
+            PlayerUIManager.instance.SetLockOnTarget(nearestLockOnTarget.characterCombatManager.LockOnTransform);
             player.playerCombatManager.isLockedOn = true;
         }
         yield return null;
     }
 
 
-    //FPP 
+    public void snapCameraToFocusPoint(Transform target)
+    {
+        isInFocusMode = true;
+        player.canMove=false;
+        cameraObject.transform.position = target.position;
+        cameraObject.transform.rotation = target.rotation;
+        MobileControls.instance.DisableMobileControls();
+        player.playerBodyManager.TogglePlayerObject(false);
 
-    public void HandleAllFPCameraActions()
-    {
-        if (player != null)
-        {
-            FPHandleFollowTarget();
-            FPHandleRotation();
-            FPHandleCollisions();
-        }
+
     }
-    private void FPHandleFollowTarget()
+    public void ResetCameraFromFocus()
     {
-        FPCameraObject.fieldOfView = CameraFOV;
-        Vector3 targetCameraPosition = Vector3.SmoothDamp(transform.position, player.transform.position, ref cameraVelocity, cameraSmoothSpeed * Time.deltaTime);
-        transform.position = targetCameraPosition;
+        isInFocusMode=false;
+        player.canMove = true;
+        cameraObject.transform.localPosition = new Vector3(0, 0, cameraZPosition); // Reset and Set it back to default Z offset
+        cameraObject.transform.localRotation = Quaternion.identity;//reset Rotation
+        MobileControls.instance.EnableMobileControls();
+        player.playerBodyManager.TogglePlayerObject(true);
+
     }
 
-    public void FPHandleRotation()
+    public void InspectObjectBasedOn(Vector2 screenPos)
     {
-        if (player.playerInteractionManager.isInspectingObject & player.playerInteractionManager.currentInteractable!=null)
-        {
-            GameObject parentObject = player.playerInteractionManager.currentInteractable.transform.parent.gameObject;
-            player.playerInteractionManager.RotateObject(parentObject);
+        if(!isInFocusMode)
             return;
 
-
-        }
-        if (isInputActive)
+        Ray ray = cameraObject.ScreenPointToRay(screenPos);
+        if (Physics.Raycast(ray, out RaycastHit hit, inspectRayDistance, inspectLayerMask))
         {
-            leftAndRightLookAngle = (PlayerInputManager.Instance.cameraHorizontalInput * leftAndRightRotationSpeed) * Time.deltaTime;
-            upAndDownLookAngle = -(PlayerInputManager.Instance.cameraVerticalInput * upAndDownRotationSpeed) * Time.deltaTime;
+            // restrict to children of the inspected object
+            if (currentInspectRoot != null && !hit.transform.IsChildOf(currentInspectRoot))
+                return;
 
-            if (touchField != null && touchField.SwipeDelta != Vector2.zero)
-            {
-                leftAndRightLookAngle = (touchField.SwipeDelta.x * touchSensitivity * leftAndRightRotationSpeed / Screen.width) * Time.deltaTime;
-                upAndDownLookAngle = -(touchField.SwipeDelta.y * touchSensitivity * upAndDownRotationSpeed / Screen.height) * Time.deltaTime;
-            }
+            Interactable interactable = hit.collider.GetComponent<Interactable>();
+            if (interactable == null)
+                interactable = hit.collider.GetComponentInParent<Interactable>();
 
-            Vector3 cameraRotation = Vector3.zero;
-            Quaternion targetRotation;
-
-            cameraRotation.y = leftAndRightLookAngle;
-            targetRotation = Quaternion.Euler(cameraRotation);
-            transform.rotation *= targetRotation;
-
-            cameraPivotAngle += upAndDownLookAngle;
-            cameraPivotAngle = Mathf.Clamp(cameraPivotAngle, FPMinimumpivot, FPMaximumpivot);
-
-            cameraRotation = Vector3.zero;
-            cameraRotation.x = cameraPivotAngle;
-            targetRotation = Quaternion.Euler(cameraRotation);
-            cameraPivotTransform.localRotation = targetRotation;
-        }
-    }
-
-    private void FPHandleCollisions()
-    {
-        targetCameraZPosition = cameraZPosition;
-        RaycastHit hit;
-        Vector3 direction = FPCameraObject.transform.position - cameraPivotTransform.position;
-        direction.Normalize();
-
-        if (Physics.SphereCast(cameraPivotTransform.position, cameraCollisionRadius, direction, out hit, Mathf.Abs(targetCameraZPosition), collideWithLayers))
-        {
-            float distanceFromHitObject = Vector3.Distance(cameraPivotTransform.position, hit.point);
-            float collisionOffset = cameraCollisionRadius;
-            targetCameraZPosition = -(distanceFromHitObject - collisionOffset);
-        }
-        if (Mathf.Abs(targetCameraZPosition) < cameraCollisionRadius)
-        {
-            targetCameraZPosition = -cameraCollisionRadius;
-        }
-        cameraObjectPosition = cameraObject.transform.localPosition;
-        cameraObjectPosition.z = Mathf.Lerp(cameraObject.transform.localPosition.z, targetCameraZPosition, 0.2f);
-        cameraObject.transform.localPosition = cameraObjectPosition;
-    }
-    private void DisablePlayerObjectAndActionsDuringFP()
-    {
-        cameraObject.gameObject.SetActive(false);
-
-        // Enable First Person Camera
-        FPCameraObject.gameObject.SetActive(true);
-        if (FPCameraSwitch)
-        {
-            foreach (GameObject obj in fppObjectsToHide)
-            {
-                // Hide the object and disable its components During FP
-                obj.SetActive(false);
-
-
-
-
-
-
-                
-            }
-
-        }
-       
-        
-
-       
-        
-    }
-
-    private void EnablePlayerObjectsAndActionsDuringTP()
-    {
-        cameraObject.gameObject.SetActive(true);
-
-        // Enable First Person Camera
-        FPCameraObject.gameObject.SetActive(false);
-        if (!FPCameraSwitch)
-        {
-
-            foreach (GameObject obj in fppObjectsToHide)
-            {
-                // UnHide the object and disable its components During TP
-                obj.SetActive(true);
-
-
-
-
-
-
-
-            }
+            if (interactable != null)
+                interactable.Interact(player);
         }
 
     }
-
-    
-
-
-
-
-
-
-
-
 
 
 }
+
+
+
+
+
+
+
+
+

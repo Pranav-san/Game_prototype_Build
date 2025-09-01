@@ -10,12 +10,32 @@ public class AICharacterCombatManager : CharacterCombatManager
     [Header("Damage")]
      protected int baseDamage = 25;
      protected int basePoiseDamage = 25;
+
     
 
-    [Header("Target Onformation")]
+    
+
+    [Header("Target Information")]
     public float distanceFromTarget;
     public float viewableAngle;
     public Vector3 targetDirection;
+
+    [Header("Stance Setings")]
+    public float maxStance = 150f;
+    public float currentStance;
+    public float stanceRegeneratedPerSecond = 15;
+    [SerializeField] bool ignoreStanceBreak = false;
+
+    [Header("Stance timer")]
+    public float stanceRegenerationTimer = 0;
+    [SerializeField] private float  stancetickTimer = 0;
+    [SerializeField] float deafaultTimeUntilStanceRegenerationBegins = 15;
+
+    [Header("Grapple Hold Position")]
+    public Transform grappleTransfom;
+
+
+
 
 
 
@@ -31,13 +51,80 @@ public class AICharacterCombatManager : CharacterCombatManager
     [Header("Attack Rotation Speed")]
     public float attackRotationSpeed = 25;
 
+    [Header("AI Equipments")]
+    public ProjectileSlot currentProjectileBeingUsed;
+
     protected override void Awake()
     {
         base.Awake();
 
         aiCharacter = GetComponent<AICharacterManager>();
 
+        currentStance = maxStance;
+
         
+    }
+
+    private void FixedUpdate()
+    {
+        
+        HandleStanceBreak();
+    }
+
+    private void HandleStanceBreak()
+    {
+        if (aiCharacter.characterStatsManager.isDead)
+            return;
+
+        if(stanceRegenerationTimer > 0)
+        {
+            stanceRegenerationTimer -= Time.deltaTime;
+        }
+        else
+        {
+            stanceRegenerationTimer = 0;
+
+            if(currentStance < maxStance)
+
+            {
+                //Begin Adding Stance Each Tick
+                stancetickTimer +=Time.deltaTime;
+
+                if(stancetickTimer >=1)
+                {
+                    stancetickTimer =0f;
+                    currentStance += stanceRegeneratedPerSecond;
+                }
+
+            }
+
+            else
+            {
+                currentStance = maxStance;
+            }
+        }
+
+        if(currentStance <=0)
+        {
+            currentStance = maxStance;
+
+            if(ignoreStanceBreak)
+                return;
+
+            aiCharacter.characterAnimatorManager.PlayTargetActionAnimationInstantly("Stance Break_01", true);
+        }
+        
+
+    }
+
+    public void DamageStance(int stanceDamage)
+    {
+        //When Stance Is Damaged, The Timer Is Reset, Constant Attacks Gives No Chnace At Recovering Stance That Is Lost
+        stanceRegenerationTimer =deafaultTimeUntilStanceRegenerationBegins;
+
+        currentStance -= stanceDamage;
+
+
     }
 
     public void AwardRunesOnDeath(playerManager player)
@@ -46,6 +133,7 @@ public class AICharacterCombatManager : CharacterCombatManager
             return;
 
         player.playerStatsManager.AddRunes(aiCharacter.characterStatsManager.runesDroppedOnDeath);
+        Debug.Log("Awarding runes: " + aiCharacter.characterStatsManager.runesDroppedOnDeath);
 
     }
 
@@ -82,7 +170,7 @@ public class AICharacterCombatManager : CharacterCombatManager
                         WorldUtilityManager.Instance.GetEnviroLayer()))
                     {
                         Debug.DrawLine(aiCharacter.characterCombatManager.LockOnTransform.position, targetCharacter.characterCombatManager.LockOnTransform.position, Color.red, 2f );
-                        Debug.Log("Blocked");
+                        //Debug.Log("Blocked");
                     }
                     else
                     {
@@ -100,46 +188,57 @@ public class AICharacterCombatManager : CharacterCombatManager
 
     }
 
-    //Rotation Animation 
-    public void PivotTowardsTarget(AICharacterManager aiCharacter)
+    //Rotatate and Facte Target Using Animations
+    public virtual void PivotTowardsTarget(AICharacterManager aiCharacter)
     {
         if (aiCharacter.isPerformingAction)
             return;
-        if (viewableAngle>=20 && viewableAngle<=60)
+
+        // Right turns
+        if (viewableAngle >= 20 && viewableAngle <= 60)
         {
-            aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Turn Right 45 ", true);
+            aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Turn Right 45", true);
             Debug.Log("45 degree Right");
         }
-        else if (viewableAngle <= -20 && viewableAngle >= -60)
-        {
-            aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Turn Left 45 ", true);
-            Debug.Log("45 degree left");
-
-        }
-        if (viewableAngle >= 61 && viewableAngle <= 110)
+        else if (viewableAngle >= 61 && viewableAngle <= 110)
         {
             aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Turn Right 90", true);
+            Debug.Log("90 degree Right");
+        }
+        else if (viewableAngle >= 111 && viewableAngle <= 160)
+        {
+            aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Turn Right 135", true);
+            Debug.Log("135 degree Right");
+        }
+        else if (viewableAngle >= 161 && viewableAngle <= 180)
+        {
+            aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Turn Right 180", true);
+            Debug.Log("180 degree Right");
+        }
 
+        // Left turns
+        else if (viewableAngle <= -20 && viewableAngle >= -60)
+        {
+            aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Turn Left 45", true);
+            Debug.Log("45 degree Left");
         }
         else if (viewableAngle <= -61 && viewableAngle >= -110)
         {
             aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Turn Left 90", true);
-
+            Debug.Log("90 degree Left");
         }
-
-        if (viewableAngle >= 146 && viewableAngle <= 180)
+        else if (viewableAngle <= -111 && viewableAngle >= -160)
         {
-            aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Turn Right 180", true);
-
+            aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Turn Left 135", true);
+            Debug.Log("135 degree Left");
         }
-        else if (viewableAngle <= -146 && viewableAngle >= -180)
+        else if (viewableAngle <= -161 && viewableAngle >= -180)
         {
             aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Turn Left 180", true);
-
+            Debug.Log("180 degree Left");
         }
-
-
     }
+
 
     public void HandleActionRecovery(AICharacterManager aiCharacter)
     {
@@ -148,6 +247,13 @@ public class AICharacterCombatManager : CharacterCombatManager
             if(!aiCharacter.isPerformingAction)
             {
                 actionRecoveryTimer -= Time.deltaTime;  
+            }
+            else if(aiCharacter.isHoldingArrow)
+            {
+                actionRecoveryTimer -= Time.deltaTime;
+
+
+
             }
 
         }
@@ -190,8 +296,116 @@ public class AICharacterCombatManager : CharacterCombatManager
 
         aiCharacter.transform.rotation = Quaternion.Slerp(aiCharacter.transform.rotation, targetRotation, attackRotationSpeed * Time.deltaTime);
 
-        Debug.Log("Rotate While Attacking");
+        //Debug.Log("Rotate While Attacking");
 
+
+    }
+
+    public void ReleaseArrow()
+    {
+
+        aiCharacter.isHoldingArrow = false;
+
+
+
+
+
+
+
+
+
+        //Animate The Bow
+        //Play Fire Animation
+        //bowAnimator.SetBool("isDrawn", false);
+        //bowAnimator.Play("Bow_Fire");
+        aiCharacter.canMove = false;
+
+        //Projectile we are Firing
+        RangedProjectileItem projectileItem = null;
+
+        switch (currentProjectileBeingUsed)
+        {
+            case ProjectileSlot.Main:
+                projectileItem = aiCharacter.aiCharacterInventoryManager.mainProjectile;
+                break;
+            case ProjectileSlot.Secondary:
+                projectileItem = aiCharacter.aiCharacterInventoryManager.secondaryProjectile;
+                break;
+            default:
+                break;
+        }
+
+        if (projectileItem == null)
+            return;
+
+        if (projectileItem.currentAmmoAmount <=0)
+            return;
+
+        Transform projectileInstantiationLocation;
+        GameObject projectileGameObject;
+        Rigidbody projectileRigidbody;
+        RangedProjectileDamageCollider projectileDamageCollider;
+
+        //Subtract Ammo
+        projectileItem.currentAmmoAmount -= 1;
+
+        projectileInstantiationLocation = aiCharacter.aiCharacterCombatManager.LockOnTransform;
+        projectileGameObject = Instantiate(projectileItem.releaseProjectileModel, projectileInstantiationLocation);
+        projectileDamageCollider = projectileGameObject.GetComponent<RangedProjectileDamageCollider>();
+        projectileRigidbody = projectileGameObject.GetComponent<Rigidbody>();
+
+        //Formula To Set Damage
+        projectileDamageCollider.physicalDamage = 20;
+        projectileDamageCollider.characterShootingProjectile = aiCharacter;
+
+
+
+
+        //Locked And Not Aiming
+        if (aiCharacter.aiCharacterCombatManager.currentTarget != null)
+        {
+            Quaternion arrowRotation = Quaternion.LookRotation(aiCharacter.aiCharacterCombatManager.currentTarget.characterCombatManager.LockOnTransform.position
+                - projectileGameObject.transform.position);
+
+            projectileGameObject.transform.rotation = arrowRotation;
+
+
+        }
+    
+
+
+
+
+
+        //Get All Character Damage Collider and Ignore Self
+
+        Collider[] characterColliders = aiCharacter.GetComponentsInChildren<Collider>();
+        List<Collider> collidersArrowWillIgnore = new List<Collider>();
+
+        foreach (var item in characterColliders)
+            collidersArrowWillIgnore.Add(item);
+
+        foreach (Collider hitBox in collidersArrowWillIgnore)
+            Physics.IgnoreCollision(projectileDamageCollider.damageCollider, hitBox, true);
+
+        projectileRigidbody.AddForce(projectileGameObject.transform.forward* projectileItem.forwardVelocity);
+        projectileGameObject.transform.parent = null;
+
+
+
+
+
+
+
+
+
+
+
+    }
+
+    public void DrawProjectile()
+    {
+        aiCharacter.isHoldingArrow = true;
 
     }
 
@@ -202,4 +416,38 @@ public class AICharacterCombatManager : CharacterCombatManager
 
     }
 
+    public virtual void PerformEvasion()
+    {
+        if(currentTarget==null)
+            return;
+        if(distanceFromTarget>5)
+            return;
+
+        Debug.Log("AI Evaded Attack");
+
+        //Method #1 A.I Simply play Dodge Animation
+        //aiCharacter.isInvulnerable = true;
+        //aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Roll Backward", true);
+
+        //Method #2 A.I Rolls Away From Target
+
+        //aiCharacter.isInvulnerable = true;
+        //aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Roll Backward", true);
+        //Vector3 directionToDodge = -aiCharacter.transform.forward;
+        //directionToDodge.y = 0;
+        //directionToDodge.Normalize();
+
+        //Optionally use Couroutine To Apply this Rotation 
+
+        //aiCharacter.transform.rotation = Quaternion.LookRotation(directionToDodge);
+
+        // //Method #3 Choose a Random Direction And Roll Toward It 
+        aiCharacter.isInvulnerable = true;
+        aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Roll", true);
+        Vector3 directionToDodge = Random.insideUnitSphere.normalized;
+        directionToDodge.y = 0;
+        aiCharacter.transform.rotation = Quaternion.LookRotation(directionToDodge);
+
+
+    }
 }

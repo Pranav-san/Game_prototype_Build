@@ -8,12 +8,15 @@ public class PlayerBodyManager : MonoBehaviour
 
     [Header("Hair game object")]
     [SerializeField] public GameObject hair;
+    [SerializeField] public GameObject[] hairObjects;
     [SerializeField] public GameObject facialHair;
 
     [Header("Male")]
+    public GameObject maleObject;
     [SerializeField] public GameObject maleHead;  //Default Head Model when Unequipping Armor or Outfit
     [SerializeField] public GameObject[] maleBody;//Default UpperBodyModel When Unequipping Armor or Outfit
-    [SerializeField] public GameObject[] maleArms;//Default UpperBodyModel When Unequipping Armor or Outfit(Lower left arm, Left Hand, Lower Right Arm, Right Hand)
+    [SerializeField] public GameObject[] maleUpperArms;//Default UpperBodyModel When Unequipping Armor or Outfit(Lower left arm, Left Hand, Lower Right Arm, Right Hand)
+    [SerializeField] public GameObject[] maleLowerArms;//Default UpperBodyModel When Unequipping Armor or Outfit(Lower left arm, Left Hand, Lower Right Arm, Right Hand)
     [SerializeField] public GameObject[] maleLegs;//Default Hips, Left and Right Leg When Unequipping Armor or Outfit
     [SerializeField] public GameObject[] DefaultUpperBodyCloth; //Vest...Etc
     [SerializeField] public GameObject[] DefaultLowerBodyCloth;//LoinCloth, Briefs..Etc
@@ -24,12 +27,24 @@ public class PlayerBodyManager : MonoBehaviour
     
 
     [Header("Female")]
+    public GameObject feMaleObject;
     [SerializeField] public GameObject femaleHead;
     [SerializeField] public GameObject[] femaleBody;
-    [SerializeField] public GameObject[] femaleArms;
+    [SerializeField] public GameObject[] femaleUpperArms;
+    [SerializeField] public GameObject[] femaleLowerArms;
     [SerializeField] public GameObject[] femaleLegs;
     [SerializeField] public GameObject femaleEyes;
-   
+
+
+    [Header("Mesh Render")]
+    public SkinnedMeshRenderer[] meshRenderers;
+
+    private void Awake()
+    {
+        meshRenderers = GetComponentsInChildren<SkinnedMeshRenderer>();
+    }
+
+
 
     public void EnableHead()
     {
@@ -38,7 +53,7 @@ public class PlayerBodyManager : MonoBehaviour
         //femaleHead.SetActive(true);
 
         //Enable Facial Features
-        maleEyes.SetActive(true);
+        //maleEyes.SetActive(true);
         //femaleEyes.SetActive(true);
 
 
@@ -57,10 +72,11 @@ public class PlayerBodyManager : MonoBehaviour
     }
     public void EnableHair()
     {
-        hair.SetActive(true);
+        //hair.SetActive(true);
     }
     public void DisableHair()
     {
+        if(hair!=null)
         hair.SetActive(false);
     }
     public void DisableFacialHair()
@@ -78,11 +94,23 @@ public class PlayerBodyManager : MonoBehaviour
         {
             model.SetActive(true);
         }
+
+        foreach (var model in femaleBody)
+        {
+            model.SetActive(true);
+        }
+
+
     }
 
     public void DisableBody()
     {
         foreach (var model in maleBody)
+        {
+            model.SetActive(false);
+        }
+
+        foreach (var model in femaleBody)
         {
             model.SetActive(false);
         }
@@ -95,6 +123,15 @@ public class PlayerBodyManager : MonoBehaviour
             model.SetActive(true);
         }
 
+
+
+        foreach (var model in femaleLegs)
+        {
+            model.SetActive(true);
+        }
+
+
+
     }
 
     public void DisableLowerBody()
@@ -104,16 +141,44 @@ public class PlayerBodyManager : MonoBehaviour
             model.SetActive(false);
         }
 
+        foreach (var model in femaleLegs)
+        {
+            model.SetActive(false);
+        }
+
+
+
     }
 
-    public void EnableArms()
+    public void EnableUpperArms()
     {
-        foreach (var model in maleArms)
+        foreach (var model in maleUpperArms)
+        {
+            model.SetActive(true);
+        }
+
+        foreach (var model in femaleUpperArms)
         {
             model.SetActive(true);
         }
 
     }
+
+    public void DisableUpperArms()
+    {
+        foreach (var model in maleUpperArms)
+        {
+            model.SetActive(false);
+        }
+
+        foreach (var model in femaleUpperArms)
+        {
+            model.SetActive(false);
+        }
+
+    }
+
+   
 
     public void EnableDefaultUpperBodyClothes()
     {
@@ -152,6 +217,59 @@ public class PlayerBodyManager : MonoBehaviour
         }
 
     }
+
+    public void ToggleBodyType(bool isMale)
+    {
+        if (isMale)
+        {
+            maleObject.SetActive(true);
+            feMaleObject.SetActive(false);
+
+        }
+        else
+        {
+            maleObject.SetActive(false);
+            feMaleObject.SetActive(true);
+        }
+    }
+
+    public void ToggleHairType(int hairType)
+    {
+
+        //Disable All Hair Objects
+        for (int i = 0; i < hairObjects.Length; i++)
+        {
+            hairObjects[i].SetActive(false);
+
+        }
+
+        //Enable Choosen Hair
+        hairObjects[hairType].SetActive(true);
+
+
+    }
+
+    public void TogglePlayerObject(bool status)
+    {
+        if (status)
+        {
+            for(int i = 0;meshRenderers.Length > 0; i++)
+            {
+                meshRenderers[i].enabled =true;
+            }
+        }
+        else
+        {
+            for (int i = 0; meshRenderers.Length > 0; i++)
+            {
+                meshRenderers[i].enabled =false;
+            }
+
+        }
+    }
+
+
+
 
 
 }

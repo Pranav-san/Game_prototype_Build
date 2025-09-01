@@ -18,7 +18,7 @@ public enum CharacterSlot
     CharacterSlot_08,
     CharacterSlot_09,
     CharacterSlot_10,
-    N0_SLOT
+    NO_SLOT
     
 }
 public enum WeaponModelSlot{
@@ -69,16 +69,20 @@ public enum EquipmentType
 {
     RightWeapon01,//0
     RightWeapon02,//1
-    RightWeapon03,//2
+    
 
-    leftWeapon01,//3
-    leftWeapon02,//4
-    leftWeapon03,//5
+    leftWeapon01,//2
+    leftWeapon02,//3
 
-    Head,        //6
-    Body,        //7
-    Leg,         //8
-    Hand,        //9
+    TwoHandWeapon,//4
+
+    Head,        //5
+    Body,        //6
+    Leg,         //7
+    Hand,        //8
+
+    QuickSlot01,//9
+    QuickSlot02,//10
 }
 
 public enum EquipmentModelType
@@ -129,13 +133,24 @@ public enum WeapomClass
     spear,
     Bow,
     Fist,
-    Shield
+    Shield,
+    Gun,
+}
+
+public enum WeaponWieldingType
+{
+    OneHand,
+    TwoHand,
 }
 
 public enum ProjectileClass
 {
     Arrow,
-    Bolt
+    Bolt, 
+    HandgunAmmo,
+    ShotgunShells,
+
+
 
 }
 
@@ -144,6 +159,13 @@ public enum ProjectileSlot
     Main,
     Secondary,
 
+}
+
+public enum EnemyType
+{
+    melee,
+    Ranged,
+    exploder,
 }
 
 
@@ -160,6 +182,51 @@ public enum IdleStateMode
 {
     Idle,
     Patrol
+}
+
+public enum InventoryCategory
+{
+    All,
+    Weapons,
+    Armor,
+    Consumables
+}
+
+//Quests
+
+public enum QuestObjective
+{
+    Kill,
+    collectItem,
+    Talk,
+}
+
+
+//Puzzles
+
+public enum PasscodeButtonType
+{
+    Digit0,
+    Digit1,
+    Digit2,
+    Digit3,
+    Digit4,
+    Digit5,
+    Digit6,
+    Digit7,
+    Digit8,
+    Digit9,
+}
+
+
+public enum SurfaceType
+{
+    Default,
+    Snow,
+    Grass,
+    Floor,
+    Wood,
+    Metal,
 }
 
 

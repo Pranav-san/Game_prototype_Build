@@ -18,6 +18,9 @@ public class WorldItemDatabase : MonoBehaviour
     [Header("projectiles")]
     [SerializeField] List<RangedProjectileItem> projectiles = new List<RangedProjectileItem>();
 
+    [Header("QuickSlot items")]
+    [SerializeField] List<QuickSlotItem> quickSlotItems = new List<QuickSlotItem>();
+
     [Header("Head Equipment")]
     [SerializeField] List<HeadEquipmentItem> headEquipment = new List<HeadEquipmentItem>();
 
@@ -29,6 +32,11 @@ public class WorldItemDatabase : MonoBehaviour
 
     [Header("Hand Equipment")]
     [SerializeField] List<HandEquipmentItem> handEquipment = new List<HandEquipmentItem>();
+
+    [Header("Key item")]
+    [SerializeField] List<KeyItem> keyItems = new List<KeyItem>();
+
+
 
     //List Of EveryItem We Have In The Game
     private List<Item>items = new List<Item>();
@@ -84,6 +92,19 @@ public class WorldItemDatabase : MonoBehaviour
 
         }
 
+        foreach (var item in quickSlotItems)
+        {
+            items.Add(item);
+
+        }
+
+        foreach (var item in keyItems)
+        {
+            items.Add(item);
+
+        }
+
+        //Assign All Items a Unique ID
         for (int i=0; i<items.Count; i++)
         {
             items[i].itemID = i;
@@ -99,6 +120,12 @@ public class WorldItemDatabase : MonoBehaviour
     public SpellItem GetSpellByID(int ID)
     {
         return spells.FirstOrDefault(item => item.itemID == ID);
+
+    }
+
+    public QuickSlotItem GetQuickSlotItemByID(int ID)
+    {
+        return quickSlotItems.FirstOrDefault(item => item.itemID == ID);
 
     }
 
@@ -126,6 +153,30 @@ public class WorldItemDatabase : MonoBehaviour
     public HandEquipmentItem GetHandEquipmentByID(int ID)
     {
         return handEquipment.FirstOrDefault(equipment => equipment.itemID == ID);
+
+    }
+
+
+    //ITEM Serialization
+
+    public WeaponItem GetWeaponFromSerialzedData(SerializableWeapon serializableWeapon)
+    {
+        WeaponItem weapon = null;
+        
+
+        if(GetWeaponByID(serializableWeapon.itemID))
+            weapon = Instantiate(GetWeaponByID(serializableWeapon.itemID));
+
+        if (weapon == null)
+            return Instantiate(unArmedWeapon);
+        else
+        {
+            return weapon;
+        }
+
+        
+
+
 
     }
 

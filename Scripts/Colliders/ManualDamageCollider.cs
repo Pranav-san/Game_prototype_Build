@@ -7,6 +7,7 @@ public class ManualDamageCollider : DamageCollider
 
     AICharacterManager characterCausingDamage;
 
+
     protected override void Awake()
     {
         base.Awake();

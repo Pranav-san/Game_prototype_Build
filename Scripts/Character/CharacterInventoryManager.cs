@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class CharacterInventoryManager : MonoBehaviour
 {
+    
     protected virtual void  Awake()
     {
 

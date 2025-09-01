@@ -21,7 +21,31 @@ public class WorldSoundFXManager : MonoBehaviour
 
     [Header("Action Sound Fx")]
     public AudioClip rollSfx;
-    public AudioClip footstepSfx;
+    public AudioClip stanceBreakSfx;
+    public AudioClip criticalStrikeSfx;
+
+    [Header("Foot Steps")]
+    public AudioClip[] defaultfootsteps;
+    public AudioClip[] snowfootsteps;
+    public AudioClip[] woodfootsteps;
+    public AudioClip[] metalfootsteps;
+    public AudioClip[] floorfootsteps;
+    public AudioClip[] grassfootsteps;
+
+
+    [Header("Door")]
+    public AudioClip doorPassCodeButtonPressetSfx;
+    public AudioClip wrongPassCodeSfx;
+    public AudioClip correctPassCodeSfx;
+
+    public AudioClip useKeySfx;
+
+
+    [Header("Menu Music")]
+    public AudioClip titleScreenMusic; 
+
+
+
 
 
 
@@ -43,31 +67,56 @@ public class WorldSoundFXManager : MonoBehaviour
         audioSource = GetComponent<AudioSource>();
         DontDestroyOnLoad(gameObject);
 
-        PlayStormSfx();
+        
+
+
     }
 
     
 
-    public void PlayFootstep()
+   
+
+    public void PlayTitleScreenMusic()
     {
-        if (footstepSfx != null)
+        if (titleScreenMusic != null)
         {
-            audioSource.PlayOneShot(footstepSfx);
+            audioSource.clip = titleScreenMusic;
+            audioSource.loop = true;
+            audioSource.Play();
         }
+
     }
 
-
-    public void PlayStormSfx()
+    public void StopTitleScreenMusic()
     {
-        if (stormSfx != null)
+        if (titleScreenMusic != null)
         {
-            audioSource.clip = stormSfx; // Assign the storm sound effect
+            audioSource.clip = titleScreenMusic; 
             audioSource.loop = true; // Set it to loop if the storm effect needs to play continuously
-            audioSource.Play(); // Play the storm SFX
+            audioSource.Stop(); 
         }
 
     }
 
+    public void playDoorUnlockButtonPressed()
+    {
+        audioSource.PlayOneShot(doorPassCodeButtonPressetSfx);
+    }
+
+    public void PlayWrongPasscodeSfx()
+    {
+        audioSource.PlayOneShot(wrongPassCodeSfx);
+    }
+
+    public void PlayCorrectPasscodeSfx()
+    {
+        audioSource.PlayOneShot(correctPassCodeSfx);
+    }
+
+    public void PlayUseKeySfx()
+    {
+        audioSource.PlayOneShot(useKeySfx);
+    }
     public AudioClip ChooseRandomSoundFxFromArray(AudioClip[] array)
     {
         int index = Random.Range(0, array.Length);

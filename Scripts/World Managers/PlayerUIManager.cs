@@ -9,9 +9,20 @@ public class PlayerUIManager : MonoBehaviour
     public PlayerUIHUDManager playerUIHUDManager;
     [HideInInspector]public PlayerUICharacterMenuManager playerUICharacterMenuManager;
     [HideInInspector]public PlayerUIEquipmentManager playerUIEquipmentManager;
+    [HideInInspector]public PlayerUIInventoryManager playerUIInventoryManager;
     [HideInInspector]public PlayerUISiteOfGraceManager playerUISiteOfGraceManager;
     [HideInInspector]public PlayerUITeleportLocationManager playerUITeleportLocationManager;
     [SerializeField] public PlayerStatsManager playerStatsManager;
+    [HideInInspector] public PlayerUILoadingScreenManager playerUILoadingScreenManager;
+
+    [Header("Puzzles")]
+    [SerializeField]public  DoorLockManager doorLockManager;
+
+
+    [Header("Lock-On UI")]
+    public RectTransform lockOnDot; // Assign in inspector
+    private Transform currentLockOnTarget;
+
 
 
     //[SerializeField] UI_StatBar staminaBar;
@@ -40,6 +51,9 @@ public class PlayerUIManager : MonoBehaviour
         playerUIEquipmentManager = GetComponentInChildren<PlayerUIEquipmentManager>();
         playerUISiteOfGraceManager = GetComponentInChildren<PlayerUISiteOfGraceManager>();
         playerUITeleportLocationManager = GetComponentInChildren<PlayerUITeleportLocationManager>();
+        playerUILoadingScreenManager = GetComponentInChildren<PlayerUILoadingScreenManager>();
+        playerUIInventoryManager = GetComponentInChildren<PlayerUIInventoryManager>();
+        doorLockManager = GetComponentInChildren<DoorLockManager>();
        
     }
 
@@ -59,7 +73,47 @@ public class PlayerUIManager : MonoBehaviour
         playerUIHUDManager.staminaBar.SetStat(maxStamina);
     }
 
-    
+    public void SetLockOnTarget(Transform target)
+    {
+        currentLockOnTarget = target;
+
+        if (target != null)
+        {
+            // Immediately place and enable the marker
+            lockOnDot.position = Camera.main.WorldToScreenPoint(target.position);
+            lockOnDot.gameObject.SetActive(true);
+        }
+        else
+        {
+            // Clear and hide
+            lockOnDot.gameObject.SetActive(false);
+        }
+    }
+
+    public void UpdateLockOnDotPosition()
+    {
+        if (currentLockOnTarget == null) return;
+
+        Vector3 targetScreenPos = Camera.main.WorldToScreenPoint(currentLockOnTarget.position);
+
+        if (targetScreenPos.z < 0)
+        {
+            lockOnDot.gameObject.SetActive(false);
+            return;
+        }
+
+        lockOnDot.gameObject.SetActive(true);
+
+        // Smooth but tight follow
+        float smoothSpeed = 20f; // higher = snappier, lower = smoother
+        lockOnDot.position = Vector3.Lerp(
+            lockOnDot.position,
+            targetScreenPos,
+            Time.deltaTime * smoothSpeed
+        );
+    }
+
+
 
     // Health Bar
     public void SetNewHealthValue(int oldValue, float newValue)
@@ -91,12 +145,21 @@ public class PlayerUIManager : MonoBehaviour
     {
         playerUICharacterMenuManager.CloseCharacterMenu();
         playerUIEquipmentManager.CloseEquipmentManagerMenu();
-        playerUICharacterMenuManager.CloseSurvivalWheel();
+        playerUIInventoryManager.CloseInventoryManagermenu();
         playerUISiteOfGraceManager.CloseSiteOfGraceManagerMenu();
         playerUITeleportLocationManager.CloseTeleportLocationManagerMenu();
+        doorLockManager.CloseDoorLockUI();
+
+      
 
 
     }
 
-   
+    public void RefreshAllUIAfterItemUse()
+    {
+        playerUIHUDManager.SetQuickSlotItemQuickSlotIcon(playerStatsManager.player.playerInventoryManager.currentQuickSlotItemID);
+        playerUIEquipmentManager.RefreshWeaponSlotsIcons();
+    }
+
+
 }

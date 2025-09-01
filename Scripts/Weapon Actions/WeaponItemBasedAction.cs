@@ -13,13 +13,13 @@ public class WeaponItemBasedAction : ScriptableObject
 
     public virtual void AttemptToPerformAction(playerManager playerPerformingAction, WeaponItem weaponPerformingAction)
     {
-        playerPerformingAction.isUsingRightHand = true;
+       
 
         playerPerformingAction.playerCombatManager.currentWeaponBeingUsed = weaponPerformingAction;
 
 
         
-        Debug.Log("The Action Has Fired");
+        //Debug.Log("The Action Has Fired");
 
 
 

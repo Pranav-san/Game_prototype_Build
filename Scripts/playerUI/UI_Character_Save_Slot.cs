@@ -14,11 +14,18 @@ public class UI_Character_Save_Slot : MonoBehaviour
     public TextMeshProUGUI characterName;
     public TextMeshProUGUI timePlayed;
 
+    
+
     private void OnEnable()
     {
         LoadSaveSlots();
         
     }
+
+
+   
+
+
     private void LoadSaveSlots()
     {
         saveFileWriter = new SaveFileDataWriter();
@@ -218,9 +225,33 @@ public class UI_Character_Save_Slot : MonoBehaviour
         WorldSaveGameManager.instance.LoadGame();
         
     }
+
+
     public void SelectCurrentSlot()
     {
         TitleScreenManager.Instance.SelectCharacterSlot(characterSlot);
+       
+    }
+
+   
+
+    public void OnSlotClicked()
+    {
+        CharacterSlot clickedSlot = characterSlot;
+
+        // If clicked slot is already the current selected slot load game
+        if (TitleScreenManager.Instance.currentSelectedCharacterSlot == clickedSlot)
+        {
+            LoadGameFromCharacterSlots();
+            TitleScreenManager.Instance.CloseLoadGameMenu();
+
+
+        }
+        else
+        {
+            // First click – update currentSelectedCharacterSlot
+            TitleScreenManager.Instance.currentSelectedCharacterSlot = clickedSlot;
+        }
     }
 
 }

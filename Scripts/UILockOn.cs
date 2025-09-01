@@ -16,8 +16,7 @@ public class UILockOn : MonoBehaviour
 
     public void EnablelockOn()
     {
-        if (!PlayerCamera.instance.FPCameraSwitch)
-        {
+       
 
             if (playerManager.instance.playerCombatManager.isLockedOn)
             {
@@ -33,12 +32,8 @@ public class UILockOn : MonoBehaviour
                 lockon.SetActive(false);
 
             }
-        }
-        else
-        {
-            lockon.SetActive(false);
-            lockoff.SetActive(false);
-        }
+        
+       
        
     }
     

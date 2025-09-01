@@ -7,6 +7,9 @@ using UnityEngine.AI;
 
 public class CombatStanceState : AIState
 {
+    [Header("Enemy Type")]
+    EnemyType enemyType;
+
     [Header("AI Character Attacks")]
     public List<AICharacterAttackAction> aiCharacterAttacks;// A List of All Possible Attacks This Character can do
 
@@ -14,6 +17,20 @@ public class CombatStanceState : AIState
     private AICharacterAttackAction choosenAttack;
     private AICharacterAttackAction previousAttack;
     protected bool hasAttack = false;
+
+    [Header("Delay Timers")]
+    private float attackDecisionTimer = 0f;
+    private float attackDecisionInterval = 0.2f;
+
+    private float navMeshUpdateTimer = 0f;
+    private float navMeshUpdateInterval = 0.5f;
+
+    [Header("Ranged Attack Setting")]
+    [SerializeField] bool hasAmmoLoaded = false;
+    [SerializeField] float minimumRangedDistanceEngageMentDistance = 4;
+    [SerializeField] float MaximumRangedDistanceEngageMentDistance = 9;
+
+
 
 
     [Header("combos")]
@@ -32,11 +49,33 @@ public class CombatStanceState : AIState
     private bool hasChoosenCirclePath = false;
     [SerializeField] float strafeMoveAmount = 0;
 
+    [Header("Evasion")]
+    [SerializeField] bool canEvade = false;
+    [SerializeField] int percentageofTimeWillEvade = 75;
+    private bool hasEvaded = false;
+    private bool hasRolledorEvasionChance = false;
+    private bool willEvadeDuringCombatRotation = false;
+
+
+
 
 
 
     public override AIState Tick(AICharacterManager aiCharacter)
     {
+
+        if (aiCharacter.enemyType == EnemyType.Ranged)
+        {
+            return ProcessArcheryCombatStyle(aiCharacter);
+        }
+
+        if(aiCharacter.enemyType == EnemyType.exploder)
+        {
+            return ProcessExploderCombatStyle(aiCharacter);
+        }
+
+        aiCharacter.characterController.Move(Vector3.zero);
+
         if (aiCharacter.isPerformingAction)
             return this;
 
@@ -59,45 +98,77 @@ public class CombatStanceState : AIState
 
 
         //If you want your Ai character to turn and Face towards its target when its outside of its FOV
-       
+
 
         //Rotate to Face our target
         aiCharacter.aiCharacterCombatManager.RotateTowardsAgent(aiCharacter);
 
         //If Target is No Longer Present, Switch to Idle State
-        if(aiCharacter.aiCharacterCombatManager.currentTarget == null)
+        if (aiCharacter.aiCharacterCombatManager.currentTarget == null)
         {
-            SwitchState(aiCharacter, aiCharacter.idle);
+            return SwitchState(aiCharacter, aiCharacter.idle);
         }
 
-        if(willCircleTarget)
+        if (willCircleTarget)
             SetCirclePath(aiCharacter);
 
-        //If we dont have an Attack get one
-        if(!hasAttack)
+
+        if (canEvade && !hasRolledorEvasionChance)
         {
-            GetNewAttack(aiCharacter);
+            hasRolledorEvasionChance = true;
+            willEvadeDuringCombatRotation = RollForOutComeChance(percentageofTimeWillEvade);
 
         }
-        else
-        {
 
+        if (willEvadeDuringCombatRotation && aiCharacter.aiCharacterCombatManager.currentTarget.isAttacking && !hasEvaded)
+        {
+            hasEvaded = true;
+            aiCharacter.aiCharacterCombatManager.PerformEvasion();
+
+        }
+        //If we dont have an Attack get one
+        //attackDecisionTimer += Time.deltaTime;
+
+        //if (!hasAttack && attackDecisionTimer >= attackDecisionInterval)
+
+        if (hasAttack)
+        {
+            if (aiCharacter.aiCharacterCombatManager.currentTarget.isPerformingAction)
+                return this;
+
+
+
+
+            aiCharacter.navMeshAgent.enabled = false;
             aiCharacter.attackState.currentAttack = choosenAttack;
 
             return SwitchState(aiCharacter, aiCharacter.attackState);
 
 
         }
-
-        //If we are outside of its Combat EngagementDistance, switch to Pursue Target State
-        if(aiCharacter.aiCharacterCombatManager.distanceFromTarget > maximumEngagementDistance)
+        else
         {
-            return SwitchState(aiCharacter, aiCharacter.pursueTarget);  
+            GetNewAttack(aiCharacter);
+            attackDecisionTimer = 0f;
+
         }
 
-        NavMeshPath path = new NavMeshPath();
-        aiCharacter.navMeshAgent.CalculatePath(aiCharacter.aiCharacterCombatManager.currentTarget.transform.position, path);
-        aiCharacter.navMeshAgent.SetPath(path);
+        //If we are outside of its Combat EngagementDistance, switch to Pursue Target State
+        if (aiCharacter.aiCharacterCombatManager.distanceFromTarget > maximumEngagementDistance)
+        {
+            return SwitchState(aiCharacter, aiCharacter.pursueTarget);
+        }
+
+        //navMeshUpdateTimer += Time.deltaTime;
+
+        //if (navMeshUpdateTimer >= navMeshUpdateInterval)
+        {
+            NavMeshPath path = new NavMeshPath();
+            aiCharacter.navMeshAgent.CalculatePath(aiCharacter.aiCharacterCombatManager.currentTarget.transform.position, path);
+            aiCharacter.navMeshAgent.SetPath(path);
+
+            navMeshUpdateTimer = 0f;
+        }
         //Performant 
         //May Cause Frame Drop
 
@@ -105,15 +176,214 @@ public class CombatStanceState : AIState
 
     }
 
+
+    private AIState ProcessArcheryCombatStyle(AICharacterManager aiCharacter)
+    {
+        aiCharacter.characterController.Move(Vector3.zero);
+
+        if (aiCharacter.isPerformingAction)
+            return this;
+
+        if (!aiCharacter.navMeshAgent.enabled)
+            aiCharacter.navMeshAgent.enabled = true;
+
+        if (enablePivot)
+        {
+            if (!aiCharacter.isMoving)
+            {
+                if (aiCharacter.aiCharacterCombatManager.viewableAngle<-30 || aiCharacter.aiCharacterCombatManager.viewableAngle > 30)
+                {
+                    aiCharacter.aiCharacterCombatManager.PivotTowardsTarget(aiCharacter);
+                }
+            }
+
+        }
+
+
+
+
+        //If you want your Ai character to turn and Face towards its target when its outside of its FOV
+
+
+        //Rotate to Face our target
+        aiCharacter.aiCharacterCombatManager.RotateTowardsAgent(aiCharacter);
+
+        //If Target is No Longer Present, Switch to Idle State
+        if (aiCharacter.aiCharacterCombatManager.currentTarget == null)
+        {
+            return SwitchState(aiCharacter, aiCharacter.idle);
+        }
+
+        if (willCircleTarget)
+            SetCirclePath(aiCharacter);
+
+        //If we dont have an Attack get one
+
+
+        if (!hasAmmoLoaded)
+        {
+            //Draw Arrow Projectile
+            DrawArrow(aiCharacter);
+            //Aim At Target before We Fire
+            AimAtTargetBeforeFiring(aiCharacter);
+            hasAmmoLoaded = true;
+
+        }
+
+        if (hasAmmoLoaded)
+        {
+            if (aiCharacter.aiCharacterCombatManager.currentTarget.isPerformingAction)
+                return this;
+
+
+
+
+            aiCharacter.navMeshAgent.enabled = false;
+
+            return SwitchState(aiCharacter, aiCharacter.attackState);
+
+
+        }
+
+
+
+        //If we are outside of its Combat EngagementDistance, switch to Pursue Target State
+        if (aiCharacter.aiCharacterCombatManager.distanceFromTarget > maximumEngagementDistance)
+        {
+            return SwitchState(aiCharacter, aiCharacter.pursueTarget);
+        }
+
+        //navMeshUpdateTimer += Time.deltaTime;
+
+        //if (navMeshUpdateTimer >= navMeshUpdateInterval)
+        {
+            NavMeshPath path = new NavMeshPath();
+            aiCharacter.navMeshAgent.CalculatePath(aiCharacter.aiCharacterCombatManager.currentTarget.transform.position, path);
+            aiCharacter.navMeshAgent.SetPath(path);
+
+            navMeshUpdateTimer = 0f;
+        }
+        //Performant 
+        //May Cause Frame Drop
+
+        return this;
+
+    }
+
+    private AIState ProcessExploderCombatStyle(AICharacterManager aiCharacter)
+    {
+        aiCharacter.characterController.Move(Vector3.zero);
+
+        if (aiCharacter.isPerformingAction)
+            return this;
+
+        if (!aiCharacter.navMeshAgent.enabled)
+            aiCharacter.navMeshAgent.enabled = true;
+
+        if (enablePivot)
+        {
+            if (!aiCharacter.isMoving)
+            {
+                if (aiCharacter.aiCharacterCombatManager.viewableAngle<-30 || aiCharacter.aiCharacterCombatManager.viewableAngle > 30)
+                {
+                    aiCharacter.aiCharacterCombatManager.PivotTowardsTarget(aiCharacter);
+                }
+            }
+
+        }
+
+
+
+
+        //If you want your Ai character to turn and Face towards its target when its outside of its FOV
+
+
+        //Rotate to Face our target
+        aiCharacter.aiCharacterCombatManager.RotateTowardsAgent(aiCharacter);
+
+        //If Target is No Longer Present, Switch to Idle State
+        if (aiCharacter.aiCharacterCombatManager.currentTarget == null)
+        {
+            return SwitchState(aiCharacter, aiCharacter.idle);
+        }
+
+        if (willCircleTarget)
+            SetCirclePath(aiCharacter);
+
+
+        if (canEvade && !hasRolledorEvasionChance)
+        {
+            hasRolledorEvasionChance = true;
+            willEvadeDuringCombatRotation = RollForOutComeChance(percentageofTimeWillEvade);
+
+        }
+
+        if (willEvadeDuringCombatRotation && aiCharacter.aiCharacterCombatManager.currentTarget.isAttacking && !hasEvaded)
+        {
+            hasEvaded = true;
+            aiCharacter.aiCharacterCombatManager.PerformEvasion();
+
+        }
+        //If we dont have an Attack get one
+        //attackDecisionTimer += Time.deltaTime;
+
+        //if (!hasAttack && attackDecisionTimer >= attackDecisionInterval)
+
+        if (hasAttack)
+        {
+            if (aiCharacter.aiCharacterCombatManager.currentTarget.isPerformingAction)
+                return this;
+
+
+
+
+            aiCharacter.navMeshAgent.enabled = false;
+            aiCharacter.attackState.currentAttack = choosenAttack;
+
+            return SwitchState(aiCharacter, aiCharacter.attackState);
+
+
+        }
+        else
+        {
+            GetNewAttack(aiCharacter);
+            attackDecisionTimer = 0f;
+
+        }
+
+        //If we are outside of its Combat EngagementDistance, switch to Pursue Target State
+        if (aiCharacter.aiCharacterCombatManager.distanceFromTarget > maximumEngagementDistance)
+        {
+            return SwitchState(aiCharacter, aiCharacter.pursueTarget);
+        }
+
+        //navMeshUpdateTimer += Time.deltaTime;
+
+        //if (navMeshUpdateTimer >= navMeshUpdateInterval)
+        {
+            NavMeshPath path = new NavMeshPath();
+            aiCharacter.navMeshAgent.CalculatePath(aiCharacter.aiCharacterCombatManager.currentTarget.transform.position, path);
+            aiCharacter.navMeshAgent.SetPath(path);
+
+            navMeshUpdateTimer = 0f;
+        }
+        //Performant 
+        //May Cause Frame Drop
+
+        return this;
+    }
+
+
+
     protected virtual void GetNewAttack(AICharacterManager aiCharacter)
     {
 
         potentialAttacks = new List<AICharacterAttackAction>();
 
-        foreach(var potentialAttack in aiCharacterAttacks)
+        foreach (var potentialAttack in aiCharacterAttacks)
         {
             //If we are Too close for this Attack, Check the next one
-            if(potentialAttack.minimumAttackDistance > aiCharacter.aiCharacterCombatManager.distanceFromTarget)
+            if (potentialAttack.minimumAttackDistance > aiCharacter.aiCharacterCombatManager.distanceFromTarget)
             {
                 continue;
             }
@@ -123,7 +393,7 @@ public class CombatStanceState : AIState
                 continue;
             }
             //If the Target is outside of the MINIMUM FOV for this Attack, Check the Next Attack
-            if(potentialAttack.minimumAttackAngle > aiCharacter.aiCharacterCombatManager.viewableAngle)
+            if (potentialAttack.minimumAttackAngle > aiCharacter.aiCharacterCombatManager.viewableAngle)
                 continue;
 
             //If the Target is outside of the MAXIMUM FOV for this Attack, Check the Next Attack
@@ -139,7 +409,7 @@ public class CombatStanceState : AIState
 
         var totalWeight = 0;
 
-        foreach(var attack in potentialAttacks)
+        foreach (var attack in potentialAttacks)
         {
             totalWeight += attack.attackWeight;
 
@@ -182,19 +452,24 @@ public class CombatStanceState : AIState
 
     protected override void ResetStateFlags(AICharacterManager aiCharacter)
     {
-        base.ResetStateFlags(aiCharacter);
-        
+
         hasAttack = false;
         hasRolledForComboChance = false;
+        hasRolledorEvasionChance = false;
+        hasEvaded= false;
         strafeMoveAmount = 0;
         hasChoosenCirclePath = false;
-   
+        hasAmmoLoaded = false;
+
+        attackDecisionTimer = 0f;
+        navMeshUpdateTimer = 0f;
+
     }
 
     protected virtual void SetCirclePath(AICharacterManager aiCharacter)
     {
 
-        if(Physics.CheckSphere(aiCharacter.aiCharacterCombatManager.LockOnTransform.position, aiCharacter.characterController.radius+ 0.25f, WorldUtilityManager.Instance.GetEnviroLayer()))
+        if (Physics.CheckSphere(aiCharacter.aiCharacterCombatManager.LockOnTransform.position, aiCharacter.characterController.radius+ 0.25f, WorldUtilityManager.Instance.GetEnviroLayer()))
         {
             //Stop Strafing/Circling Because We've Hit Something, Instead path Towards Enemy
             Debug.Log("AI Colliding with something, Ended Strafe");
@@ -219,19 +494,59 @@ public class CombatStanceState : AIState
 
         int leftOrRightIndex = Random.Range(0, 100);
 
-        if(leftOrRightIndex >= 60)
+        if (leftOrRightIndex >= 60)
         {
             //Left
             strafeMoveAmount = -0.5f;
-            Debug.Log("Chosen strafe direction: " + strafeMoveAmount);
+            //Debug.Log("Chosen strafe direction: " + strafeMoveAmount);
         }
 
         else
         {
             //Right
             strafeMoveAmount = 0.5f;
-            Debug.Log("Chosen strafe direction: " + strafeMoveAmount);
+            //Debug.Log("Chosen strafe direction: " + strafeMoveAmount);
         }
+
+
+    }
+
+
+    private void DrawArrow(AICharacterManager aiCharacter)
+    {
+        if (aiCharacter.isPerformingAction)
+            return;
+
+        hasAmmoLoaded = true;
+        aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Bow_Draw", true, true, true);
+        aiCharacter.isPerformingAction = true;
+        aiCharacter.animator.SetBool("isHoldingArrow", true);
+        aiCharacter.isHoldingArrow = true;
+
+    }
+
+    public void ResetAmmoAfterFiring()
+    {
+        hasAmmoLoaded = false;
+        hasAttack = false;
+
+    }
+
+    private void AimAtTargetBeforeFiring(AICharacterManager aiCharacter)
+    {
+        float timeUntilAmmoIsShotAtTarget = Random.Range(aiCharacter.minimumTimeToAimAtTarget, aiCharacter.maximunTimeToAimAtTarget);
+        aiCharacter.aiCharacterCombatManager.actionRecoveryTimer = timeUntilAmmoIsShotAtTarget;
+
+
+
+
+    }
+
+    public void ResetStatemachine(AICharacterManager aiCharacter)
+    {
+        ResetStateFlags(aiCharacter);
+
+
 
 
     }

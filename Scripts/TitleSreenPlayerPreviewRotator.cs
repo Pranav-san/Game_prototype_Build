@@ -13,10 +13,17 @@ public class TitleSreenPlayerPreviewRotator : MonoBehaviour
     [SerializeField] private float horizontalInput;
     [SerializeField]private float rotationSpeed;
 
+    private void Start()
+    {
+        transform.position =  WorldSaveGameManager.instance.player.defaultPlayerposition;
+    }
+
     private void OnEnable()
     {
         if (playerControls == null)
         {
+           
+            
             playerControls = new PlayerControls2();
             playerControls.PlayerCamera.Movement.performed+=i => cameraInput =i.ReadValue<Vector2>();
         }

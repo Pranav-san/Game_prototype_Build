@@ -14,7 +14,18 @@ public class CharacterStatsManager : MonoBehaviour
     public int currentHealth = 100;
 
     public CharacterManager character;
-    public UI_Character_HP_Bar uI_Character_HP_Bar;
+    public playerManager player;
+
+    public UI_StatBar uI_Character_HP_Bar;
+    public AIHealthUI AIHealthUI;
+
+    [Header("Poise")]
+    public float totalPoiseDamage; //How Much Poise damage We have Taken
+    public float offensivePoiseBonus; //The Poise Bonus Gained From Using Weapons
+    public float basePoiseDefense; //The Poise bonus Gained From armor/talisman
+    public float defaultPoiseResetTimer = 8; // the time it takes for poise damage To reset (must not be Hit in the time or it will reset)
+    public float poiseResetTimer = 0;
+    
 
     [Header("Blocking Absorption")]
     public float blockingPhysicalAbsorption;
@@ -35,12 +46,16 @@ public class CharacterStatsManager : MonoBehaviour
 
     [Header("Runes")]
     public int runesDroppedOnDeath = 50;
+    public CharacterManager lastAttacker;
 
 
     protected virtual void Awake()
     {
         character = GetComponent<CharacterManager>();
+        player = GetComponent<playerManager>();
+
         uI_Character_HP_Bar = GetComponentInChildren<UI_Character_HP_Bar>();
+        AIHealthUI = GetComponentInChildren<AIHealthUI>();
     }
 
     
@@ -73,13 +88,14 @@ public class CharacterStatsManager : MonoBehaviour
     }
     
     
-    void Update()
+    protected virtual void Update()
     {
         if (currentStamina < maxStamina)
         {
-            RegenerateStamina(10);
+            RegenerateStamina(45);
         }
 
+        HandlePoiseResetTimer();    
         
 
     }
@@ -90,6 +106,8 @@ public class CharacterStatsManager : MonoBehaviour
         {
             isDead = true;
             StartCoroutine(character.ProcessDeathEvent());
+
+            
             
             
         }
@@ -110,17 +128,12 @@ public class CharacterStatsManager : MonoBehaviour
 
 
         //Ai Character Hp bar 
-        if (uI_Character_HP_Bar != null)
+        if (AIHealthUI != null && !isDead)
         {
-            if (!isDead)
-            {
-                uI_Character_HP_Bar.SetStat(currentHealth);
-
-            }
-           
+            AIHealthUI.OnHealthChanged(oldHealth, currentHealth);
         }
 
-        //Check whether its player or not before updating Player Hp BaR
+        //Check whether its character or not before updating Player Hp BaR
 
         if (character is playerManager)  
         {
@@ -151,8 +164,21 @@ public class CharacterStatsManager : MonoBehaviour
 
     public void RegenerateStamina(float amountPerSecond)
     {
+        PlayerUIManager.instance.UpdateStaminaBar(Mathf.RoundToInt(currentStamina));
+
+        if (player.isAttacking)
+            return;
+
+        if (player.isPerformingAction)
+            return;
+       
+
+        if (player.isSprinting)
+            return ;
+
         if (currentStamina < maxStamina)
         {
+
             currentStamina += amountPerSecond * Time.deltaTime;
             if (currentStamina > maxStamina)
             {
@@ -160,6 +186,19 @@ public class CharacterStatsManager : MonoBehaviour
             }
             PlayerUIManager.instance.UpdateStaminaBar(Mathf.RoundToInt(currentStamina));
             PlayerInputManager.Instance.ForceStateUpdate();
+        }
+    }
+
+
+    protected virtual void HandlePoiseResetTimer()
+    {
+        if (poiseResetTimer>0)
+        {
+            poiseResetTimer -= Time.deltaTime;
+        }
+        else
+        {
+            totalPoiseDamage = 0;
         }
     }
 }

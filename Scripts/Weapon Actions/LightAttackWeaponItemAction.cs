@@ -17,6 +17,12 @@ public class LightAttackWeaponItemAction : WeaponItemBasedAction
 
         playerPerformingAction.isAttacking = true;
 
+        playerPerformingAction.isUsingRightHand = true;
+
+        playerPerformingAction.playerCombatManager.AttemptCriticalAttack();
+
+        if(playerPerformingAction.isPerformingCriticalAttack)
+            return;
 
         PerformLightAttack(playerPerformingAction, weaponPerformingAction);
     }
@@ -27,7 +33,7 @@ public class LightAttackWeaponItemAction : WeaponItemBasedAction
         if (playerPerformingAction.playerCombatManager.canComboWithMainHandleWeapon&&playerPerformingAction.isPerformingAction)
         {
             playerPerformingAction.playerCombatManager.canComboWithMainHandleWeapon = false;
-            playerPerformingAction.isUsingRightHand = true;
+            
 
 
             if (playerPerformingAction.characterCombatManager.lastAttackAnimationPerformed==light_Attack_01)
@@ -50,6 +56,8 @@ public class LightAttackWeaponItemAction : WeaponItemBasedAction
 
         }
 
+
+      
     }
    
 

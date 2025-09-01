@@ -7,10 +7,14 @@ using UnityEngine.UI;
 public class PlayerUIHUDManager : MonoBehaviour
 {
 
-    [SerializeField] CanvasGroup[] canvasGroup;
+    [SerializeField] public CanvasGroup[] canvasGroup;
     
     public UI_StatBar staminaBar;
     public UI_StatBar healthBar;
+
+    [Header("Boss Health Bar")]
+    public Transform BossHealthBarParent;
+    public GameObject BossHealthBar;
 
     [Header("Runes")]
     [SerializeField] float runeUpdateCountDelayTimer = 2.5f;
@@ -23,6 +27,8 @@ public class PlayerUIHUDManager : MonoBehaviour
     
     [SerializeField] Image rightWeaponQuickSlotIcon;
     [SerializeField] Image leftWeaponQuickSlotIcon;
+    [SerializeField] Image quickslotItemQuickSlotIcon;
+    [SerializeField] TextMeshProUGUI quickslotItemCount;
 
 
     
@@ -78,10 +84,12 @@ public class PlayerUIHUDManager : MonoBehaviour
 
     public void ToggleHUD(bool status)
     {
+
         if (status)
         {
             foreach (var canvas in canvasGroup)
             {
+                
                 canvas.alpha= 1.0f;
             }
 
@@ -90,11 +98,16 @@ public class PlayerUIHUDManager : MonoBehaviour
         
         else
         {
+            
             foreach (var canvas in canvasGroup)
             {
+                
                 canvas.alpha= 0.0f;
             }
         }
+
+        
+
 
     }
 
@@ -160,6 +173,46 @@ public class PlayerUIHUDManager : MonoBehaviour
 
         leftWeaponQuickSlotIcon.sprite = weapon.itemIcon;
         leftWeaponQuickSlotIcon.enabled = true;
+
+    }
+
+    public void SetQuickSlotItemQuickSlotIcon(int itemID)
+    {
+
+        QuickSlotItem quickslotItem = WorldItemDatabase.instance.GetQuickSlotItemByID(itemID);
+        if (quickslotItem == null)
+        {
+            Debug.Log("Item is Null");
+            quickslotItemQuickSlotIcon.enabled = false;
+            quickslotItemQuickSlotIcon.sprite = null;
+            quickslotItemCount.enabled = false;
+            return;
+        }
+        if (quickslotItem.itemIcon == null)
+        {
+            Debug.Log("Item has No ICON");
+            quickslotItemQuickSlotIcon.enabled = false;
+            quickslotItemQuickSlotIcon.sprite = null;
+            quickslotItemCount.enabled = false;
+            return;
+        }
+
+        //Update Quantity left, Show in The UI
+        //Fade out icon if none left
+
+        quickslotItemQuickSlotIcon.sprite = quickslotItem.itemIcon;
+        quickslotItemQuickSlotIcon.enabled = true;
+
+        if (quickslotItem.isConsumable)
+        {
+            quickslotItemCount.enabled = true;
+            quickslotItemCount.text = quickslotItem.GetCurrentAmount(PlayerCamera.instance.player).ToString();
+
+        }
+        else
+        {
+            quickslotItemCount.enabled = false;
+        }
 
     }
 

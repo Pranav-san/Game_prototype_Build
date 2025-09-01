@@ -14,6 +14,10 @@ public class CharacterSaveData
     public string characterName="Character";
     public float timePlayed;
 
+    [Header("Body Type")]
+    public bool isMale = true;
+    public int hairStyleID;
+
     [Header("World Coordinates")]
     public float xPosition;
     public float yPosition;
@@ -28,8 +32,8 @@ public class CharacterSaveData
     public int vitality;
 
     [Header("Bosses")]
-    public SerializableDictionary<int, bool> bossesAwakened;
-    public SerializableDictionary<int, bool> bossesDefeated;
+    public SerializableDictionary<int, bool> bossesAwakened;//Int is Boss ID, Bool is Awakened Status
+    public SerializableDictionary<int, bool> bossesDefeated;//Int is The Boss ID, Bool is Defeated Status
 
     [Header("Sites Of Grace")]
     public SerializableDictionary<int, bool> sitesOfGrace; //Int is SiteOfGrace ID, Bool Is Activation Status
@@ -39,6 +43,18 @@ public class CharacterSaveData
 
     [Header("Items")]
     public SerializableDictionary<int, bool> worldItemsLooted; //int is the Item ID, Bool is The Looted Status
+
+    [Header("Equipment")]
+    public int rightWeaponIndex;
+    public SerializableWeapon rightWeapon_01;
+    public SerializableWeapon rightWeapon_02;
+
+    public int leftWeaponIndex;
+    public SerializableWeapon leftWeapon_01;
+    public SerializableWeapon leftWeapon_02;
+
+
+   
 
 
     public CharacterSaveData()

@@ -12,8 +12,14 @@ public class RangedProjectileItem : Item
     public float AmmoMass = 0.01f;
 
     [Header("Capacity")]
-    public int capacity = 30;
     public int currentAmmoAmount = 30;
+    public int pickUpAmount = 3;
+
+    [Header("Magazine")]
+    public int magazineSize = 6;// per reload capacity
+    public int currentMagazineAmmo = 6;
+
+
 
     [Header("Damage")]
     public int physicalDamage = 0;

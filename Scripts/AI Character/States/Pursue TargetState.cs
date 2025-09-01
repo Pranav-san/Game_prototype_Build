@@ -15,29 +15,40 @@ public class PursueTargetState : AIState
 
         //Check If AI is Performing An Action 
         if (aiCharacter.isPerformingAction)
-        {
-            aiCharacter.characterAnimatorManager.SetAnimatorMovementParameters(0, 0);
-            return this;
-        }
-        aiCharacter.characterAnimatorManager.SetAnimatorMovementParameters(0, 1);
+        return this;
 
-        //Check If AI Target Is null, If we Do not Have a Target Return To Idle State
+        //Check If AI Target Is null, If we Do Not Have A Target Return To Idle State
         if (aiCharacter.aiCharacterCombatManager.currentTarget==null)
         {
             return SwitchState(aiCharacter, aiCharacter.idle);
         }
 
+        //Make Sure The Navmesh Agent Is Enabled, If Its Not Enable It
         if (!aiCharacter.navMeshAgent.enabled)
             aiCharacter.navMeshAgent.enabled = true;
 
-        //If our Target goes outside of the characters FOV, Pivot to face them
 
+
+
+        //if (aiCharacter.enemyType == EnemyType.exploder)
+        //{
+        //    aiCharacter.characterAnimatorManager.SetAnimatorMovementParameters(0, 2f);
+
+        //}
+        //aiCharacter.characterAnimatorManager.SetAnimatorMovementParameters(0, 1f);
+
+       
+
+       
+
+        //If our Target goes outside of the characters FOV, Pivot to face them
         if(enablePivot)
         {
             if (aiCharacter.aiCharacterCombatManager.viewableAngle < aiCharacter.aiCharacterCombatManager.minimumDetectionFOV||
             aiCharacter.aiCharacterCombatManager.viewableAngle > aiCharacter.aiCharacterCombatManager.maximumDetectionFOV)
             {
                 aiCharacter.aiCharacterCombatManager.PivotTowardsTarget(aiCharacter);
+                return this;
             }
         }
         aiCharacter.aiCharacterLocomotionManager.RotateTowardsagent(aiCharacter);

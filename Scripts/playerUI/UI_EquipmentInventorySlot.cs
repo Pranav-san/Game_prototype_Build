@@ -100,30 +100,30 @@ public class UI_EquipmentInventorySlot : MonoBehaviour
                 PlayerUIManager.instance.playerUIEquipmentManager.RefreshMenu();
                 break;
 
-            case EquipmentType.RightWeapon03:
+            //case EquipmentType.RightWeapon03:
 
-                //If our current weapon slot is not unArmed item, Add to inventory
-                equipedItem = player.playerInventoryManager.weaponsInRightHandSlot[2];
-                if (equipedItem.itemID != WorldItemDatabase.instance.unArmedWeapon.itemID)
-                {
-                    player.playerInventoryManager.AddItemToInventory(equipedItem);
-                }
+            //    //If our current weapon slot is not unArmed item, Add to inventory
+            //    equipedItem = character.playerInventoryManager.weaponsInRightHandSlot[2];
+            //    if (equipedItem.itemID != WorldItemDatabase.instance.unArmedWeapon.itemID)
+            //    {
+            //        character.playerInventoryManager.AddItemToInventory(equipedItem);
+            //    }
 
-                //Then Replace that weapon in that slot with our new weapon
-                player.playerInventoryManager.weaponsInRightHandSlot[2] = currentItem as WeaponItem;
+            //    //Then Replace that weapon in that slot with our new weapon
+            //    character.playerInventoryManager.weaponsInRightHandSlot[2] = currentItem as WeaponItem;
 
-                //Then Remove the New Weapon From our inventory
-                player.playerInventoryManager.RemoveItemToInventory(currentItem);
+            //    //Then Remove the New Weapon From our inventory
+            //    character.playerInventoryManager.RemoveItemToInventory(currentItem);
 
-                //Re-Equip Weapon If we holding the CurrentWeapon in this slott
-                if (player.playerInventoryManager.rightHandWeaponIndex ==2)
-                {
-                    player.playerInventoryManager.currentRightHandWeaponID = currentItem.itemID;
-                    player.playerInventoryManager.OnCurrentRightHandWeaponIDChange(2, player.playerInventoryManager.currentRightHandWeaponID);
-                }
-                //Refresh Equipment Window 
-                PlayerUIManager.instance.playerUIEquipmentManager.RefreshMenu();
-                break;
+            //    //Re-Equip Weapon If we holding the CurrentWeapon in this slott
+            //    if (character.playerInventoryManager.rightHandWeaponIndex ==2)
+            //    {
+            //        character.playerInventoryManager.currentRightHandWeaponID = currentItem.itemID;
+            //        character.playerInventoryManager.OnCurrentRightHandWeaponIDChange(2, character.playerInventoryManager.currentRightHandWeaponID);
+            //    }
+            //    //Refresh Equipment Window 
+            //    PlayerUIManager.instance.playerUIEquipmentManager.RefreshMenu();
+            //    break;
 
             case EquipmentType.leftWeapon01:
 
@@ -175,30 +175,55 @@ public class UI_EquipmentInventorySlot : MonoBehaviour
                 PlayerUIManager.instance.playerUIEquipmentManager.RefreshMenu();
                 break;
 
-            case EquipmentType.leftWeapon03:
+            case EquipmentType.TwoHandWeapon:
 
                 //If our current weapon slot is not unArmed item, Add to inventory
-                equipedItem = player.playerInventoryManager.weaponsInLeftHandSlot[2];
+                equipedItem = player.playerInventoryManager.weaponsInTwoHandSlot[0];
                 if (equipedItem.itemID != WorldItemDatabase.instance.unArmedWeapon.itemID)
                 {
                     player.playerInventoryManager.AddItemToInventory(equipedItem);
                 }
 
                 //Then Replace that weapon in that slot with our new weapon
-                player.playerInventoryManager.weaponsInLeftHandSlot[2] = currentItem as WeaponItem;
+                player.playerInventoryManager.weaponsInTwoHandSlot[0] = currentItem as WeaponItem;
 
                 //Then Remove the New Weapon From our inventory
                 player.playerInventoryManager.RemoveItemToInventory(currentItem);
 
                 //Re-Equip Weapon If we holding the CurrentWeapon in this slott
-                if (player.playerInventoryManager.leftHandWeaponIndex ==2)
+                if (player.playerInventoryManager.twoHandWeaponIndex ==0 && player.playerEquipmentManager.isTwoHandingWeapon)
                 {
                     player.playerInventoryManager.currentLeftHandWeaponID = currentItem.itemID;
-                    player.playerInventoryManager.OnCurrentLeftHandWeaponIDChange(2, player.playerInventoryManager.currentLeftHandWeaponID);
+                    player.playerInventoryManager.OnCurrentTwoHandWeaponIDChange(0, player.playerInventoryManager.currentTwoHandWeaponID);
                 }
                 //Refresh Equipment Window 
                 PlayerUIManager.instance.playerUIEquipmentManager.RefreshMenu();
                 break;
+
+            //case EquipmentType.leftWeapon03:
+
+            //    //If our current weapon slot is not unArmed item, Add to inventory
+            //    equipedItem = character.playerInventoryManager.weaponsInLeftHandSlot[2];
+            //    if (equipedItem.itemID != WorldItemDatabase.instance.unArmedWeapon.itemID)
+            //    {
+            //        character.playerInventoryManager.AddItemToInventory(equipedItem);
+            //    }
+
+            //    //Then Replace that weapon in that slot with our new weapon
+            //    character.playerInventoryManager.weaponsInLeftHandSlot[2] = currentItem as WeaponItem;
+
+            //    //Then Remove the New Weapon From our inventory
+            //    character.playerInventoryManager.RemoveItemToInventory(currentItem);
+
+            //    //Re-Equip Weapon If we holding the CurrentWeapon in this slott
+            //    if (character.playerInventoryManager.leftHandWeaponIndex ==2)
+            //    {
+            //        character.playerInventoryManager.currentLeftHandWeaponID = currentItem.itemID;
+            //        character.playerInventoryManager.OnCurrentLeftHandWeaponIDChange(2, character.playerInventoryManager.currentLeftHandWeaponID);
+            //    }
+            //    //Refresh Equipment Window 
+            //    PlayerUIManager.instance.playerUIEquipmentManager.RefreshMenu();
+            //    break;
 
             case EquipmentType.Head:
 
@@ -284,6 +309,54 @@ public class UI_EquipmentInventorySlot : MonoBehaviour
 
                 //Re-Equip Weapon If we holding the CurrentWeapon in this slott
                 player.playerEquipmentManager.LoadLegEquipment(player.playerInventoryManager.legEquipment);
+
+                //Refresh Equipment Window 
+                PlayerUIManager.instance.playerUIEquipmentManager.RefreshMenu();
+                break;
+            case EquipmentType.QuickSlot01:
+
+                //If our current weapon slot is not unArmed item, Add to inventory
+                equipedItem = player.playerInventoryManager.QuickSlotItemsInQuickSlot[0];
+                if (equipedItem != null)
+                {
+                    player.playerInventoryManager.AddItemToInventory(equipedItem);
+                }
+
+                //Then Replace that weapon in that slot with our new weapon
+                player.playerInventoryManager.QuickSlotItemsInQuickSlot[0] = currentItem as QuickSlotItem;
+
+                player.playerInventoryManager.currentQuickSlotItemID = currentItem.itemID;
+
+                player.playerInventoryManager.OnQuickSlotItemIDChange(0, currentItem.itemID);
+
+                //Then Remove the New Weapon From our inventory
+                player.playerInventoryManager.RemoveItemToInventory(currentItem);
+
+                //Re-Equip Weapon If we holding the CurrentWeapon in this slott
+               //character.playerInventoryManager.currentQuickSlotItem =currentItem as QuickSlotItem;
+
+                //Refresh Equipment Window 
+                PlayerUIManager.instance.playerUIEquipmentManager.RefreshMenu();
+                break;
+
+            case EquipmentType.QuickSlot02:
+
+                //If our current weapon slot is not unArmed item, Add to inventory
+                equipedItem = player.playerInventoryManager.QuickSlotItemsInQuickSlot[1];
+                if (equipedItem != null)
+                {
+                    player.playerInventoryManager.AddItemToInventory(equipedItem);
+                }
+
+                //Then Replace that weapon in that slot with our new weapon
+                player.playerInventoryManager.QuickSlotItemsInQuickSlot[1] = currentItem as QuickSlotItem;
+
+                player.playerInventoryManager.currentQuickSlotItemID = currentItem.itemID;
+
+                player.playerInventoryManager.OnQuickSlotItemIDChange(1, currentItem.itemID);
+
+                //Then Remove the New Weapon From our inventory
+                player.playerInventoryManager.RemoveItemToInventory(currentItem);
 
                 //Refresh Equipment Window 
                 PlayerUIManager.instance.playerUIEquipmentManager.RefreshMenu();

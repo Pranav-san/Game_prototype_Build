@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
-public class UI_Character_HP_Bar : UI_StatBar
+public class UI_Character_HP_Bar : UI_StatBar, AIHealthUI
 {
     private CharacterManager character;
     private AICharacterManager aiCharacter;
@@ -52,15 +52,14 @@ public class UI_Character_HP_Bar : UI_StatBar
         }
     }
 
-    public override void SetStat(int newValue)
+    public void OnHealthChanged(int oldHealth, int newHealth)
     {
-        base.SetStat(newValue);  // Update the slider value
+        base.SetStat(newHealth); // Update the slider
 
-        // Show the bar when the character takes damage
         gameObject.SetActive(true);
-
-        // Reset hide timer whenever damage is taken
         hideTimer = defaultTimeBeforeBarHides;
+
+        int delta = oldHealth - newHealth;
 
         if (displayCharacterNameOnDamage && aiCharacter != null)
         {
@@ -68,20 +67,11 @@ public class UI_Character_HP_Bar : UI_StatBar
             characterName.enabled = true;
         }
 
-        // Display the damage dealt or healed
-        int damageDealt = character.characterStatsManager.currentHealth - newValue;
-        if (damageDealt < 0)
-        {
-            characterDamage.text = "+" + Mathf.Abs(damageDealt).ToString();
-        }
-        else
-        {
-            characterDamage.text = "-" + damageDealt.ToString();
-        }
-
-        characterDamage.enabled = true;  // Enable the damage text
+        characterDamage.text = delta < 0 ? "+" + Mathf.Abs(delta) : "-" + delta;
+        characterDamage.enabled = true;
     }
 
-    
+
+
 
 }

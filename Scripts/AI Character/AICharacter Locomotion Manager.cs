@@ -31,10 +31,15 @@ public class AICharacterLocomotionManager : CharacterLocomotionManager
         if (aiCharacter.navMeshAgent.isOnNavMesh)
         {
             // Move the character towards the desired velocity
-            aiCharacter.transform.position += aiCharacter.navMeshAgent.desiredVelocity * Time.deltaTime;
+            //aiCharacter.transform.position += aiCharacter.navMeshAgent.desiredVelocity * Time.deltaTime;
+
+            Vector3 desiredVelocity = aiCharacter.navMeshAgent.desiredVelocity;
+
+
+            // Move via CharacterController to keep collision active
+            aiCharacter.characterController.Move(desiredVelocity * Time.deltaTime);
 
             // Rotate the character based on desired velocity
-            Vector3 desiredVelocity = aiCharacter.navMeshAgent.desiredVelocity;
             if (desiredVelocity.magnitude > 0.1f)
             {
                 Quaternion targetRotation = Quaternion.LookRotation(desiredVelocity.normalized);

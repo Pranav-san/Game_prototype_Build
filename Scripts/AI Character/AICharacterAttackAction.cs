@@ -10,6 +10,8 @@ public class AICharacterAttackAction : ScriptableObject
     [Header("Attack")]
     [SerializeField] private string attackAnimation;
 
+   
+
     [Header("ComBoAction")]
     public AICharacterAttackAction comboAction;//Combo Action Of Thi Attack 
 
@@ -23,13 +25,14 @@ public class AICharacterAttackAction : ScriptableObject
     public float minimumAttackDistance = 0;
     public float maximumAttackDistance = 2;
 
-    public void AttemptToPerformAction(AICharacterManager aiCharacter)
+
+    public virtual void AttemptToPerformAction(AICharacterManager aiCharacter)
     {
         //If Ai character Attack animation is Purely Equipment/Weapon Based, If so use PlayTargetAttackActionAnimation()
         //aiCharacter.characterAnimatorManager.PlayTargetAttackActionAnimation(attackType, attackAnimation,true);
 
         //If Ai character Attack is Purely Animation based, & not Equipment/Weapon Based, If so use PlayTargetActionAnimation()
-        aiCharacter.characterAnimatorManager.PlayTargetActionAnimation(attackAnimation, true);
+        aiCharacter.characterAnimatorManager.PlayTargetActionAnimation(attackAnimation, true,true);
 
 
     }

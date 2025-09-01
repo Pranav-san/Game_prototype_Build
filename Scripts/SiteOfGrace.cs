@@ -47,8 +47,10 @@ public class SiteOfGrace : Interactable
         }
         else
         {
-            interactableText = "LIGHT CAMPFIRE";
+            interactableText = "LIGHT LANTERN";
         }
+
+        WorldObjectManager.instance.AddSiteOfGraceToTheList(this);
 
 
     }
@@ -70,7 +72,7 @@ public class SiteOfGrace : Interactable
 
         player.playerAnimatorManager.PlayTargetActionAnimation("Activate_Site_Of_Grace_01", true);
 
-        PlayerUIManager.instance.playerUIPopUPManager.SendGraceRestoredPop("CAMPFIRE LIT");
+        PlayerUIManager.instance.playerUIPopUPManager.SendGraceRestoredPop("LANTERN LIT");
 
         activatedParticles.SetActive(true);
         
@@ -80,7 +82,7 @@ public class SiteOfGrace : Interactable
         }
         else
         {
-            interactableText = "LIT CAMPFIRE";
+            interactableText = "Light Lantern";
         }
 
         StartCoroutine(WaitForAnimationAndPopUpAndRestoreInteractableCollider());
@@ -95,7 +97,11 @@ public class SiteOfGrace : Interactable
     {
         Debug.Log("Resting");
 
+        player.playerRespawnManager.SetLastGraceTransform(teleportTransform);
+
         PlayerUIManager.instance.playerUISiteOfGraceManager.OpenSiteOfGraceManagerMenu();
+
+        MobileControls.instance.DisableMobileControls();
 
         interactableCollider.enabled  = true; //Temporarily Enable for testing
 
@@ -104,11 +110,27 @@ public class SiteOfGrace : Interactable
         player.playerStatsManager.currentHealth = player.playerStatsManager.maxHealth;
         player.playerStatsManager.currentStamina = player.playerStatsManager.maxStamina;
         PlayerUIManager.instance.UpdateHealthBar(player.playerStatsManager.currentHealth);
+        player.playerInventoryManager.remainingHealthFlasks = player.playerInventoryManager.maximunFlasks;
 
         player.isMoving = true;
 
 
     }
+
+    public void TeleportToSiteOfGrace()
+    {
+        playerManager player = PlayerInputManager.Instance.player;
+
+        //Enable Loading Screen
+        PlayerUIManager.instance.playerUILoadingScreenManager.ActivateLoadingScreen();
+
+        //Teleport Player
+        player.transform.position = teleportTransform.position;
+
+        PlayerUIManager.instance.playerUILoadingScreenManager.DeactivateLoadingScreen();
+    }
+
+
 
     
 

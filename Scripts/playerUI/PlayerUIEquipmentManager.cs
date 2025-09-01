@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -13,44 +14,68 @@ public class PlayerUIEquipmentManager : MonoBehaviour
     [Header("Weapon Slots")]
     [SerializeField] Image rightHandSlot01;
     [SerializeField] Image rightHandSlot02;
-    [SerializeField] Image rightHandSlot03;
+    //[SerializeField] Image rightHandSlot03;
 
     [SerializeField] Image leftHandSlot01;
     [SerializeField] Image leftHandSlot02;
-    [SerializeField] Image leftHandSlot03;
-    
+    //[SerializeField] Image leftHandSlot03;
+
+    [SerializeField] Image TwoHandWeaponSlot;
+
+    [Header("Armor Slots")]
     [SerializeField] Image headEquipmentSlot;
     [SerializeField] Image bodyEquipmentSlot;
     [SerializeField] Image handEquipmentSlot;
     [SerializeField] Image legEquipmentSlot;
 
-    [Header("Highlight Selected Slot")]
+    [Header("QuickSlot Item")]
+    [SerializeField] Image quickSlotItem_01;
+    [SerializeField] TextMeshProUGUI quickSlotItem01Count;
+    [SerializeField] Image quickSlotItem_02;
+    [SerializeField] TextMeshProUGUI quickSlotItem02Count;
+
+    [Header("Highlight Weapon Selected Slot")]
     public Image highlightedRightItemIcon01;
     public Image highlightedRightItemIcon02;
-    public Image highlightedRightItemIcon03;
+    //public Image highlightedRightItemIcon03;
     
     public Image highlightedLeftItemIcon01;
     public Image highlightedLeftItemIcon02;
-    public Image highlightedLeftItemIcon03;
+    //public Image highlightedLeftItemIcon03;
 
+    public Image highlightedTwoHandItemIcon01;
+
+    [Header("Highlight Armor Selected Slot")]
     public Image highlightedHeadEquipmentItemIcon;
     public Image highlightedBodyEquipmentItemIcon;
     public Image highlightedHandEquipmentItemIcon;
     public Image highlightedLegEquipmentItemIcon;
 
-    [Header("unEquipButton ")]
-    public GameObject unEquipButtonRightItemIcon01;
-    public GameObject unEquipButtonRightItemIcon02;
-    public GameObject unEquipButtonRightItemIcon03;
+    [Header("Highlight QuickSlot Item Selected Slot")]
+    public Image highlightedQuickSlotIcon01;
+    public Image highlightedQuickSlotIcon02;
+    
 
-    public GameObject unEquipButtonLeftItemIcon01;
-    public GameObject unEquipButtonLeftItemIcon02;
-    public GameObject unEquipButtonLeftItemIcon03;
+    [Header("Weapon unEquipButton ")]
+    public GameObject unEquipButtonRightItem01;
+    public GameObject unEquipButtonRightItem02;
+    //public GameObject unEquipButtonRightItem03;
 
-    public GameObject unEquipButtonHeadEquipmentItemIcon;
-    public GameObject unEquipButtonBodyEquipmentItemIcon;
-    public GameObject unEquipButtonHandEquipmentItemIcon;
-    public GameObject unEquipButtonLegEquipmentItemIcon;
+    public GameObject unEquipButtonLeftItem01;
+    public GameObject unEquipButtonLeftItem02;
+    //public GameObject unEquipButtonLeftItem03;
+
+    public GameObject unEquipTwoHandItem01;
+
+    [Header("Armor unEquipButton ")]
+    public GameObject unEquipButtonHeadEquipmentItem;
+    public GameObject unEquipButtonBodyEquipmentItem;
+    public GameObject unEquipButtonHandEquipmentItem;
+    public GameObject unEquipButtonLegEquipmentItem;
+
+    [Header("QuickSlot Item unEquipButton ")]
+    public GameObject unEquipButtonQuickSlotItem01;
+    public GameObject unEquipButtonQuickSlotItem02;
 
 
 
@@ -84,7 +109,7 @@ public class PlayerUIEquipmentManager : MonoBehaviour
 
     }
 
-    private void RefreshWeaponSlotsIcons()
+    public void RefreshWeaponSlotsIcons()
     {
         playerManager player = playerManager.instance?.GetComponent<playerManager>();
 
@@ -122,18 +147,21 @@ public class PlayerUIEquipmentManager : MonoBehaviour
             rightHandSlot02.enabled = false;
         }
 
-        //Right Hand Weapon 03
-        WeaponItem rightHandWeapon03 = player.playerInventoryManager.weaponsInRightHandSlot[2];
 
-        if (rightHandWeapon03.itemIcon != null)
-        {
-            rightHandSlot03.enabled = true;
-            rightHandSlot03.sprite = rightHandWeapon03.itemIcon;
-        }
-        else
-        {
-            rightHandSlot03.enabled = false;
-        }
+
+        //Right Hand Weapon 03
+        //WeaponItem rightHandWeapon03 = character.playerInventoryManager.weaponsInRightHandSlot[2];
+
+        //if (rightHandWeapon03.itemIcon != null)
+        //{
+        //    rightHandSlot03.enabled = true;
+        //    rightHandSlot03.sprite = rightHandWeapon03.itemIcon;
+        //}
+        //else
+        //{
+        //    rightHandSlot03.enabled = false;
+        //}
+
 
         //Left Hand Weapon 01
         WeaponItem leftHandWeapon01 = player.playerInventoryManager.weaponsInLeftHandSlot[0];
@@ -164,16 +192,28 @@ public class PlayerUIEquipmentManager : MonoBehaviour
         }
 
         //Left Hand Weapon 03
-        WeaponItem leftHandWeapon03 = player.playerInventoryManager.weaponsInLeftHandSlot[2];
+        //WeaponItem leftHandWeapon03 = character.playerInventoryManager.weaponsInLeftHandSlot[2];
 
-        if (leftHandWeapon03.itemIcon != null)
+        //if (leftHandWeapon03.itemIcon != null)
+        //{
+        //    leftHandSlot03.enabled = true;
+        //    leftHandSlot03.sprite = leftHandWeapon03.itemIcon;
+        //}
+        //else
+        //{
+        //    leftHandSlot03.enabled = false;
+        //}
+
+        WeaponItem twoHandWeapon = player.playerInventoryManager.weaponsInTwoHandSlot[0];
+
+        if (twoHandWeapon != null && twoHandWeapon.itemIcon != null)
         {
-            leftHandSlot03.enabled = true;
-            leftHandSlot03.sprite = leftHandWeapon03.itemIcon;
+            TwoHandWeaponSlot.enabled = true;
+            TwoHandWeaponSlot.sprite = twoHandWeapon.itemIcon;
         }
         else
         {
-            leftHandSlot03.enabled = false;
+            TwoHandWeaponSlot.enabled = false;
         }
 
         //Head Equipment
@@ -228,6 +268,53 @@ public class PlayerUIEquipmentManager : MonoBehaviour
             legEquipmentSlot.enabled = false;
         }
 
+        QuickSlotItem QuickSlotEquipment = player.playerInventoryManager.QuickSlotItemsInQuickSlot[0];
+        if (QuickSlotEquipment != null && QuickSlotEquipment.itemIcon != null)
+        {
+            quickSlotItem_01.enabled = true;
+            quickSlotItem_01.sprite = QuickSlotEquipment.itemIcon;
+
+            if (QuickSlotEquipment.isConsumable)
+            {
+                quickSlotItem01Count.enabled = true;
+                quickSlotItem01Count.text = QuickSlotEquipment.GetCurrentAmount(player).ToString();
+            }
+            else
+            {
+                quickSlotItem_01.enabled = false;
+
+            }
+        }
+        else
+        {
+            quickSlotItem_01.enabled = false;
+            quickSlotItem01Count.enabled = false;
+        }
+
+        // Quick Slot Item 02
+        QuickSlotItem QuickSlotEquipment02 = player.playerInventoryManager.QuickSlotItemsInQuickSlot[1];
+        if (QuickSlotEquipment02 != null && QuickSlotEquipment02.itemIcon != null)
+        {
+            quickSlotItem_02.enabled = true;
+            quickSlotItem_02.sprite = QuickSlotEquipment02.itemIcon;
+
+            if (QuickSlotEquipment02.isConsumable)
+            {
+                quickSlotItem02Count.enabled = true;
+                quickSlotItem02Count.text = QuickSlotEquipment02.GetCurrentAmount(player).ToString();
+            }
+            else
+            {
+                quickSlotItem_02.enabled = false;
+
+            }
+        }
+        else
+        {
+            quickSlotItem_02.enabled = false;
+            quickSlotItem02Count.enabled = false;
+        }
+
 
 
     }
@@ -259,17 +346,21 @@ public class PlayerUIEquipmentManager : MonoBehaviour
             case EquipmentType.RightWeapon02:
                 LoadWeaponInventory();
                 break;
-            case EquipmentType.RightWeapon03:
-                LoadWeaponInventory();
-                break;    
+            //case EquipmentType.RightWeapon03:
+            //    LoadWeaponInventory();
+            //    break;    
             case EquipmentType.leftWeapon01:
                 LoadWeaponInventory();
                 break;
             case EquipmentType.leftWeapon02:
                 LoadWeaponInventory();
                 break;
-            case EquipmentType.leftWeapon03:
-                LoadWeaponInventory();
+            //case EquipmentType.leftWeapon03:
+            //    LoadWeaponInventory();
+            //    break;
+
+            case EquipmentType.TwoHandWeapon:
+                LoadTwoHandWeaponInventory();
                 break;
 
             case EquipmentType.Head:
@@ -283,6 +374,12 @@ public class PlayerUIEquipmentManager : MonoBehaviour
                 break;
             case EquipmentType.Leg:
                 LoadLegEquipmentInventory();
+                break;
+            case EquipmentType.QuickSlot01:
+                LoadQuickSlotInventory();
+                break;
+            case EquipmentType.QuickSlot02:
+                LoadQuickSlotInventory();
                 break;
             default:
                 break;
@@ -304,7 +401,7 @@ public class PlayerUIEquipmentManager : MonoBehaviour
         {
             WeaponItem weapon = player.playerInventoryManager.itemsInInventory[i] as WeaponItem;
 
-            if (weapon != null)
+            if (weapon != null && weapon.weaponWieldingType == WeaponWieldingType.OneHand)
             {
                 weaponsInInventory.Add(weapon);
             }
@@ -328,6 +425,52 @@ public class PlayerUIEquipmentManager : MonoBehaviour
 
             //This Will Select The First Button In The List
             if(!hasSelectedFirstInventorySlot)
+            {
+                hasSelectedFirstInventorySlot = true;
+                Button inventorySlotButton = inventorySlotGameObject.GetComponent<Button>();
+                inventorySlotButton.Select();
+                inventorySlotButton.OnSelect(null);
+            }
+        }
+
+    }
+
+    private void LoadTwoHandWeaponInventory()
+    {
+        playerManager player = playerManager.instance?.GetComponent<playerManager>();
+
+        List<WeaponItem> weaponsInInventory = new List<WeaponItem>();
+
+
+
+        for (int i = 0; i < player.playerInventoryManager.itemsInInventory.Count; i++)
+        {
+            WeaponItem weapon = player.playerInventoryManager.itemsInInventory[i] as WeaponItem;
+
+            if (weapon != null && weapon.weaponWieldingType == WeaponWieldingType.TwoHand)
+            {
+                weaponsInInventory.Add(weapon);
+            }
+
+        }
+
+        if (weaponsInInventory.Count <= 0)
+        {
+            RefreshMenu();
+            return;
+
+        }
+
+        bool hasSelectedFirstInventorySlot = false;
+
+        for (int i = 0; i < weaponsInInventory.Count; i++)
+        {
+            GameObject inventorySlotGameObject = Instantiate(equipmentInventorySlotPrefab, equipmentInventoryContentWindow);
+            UI_EquipmentInventorySlot equipmentInventorySlot = inventorySlotGameObject.GetComponent<UI_EquipmentInventorySlot>();
+            equipmentInventorySlot.AddItem(weaponsInInventory[i]);
+
+            //This Will Select The First Button In The List
+            if (!hasSelectedFirstInventorySlot)
             {
                 hasSelectedFirstInventorySlot = true;
                 Button inventorySlotButton = inventorySlotGameObject.GetComponent<Button>();
@@ -522,6 +665,52 @@ public class PlayerUIEquipmentManager : MonoBehaviour
 
     }
 
+    private void LoadQuickSlotInventory()
+    {
+        playerManager player = playerManager.instance?.GetComponent<playerManager>();
+
+        List<QuickSlotItem> quickSlotItemsInInventory = new List<QuickSlotItem>();
+
+
+
+        for (int i = 0; i < player.playerInventoryManager.itemsInInventory.Count; i++)
+        {
+           QuickSlotItem quickSlotItem = player.playerInventoryManager.itemsInInventory[i] as QuickSlotItem;
+
+            if (quickSlotItem != null)
+            {
+                quickSlotItemsInInventory.Add(quickSlotItem);
+            }
+
+        }
+
+        if (quickSlotItemsInInventory.Count <= 0)
+        {
+            RefreshMenu();
+            return;
+
+        }
+
+        bool hasSelectedFirstInventorySlot = false;
+
+        for (int i = 0; i < quickSlotItemsInInventory.Count; i++)
+        {
+            GameObject inventorySlotGameObject = Instantiate(equipmentInventorySlotPrefab, equipmentInventoryContentWindow);
+            UI_EquipmentInventorySlot equipmentInventorySlot = inventorySlotGameObject.GetComponent<UI_EquipmentInventorySlot>();
+            equipmentInventorySlot.AddItem(quickSlotItemsInInventory[i]);
+
+            //This Will Select The First Button In The List
+            if (!hasSelectedFirstInventorySlot)
+            {
+                hasSelectedFirstInventorySlot = true;
+                Button inventorySlotButton = inventorySlotGameObject.GetComponent<Button>();
+                inventorySlotButton.Select();
+                inventorySlotButton.OnSelect(null);
+            }
+        }
+
+    }
+
     public void SelectEquipmentSlot(int EquipmentSlot)
     {
         currentSelectedEquipmentSlot = (EquipmentType)EquipmentSlot;
@@ -529,104 +718,141 @@ public class PlayerUIEquipmentManager : MonoBehaviour
         if(currentSelectedEquipmentSlot == EquipmentType.RightWeapon01)
         {
             highlightedRightItemIcon01.enabled = true;
-            unEquipButtonRightItemIcon01.SetActive(true);
+            unEquipButtonRightItem01.SetActive(true);
         }
         else
         {
             highlightedRightItemIcon01.enabled = false;
-            unEquipButtonRightItemIcon01.SetActive(false);
+            unEquipButtonRightItem01.SetActive(false);
         }
         if (currentSelectedEquipmentSlot == EquipmentType.RightWeapon02)
         {
             highlightedRightItemIcon02.enabled = true;
-            unEquipButtonRightItemIcon02.SetActive(true);
+            unEquipButtonRightItem02.SetActive(true);
         }
         else
         {
             highlightedRightItemIcon02.enabled = false;
-            unEquipButtonRightItemIcon02.SetActive(false);
+            unEquipButtonRightItem02.SetActive(false);
         }
-        if (currentSelectedEquipmentSlot == EquipmentType.RightWeapon03)
-        {
-            highlightedRightItemIcon03.enabled = true;
-            unEquipButtonRightItemIcon03.SetActive(true);
-        }
-        else
-        {
-            highlightedRightItemIcon03.enabled = false;
-            unEquipButtonRightItemIcon03.SetActive(false);
-        }
+        //if (currentSelectedEquipmentSlot == EquipmentType.RightWeapon03)
+        //{
+        //    highlightedRightItemIcon03.enabled = true;
+        //    unEquipButtonRightItem03.SetActive(true);
+        //}
+        //else
+        //{
+        //    highlightedRightItemIcon03.enabled = false;
+        //    unEquipButtonRightItem03.SetActive(false);
+        //}
         if (currentSelectedEquipmentSlot == EquipmentType.leftWeapon01)
         {
             highlightedLeftItemIcon01.enabled = true;
-            unEquipButtonLeftItemIcon01.SetActive(true);
+            unEquipButtonLeftItem01.SetActive(true);
         }
         else
         {
             highlightedLeftItemIcon01.enabled = false;
-            unEquipButtonLeftItemIcon01.SetActive(false);
+            unEquipButtonLeftItem01.SetActive(false);
         }
         if (currentSelectedEquipmentSlot == EquipmentType.leftWeapon02)
         {
             highlightedLeftItemIcon02.enabled = true;
-            unEquipButtonLeftItemIcon02.SetActive(true);
+            unEquipButtonLeftItem02.SetActive(true);
         }
         else
         {
             highlightedLeftItemIcon02.enabled = false;
-            unEquipButtonLeftItemIcon02.SetActive(false);
+            unEquipButtonLeftItem02.SetActive(false);
         }
-        if (currentSelectedEquipmentSlot == EquipmentType.leftWeapon03)
+        //if (currentSelectedEquipmentSlot == EquipmentType.leftWeapon03)
+        //{
+        //    highlightedLeftItemIcon03.enabled = true;
+        //    unEquipButtonLeftItem03.SetActive(true);
+        //}
+        //else
+        //{
+        //    highlightedLeftItemIcon03.enabled = false;
+        //    unEquipButtonLeftItem03.SetActive(false);
+        //}
+
+        if (currentSelectedEquipmentSlot == EquipmentType.TwoHandWeapon)
         {
-            highlightedLeftItemIcon03.enabled = true;
-            unEquipButtonLeftItemIcon03.SetActive(true);
+            highlightedTwoHandItemIcon01.enabled = true;
+           unEquipTwoHandItem01.SetActive(true);
         }
         else
         {
-            highlightedLeftItemIcon03.enabled = false;
-            unEquipButtonLeftItemIcon03.SetActive(false);
+            highlightedTwoHandItemIcon01.enabled = false;
+            unEquipTwoHandItem01.SetActive(false);
         }
 
         if (currentSelectedEquipmentSlot == EquipmentType.Head)
         {
             highlightedHeadEquipmentItemIcon.enabled = true;
-            unEquipButtonHeadEquipmentItemIcon.SetActive(true);
+            unEquipButtonHeadEquipmentItem.SetActive(true);
         }
         else
         {
             highlightedHeadEquipmentItemIcon.enabled = false;
-            unEquipButtonHeadEquipmentItemIcon.SetActive(false);
+            unEquipButtonHeadEquipmentItem.SetActive(false);
         }
         if (currentSelectedEquipmentSlot == EquipmentType.Body)
         {
             highlightedBodyEquipmentItemIcon.enabled = true;
-            unEquipButtonBodyEquipmentItemIcon.SetActive(true);
+            unEquipButtonBodyEquipmentItem.SetActive(true);
         }
         else
         {
             highlightedBodyEquipmentItemIcon.enabled = false;
-            unEquipButtonBodyEquipmentItemIcon.SetActive(false);
+            unEquipButtonBodyEquipmentItem.SetActive(false);
         }
         if (currentSelectedEquipmentSlot == EquipmentType.Hand)
         {
             highlightedHandEquipmentItemIcon.enabled = true;
-            unEquipButtonHandEquipmentItemIcon.SetActive(true);
+            unEquipButtonHandEquipmentItem.SetActive(true);
         }
         else
         {
             highlightedHandEquipmentItemIcon.enabled = false;
-            unEquipButtonHandEquipmentItemIcon.SetActive(false);
+            unEquipButtonHandEquipmentItem.SetActive(false);
         }
         if (currentSelectedEquipmentSlot == EquipmentType.Leg)
         {
             highlightedLegEquipmentItemIcon.enabled = true;
-            unEquipButtonLegEquipmentItemIcon.SetActive(true);
+            unEquipButtonLegEquipmentItem.SetActive(true);
         }
         else
         {
             highlightedLegEquipmentItemIcon.enabled = false;
-            unEquipButtonLegEquipmentItemIcon.SetActive(false);
+            unEquipButtonLegEquipmentItem.SetActive(false);
         }
+
+        if(currentSelectedEquipmentSlot== EquipmentType.QuickSlot01)
+        {
+            highlightedQuickSlotIcon01.enabled = true;
+            unEquipButtonQuickSlotItem01.SetActive(true);
+
+        }
+        else
+        {
+            highlightedQuickSlotIcon01.enabled = false;
+            unEquipButtonQuickSlotItem01.SetActive(false);
+
+        }
+        if (currentSelectedEquipmentSlot== EquipmentType.QuickSlot02)
+        {
+            highlightedQuickSlotIcon02.enabled = true;
+            unEquipButtonQuickSlotItem02.SetActive(true);
+
+        }
+        else
+        {
+            highlightedQuickSlotIcon02.enabled = false;
+            unEquipButtonQuickSlotItem02.SetActive(false);
+
+        }
+
 
 
 
@@ -655,7 +881,7 @@ public class PlayerUIEquipmentManager : MonoBehaviour
                 if (player.playerInventoryManager.rightHandWeaponIndex ==0)
                 {
                     player.playerInventoryManager.currentRightHandWeaponID = WorldItemDatabase.instance.unArmedWeapon.itemID;
-                    //player.playerEquipmentManager.SwitchRightWeapon();
+                    player.playerInventoryManager.OnCurrentRightHandWeaponIDChange(0, player.playerInventoryManager.currentRightHandWeaponID);
                 }
                 break;
 
@@ -674,28 +900,28 @@ public class PlayerUIEquipmentManager : MonoBehaviour
                 if (player.playerInventoryManager.rightHandWeaponIndex ==1)
                 {
                     player.playerInventoryManager.currentRightHandWeaponID = WorldItemDatabase.instance.unArmedWeapon.itemID;
-                    //player.playerEquipmentManager.SwitchRightWeapon();
+                    player.playerInventoryManager.OnCurrentRightHandWeaponIDChange(1, player.playerInventoryManager.currentRightHandWeaponID);
                 }
                 break;
 
-            case EquipmentType.RightWeapon03:
-                unEquippedItem = player.playerInventoryManager.weaponsInRightHandSlot[2];
+            //case EquipmentType.RightWeapon03:
+            //    unEquippedItem = character.playerInventoryManager.weaponsInRightHandSlot[2];
 
-                if (unEquippedItem != null)
-                {
-                    player.playerInventoryManager.weaponsInRightHandSlot[2] = Instantiate(WorldItemDatabase.instance.unArmedWeapon);
+            //    if (unEquippedItem != null)
+            //    {
+            //        character.playerInventoryManager.weaponsInRightHandSlot[2] = Instantiate(WorldItemDatabase.instance.unArmedWeapon);
 
-                    if (unEquippedItem.itemID != WorldItemDatabase.instance.unArmedWeapon.itemID)
-                    {
-                        player.playerInventoryManager.AddItemToInventory(unEquippedItem);
-                    }
-                }
-                if (player.playerInventoryManager.rightHandWeaponIndex ==2)
-                {
-                    player.playerInventoryManager.currentRightHandWeaponID = WorldItemDatabase.instance.unArmedWeapon.itemID;
-                    //player.playerEquipmentManager.SwitchRightWeapon();
-                }
-                break;
+            //        if (unEquippedItem.itemID != WorldItemDatabase.instance.unArmedWeapon.itemID)
+            //        {
+            //            character.playerInventoryManager.AddItemToInventory(unEquippedItem);
+            //        }
+            //    }
+            //    if (character.playerInventoryManager.rightHandWeaponIndex ==2)
+            //    {
+            //        character.playerInventoryManager.currentRightHandWeaponID = WorldItemDatabase.instance.unArmedWeapon.itemID;
+            //        //character.playerEquipmentManager.SwitchRightWeapon();
+            //    }
+            //    break;
 
             case EquipmentType.leftWeapon01:
                  unEquippedItem = player.playerInventoryManager.weaponsInLeftHandSlot[0];
@@ -712,6 +938,7 @@ public class PlayerUIEquipmentManager : MonoBehaviour
                 if (player.playerInventoryManager.leftHandWeaponIndex ==0)
                 {
                     player.playerInventoryManager.currentLeftHandWeaponID = WorldItemDatabase.instance.unArmedWeapon.itemID;
+                    player.playerInventoryManager.OnCurrentLeftHandWeaponIDChange(0, player.playerInventoryManager.currentLeftHandWeaponID);
                 }
                 break;
 
@@ -731,24 +958,44 @@ public class PlayerUIEquipmentManager : MonoBehaviour
                 {
                     
                     player.playerInventoryManager.currentLeftHandWeaponID = WorldItemDatabase.instance.unArmedWeapon.itemID;
+                    player.playerInventoryManager.OnCurrentLeftHandWeaponIDChange(1, player.playerInventoryManager.currentLeftHandWeaponID);
                 }
                 break;
 
-            case EquipmentType.leftWeapon03:
-                unEquippedItem = player.playerInventoryManager.weaponsInLeftHandSlot[2];
+            //case EquipmentType.leftWeapon03:
+            //    unEquippedItem = character.playerInventoryManager.weaponsInLeftHandSlot[2];
+
+            //    if (unEquippedItem != null)
+            //    {
+            //        character.playerInventoryManager.weaponsInLeftHandSlot[2] = Instantiate(WorldItemDatabase.instance.unArmedWeapon);
+
+            //        if (unEquippedItem.itemID != WorldItemDatabase.instance.unArmedWeapon.itemID)
+            //        {
+            //            character.playerInventoryManager.AddItemToInventory(unEquippedItem);
+            //        }
+            //    }
+            //    if (character.playerInventoryManager.leftHandWeaponIndex ==2)
+            //    {
+            //        character.playerInventoryManager.currentLeftHandWeaponID = WorldItemDatabase.instance.unArmedWeapon.itemID;
+            //    }
+            //    break;
+            case EquipmentType.TwoHandWeapon:
+                unEquippedItem = player.playerInventoryManager.weaponsInTwoHandSlot[0];
 
                 if (unEquippedItem != null)
                 {
-                    player.playerInventoryManager.weaponsInLeftHandSlot[2] = Instantiate(WorldItemDatabase.instance.unArmedWeapon);
+                    player.playerInventoryManager.weaponsInTwoHandSlot[0] = Instantiate(WorldItemDatabase.instance.unArmedWeapon);
 
                     if (unEquippedItem.itemID != WorldItemDatabase.instance.unArmedWeapon.itemID)
                     {
                         player.playerInventoryManager.AddItemToInventory(unEquippedItem);
                     }
                 }
-                if (player.playerInventoryManager.leftHandWeaponIndex ==2)
+                if (player.playerInventoryManager.twoHandWeaponIndex ==1)
                 {
+
                     player.playerInventoryManager.currentLeftHandWeaponID = WorldItemDatabase.instance.unArmedWeapon.itemID;
+                    player.playerInventoryManager.OnCurrentLeftHandWeaponIDChange(1, player.playerInventoryManager.currentLeftHandWeaponID);
                 }
                 break;
 
@@ -808,6 +1055,42 @@ public class PlayerUIEquipmentManager : MonoBehaviour
                 player.playerInventoryManager.legEquipment = null;
                 player.playerEquipmentManager.LoadLegEquipment(player.playerInventoryManager.legEquipment);
                 break;
+            case EquipmentType.QuickSlot01:
+                unEquippedItem = player.playerInventoryManager.QuickSlotItemsInQuickSlot[0];
+
+                if (unEquippedItem != null)
+                {
+
+                    player.playerInventoryManager.AddItemToInventory(unEquippedItem);
+
+                }
+
+                player.playerInventoryManager.QuickSlotItemsInQuickSlot[0] = null;
+
+                if (player.playerInventoryManager.quickSlotItemIndex==0)
+                {
+                    player.playerInventoryManager.currentQuickSlotItemID = -1;
+                }
+                
+                break;
+            case EquipmentType.QuickSlot02:
+                unEquippedItem = player.playerInventoryManager.QuickSlotItemsInQuickSlot[1];
+
+                if (unEquippedItem != null)
+                {
+
+                    player.playerInventoryManager.AddItemToInventory(unEquippedItem);
+
+                }
+
+                player.playerInventoryManager.QuickSlotItemsInQuickSlot[1] = null;
+
+                if (player.playerInventoryManager.quickSlotItemIndex==1)
+                {
+                    player.playerInventoryManager.currentQuickSlotItemID = -1;
+                }
+
+                break;
         }
         //Refresh Menu
         RefreshMenu();
@@ -832,19 +1115,19 @@ public class PlayerUIEquipmentManager : MonoBehaviour
             case EquipmentType.RightWeapon02:
                 lastSelectedButton = rightHandSlot02.GetComponent<Button>();
                 break;
-            case EquipmentType.RightWeapon03:
-                lastSelectedButton = rightHandSlot03.GetComponent<Button>();
-                break;
+            //case EquipmentType.RightWeapon03:
+            //    lastSelectedButton = rightHandSlot03.GetComponent<Button>();
+            //    break;
             case EquipmentType.leftWeapon01:
                 lastSelectedButton = leftHandSlot01.GetComponent<Button>();
                 break;
             case EquipmentType.leftWeapon02:
                 lastSelectedButton = leftHandSlot02.GetComponent<Button>();
                 break;
-            case EquipmentType.leftWeapon03:
-                lastSelectedButton = leftHandSlot03.GetComponent<Button>();
+            //case EquipmentType.leftWeapon03:
+            //    lastSelectedButton = leftHandSlot03.GetComponent<Button>();
 
-                break;
+                //break;
 
                 default:
                 break;
