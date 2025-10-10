@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class AICharacterAnimatorManager : CharacterAnimatorManager
 {
-    public  AICharacterManager aiCharacter;
+    public AICharacterManager aiCharacter;
 
     protected override void Awake()
     {
@@ -15,12 +15,18 @@ public class AICharacterAnimatorManager : CharacterAnimatorManager
 
     private void OnAnimatorMove()
     {
-        if(!aiCharacter.isGrounded)
+        if (!aiCharacter.isGrounded)
             return;
+        if(aiCharacter.characterStatsManager.isDead)
+            return;
+
+        if (!aiCharacter.characterController.enabled)
+            return;
+
 
         Vector3 velocity = aiCharacter.animator.deltaPosition;
         aiCharacter.characterController.Move(velocity);
-        //aiCharacter.transform.rotation = aiCharacter.animator.deltaRotation;
+        aiCharacter.transform.rotation *= aiCharacter.animator.deltaRotation;
     }
 
 }

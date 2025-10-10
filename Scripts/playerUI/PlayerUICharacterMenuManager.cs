@@ -7,19 +7,23 @@ public class PlayerUICharacterMenuManager : MonoBehaviour
 {
     [Header("Menu")]
     [SerializeField] GameObject menu;
+    [SerializeField] MenuSlideAnimator menuAnimator;
 
-    
-    
+
+
 
     public void OpenCharacterMenu()
     {
         PlayerUIManager.instance.menuWindowOpen =true;
         menu.SetActive(true);
+        menuAnimator.ShowMenu();
+        
 
     }
     public void CloseCharacterMenu()
     {
         PlayerUIManager.instance.menuWindowOpen =false;
+        menuAnimator.HideMenu();
         menu.SetActive(false);
 
     }

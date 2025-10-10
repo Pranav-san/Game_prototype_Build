@@ -75,6 +75,7 @@ public class PlayerInputManager : MonoBehaviour
     [SerializeField] float default_Que_Input_Time = 0.35f;
     [SerializeField] float qued_Input_Timer = 0;
     [SerializeField] bool que_RB_Input = false;
+    [SerializeField] bool que_LB_Input = false;
 
 
 
@@ -154,8 +155,15 @@ public class PlayerInputManager : MonoBehaviour
             playerControls.PlayerActions.RB.performed += i => RB_Input = true;
             playerControls.PlayerActions.LB.performed += i => LB_Input = true;
             playerControls.PlayerActions.LB.canceled += i => player.isBlocking = false;
-            playerControls.PlayerActions.LB.canceled += i => player.isAiming = false;
-            playerControls.PlayerActions.LB.canceled += i => PlayerCamera.instance.OnIsAimingChanged(false);
+            //playerControls.PlayerActions.LB.canceled += i => player.isAiming = false;
+            playerControls.PlayerActions.LB.canceled += i => {
+                if (!player.playerCombatManager.isAimLockedOn)
+                {
+                    player.isAiming = false;
+                    PlayerCamera.instance.OnIsAimingChanged(false);
+                }
+               
+               };
 
 
             playerControls.PlayerActions.RT.performed += i => RT_Input = true;
@@ -188,6 +196,7 @@ public class PlayerInputManager : MonoBehaviour
 
             //Qued Inputs
             playerControls.PlayerActions.QueRB.performed += i => QueInput(ref que_RB_Input);
+            playerControls.PlayerActions.QueLB.performed += i => QueInput(ref que_LB_Input);
 
 
 
@@ -269,10 +278,33 @@ public class PlayerInputManager : MonoBehaviour
             RB_Input = true;
 
         }
+        if (que_LB_Input)
+        {
+            LB_Input = true;
+        }
     }
 
     private void HandleLockOnInput()
     {
+        if (LockOn_Input && player.isAiming && !player.playerCombatManager.isAimLockedOn)
+        {
+            LockOn_Input = false;
+            player.playerCombatManager.isAimLockedOn= true;
+            PlayerCamera.instance.OnIsAimingChanged(player.playerCombatManager.isAimLockedOn);
+
+
+
+
+        }
+
+        if(LockOn_Input && player.isAiming && player.playerCombatManager.isAimLockedOn)
+        {
+            LockOn_Input = false;
+            player.playerCombatManager.isAimLockedOn = false;
+            player.isAiming = !player.isAiming;
+            PlayerCamera.instance.OnIsAimingChanged(player.isAiming);
+
+        }
         
         if (player.playerCombatManager.isLockedOn)
             {
@@ -381,6 +413,7 @@ public class PlayerInputManager : MonoBehaviour
                 player.playerEquipmentManager.isTwoHandingWeapon = true;
                 MobileControls.instance.ToggleTwoHandButtonIcon(true);
                 player.playerEquipmentManager.LoadTwoHandWeapon();
+
             }
            
         }
@@ -421,6 +454,7 @@ public class PlayerInputManager : MonoBehaviour
 
     private void HandlePlayerMovementInput()
     {
+        
 
 
         if (useFloatingJoyStick)
@@ -440,8 +474,13 @@ public class PlayerInputManager : MonoBehaviour
 
         moveAmount = Mathf.Clamp01(Mathf.Abs(verticalInput)+ Mathf.Abs(horizontalInput));
 
-        if(!player.canMove)
+        if (!player.canMove)
+        {
+            moveAmount = 0;
             return;
+
+        }
+            
 
         
         if (moveAmount<=0.5 && moveAmount > 0&& !player.isAiming)
@@ -606,15 +645,12 @@ public class PlayerInputManager : MonoBehaviour
             if(player.playerStatsManager.currentStamina < player.playerInventoryManager.currentRightHandWeapon.baseStaminaCost)
                 return;
             player.isUsingRightHand = true;
-
+            player.currentDamageType = player.playerInventoryManager.currentRightHandWeapon.weaponClass;
             player.playerCombatManager.PerformWeaponBasedAction(player.playerInventoryManager.currentRightHandWeapon.OH_RB_Action,player.playerInventoryManager.currentRightHandWeapon);
 
 
 
-           
-
-
-
+     
 
 
         }
@@ -624,6 +660,7 @@ public class PlayerInputManager : MonoBehaviour
     private void QueInput(ref bool  quedInput)
     {
         que_RB_Input = false;
+        que_LB_Input = false;
 
         if(player.isAiming)
             return;
@@ -655,6 +692,7 @@ public class PlayerInputManager : MonoBehaviour
             {
                 //Reset All Input
                 que_RB_Input =false;
+                que_LB_Input =false;
 
 
                 qued_Input_Timer = 0;
@@ -689,7 +727,13 @@ public class PlayerInputManager : MonoBehaviour
         if (player.playerCombatManager.isUsingItem)
             return;
 
-
+        if (!player.isGrounded)
+        {
+            player.isAiming = false;
+            player.playerCombatManager.isAimLockedOn = false;
+            PlayerCamera.instance.OnIsAimingChanged(false);
+            return;
+        }
         if (PlayerCamera.instance.isInFocusMode)
             return;
 
@@ -698,16 +742,15 @@ public class PlayerInputManager : MonoBehaviour
             LB_Input = false;
             player.isUsingLeftHand = true;
           
-
+            player.currentDamageType = player.playerInventoryManager.currentLeftHandWeapon.weaponClass;
             player.playerCombatManager.PerformWeaponBasedAction(player.playerInventoryManager.currentLeftHandWeapon.OH_LB_Action, player.playerInventoryManager.currentLeftHandWeapon);
-           
-
-           
-           
-
-
 
         }
+
+    }
+
+    public void HandleCancleLBInPut()
+    {
 
     }
 

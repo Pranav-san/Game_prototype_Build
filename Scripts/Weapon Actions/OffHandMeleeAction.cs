@@ -1,11 +1,14 @@
+using System.Collections;
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "CharacterActions/WeaponActions/off Hand Melee Action ")]
 public class OffHandMeleeAction : WeaponItemBasedAction
 {
-
-    [SerializeField] string offHand_Attack_01 = "Light_Attack_01";
-    [SerializeField] string offHand_Attack_02 = "Light_Attack_02";
+    [SerializeField] string WeaponBasedOffHand_Attack_Animation;
+    [SerializeField] string Unarmed_OffHand_Attack = "Light_Attack_01";
+    [SerializeField] string Spear_OffHand_Attack = "Light_Attack_01";
+    [SerializeField] string sword_OffHand_Attack = "Light_Attack_01";
+    [SerializeField] string Dagger_OffHand_Attack = "Light_Attack_01";
     public override void AttemptToPerformAction(playerManager playerPerformingAction, WeaponItem weaponPerformingAction)
     {
         base.AttemptToPerformAction(playerPerformingAction, weaponPerformingAction);
@@ -49,29 +52,49 @@ public class OffHandMeleeAction : WeaponItemBasedAction
     private void PerformOffHandAttack(playerManager playerPerformingAction, WeaponItem WeaponPerformingAction)
     {
         //If we are Attacking Currently, And We Can Combo,Perform The Combo Attack
-        if (playerPerformingAction.playerCombatManager.canComboWithOffHandleWeapon&&playerPerformingAction.isPerformingAction)
-        {
-            playerPerformingAction.playerCombatManager.canComboWithOffHandleWeapon = false;
+        //if (playerPerformingAction.playerCombatManager.canComboWithOffHandleWeapon&&playerPerformingAction.isPerformingAction)
+        //{
+        //    playerPerformingAction.playerCombatManager.canComboWithOffHandleWeapon = false;
 
 
 
-            if (playerPerformingAction.characterCombatManager.lastAttackAnimationPerformed==offHand_Attack_01)
-            {
+        //    if (playerPerformingAction.characterCombatManager.lastAttackAnimationPerformed==offHand_Attack_01)
+        //    {
 
-                playerPerformingAction.playerAnimatorManager.PlayTargetAttackActionAnimation(WeaponPerformingAction, AttackType.LightAttack02, offHand_Attack_02, true);
+        //        playerPerformingAction.playerAnimatorManager.PlayTargetAttackActionAnimation(WeaponPerformingAction, AttackType.LightAttack02, offHand_Attack_02, true);
 
 
-            }
-            else
-            {
-                playerPerformingAction.playerAnimatorManager.PlayTargetAttackActionAnimation(WeaponPerformingAction, AttackType.LightAttack01, offHand_Attack_01, true);
-            }
+        //    }
+        //    else
+        //    {
+        //        playerPerformingAction.playerAnimatorManager.PlayTargetAttackActionAnimation(WeaponPerformingAction, AttackType.LightAttack01, offHand_Attack_01, true);
+        //    }
 
-        }
+        //}
         //Otherwise if we are not attacking, Just Perform Regular Attack
-        else if (!playerPerformingAction.isPerformingAction)
+
+        switch (WeaponPerformingAction.weaponClass)
         {
-            playerPerformingAction.playerAnimatorManager.PlayTargetAttackActionAnimation(WeaponPerformingAction, AttackType.LightAttack01, offHand_Attack_01, true);
+            case WeapomClass.spear:
+                WeaponBasedOffHand_Attack_Animation = Spear_OffHand_Attack;
+                break;
+            case WeapomClass.Unarmed:
+                WeaponBasedOffHand_Attack_Animation = Unarmed_OffHand_Attack;
+                break;
+            case WeapomClass.Sword:
+                WeaponBasedOffHand_Attack_Animation = sword_OffHand_Attack;
+                break;
+
+            case WeapomClass.Dagger:
+                WeaponBasedOffHand_Attack_Animation = Dagger_OffHand_Attack;
+                break;
+            default:
+                break;
+        }
+           
+        if (!playerPerformingAction.isPerformingAction)
+        {
+            playerPerformingAction.playerAnimatorManager.PlayOffHandAttackActionAnimation(WeaponPerformingAction, AttackType.LightAttack01, WeaponBasedOffHand_Attack_Animation, true);
 
         }
 

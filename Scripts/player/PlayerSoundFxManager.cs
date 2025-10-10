@@ -25,7 +25,7 @@ public class PlayerSoundFxManager : CharacterSoundFxManager
         
     }
 
-    public override void PlayFootstepSfx(SurfaceType surfaceType)
+    public override void PlayFootStepSFX(SurfaceType surfaceType)
     {
         switch (surfaceType)
         {
@@ -60,6 +60,17 @@ public class PlayerSoundFxManager : CharacterSoundFxManager
                 break;
 
         }
+
+
+        
+    }
+
+    public override void PlayLadderFootStepSfx()
+    {
+        currentFootStepAudioClipToPlay = WorldSoundFXManager.instance.ChooseRandomSoundFxFromArray(WorldSoundFXManager.instance.ladderfootsteps);
+        PlaySoundfx(currentFootStepAudioClipToPlay);
+       
+
     }
 
 

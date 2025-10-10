@@ -11,7 +11,6 @@ public class CharacterAnimatorManager : MonoBehaviour
     int horizontal;
 
     [Header("Damage Animations")]
-
     public string lastAnimationPlayed;
 
 
@@ -94,15 +93,7 @@ public class CharacterAnimatorManager : MonoBehaviour
         right_Medium_Damage.Add(hit_Right_Medium_01);
         //right_Medium_Damage.Add(hit_Right_Medium_02);
     }
-    void OnAnimatorMove()
-    {
-        if (character.applyRootMotion && character.characterController != null)
-        {
-            Vector3 deltaPosition = character.animator.deltaPosition;
-            character.characterController.Move(deltaPosition);
-        }
-    }
-
+   
     
 
 
@@ -270,7 +261,7 @@ public class CharacterAnimatorManager : MonoBehaviour
         character.canRotate = canRotate;
         character.canMove = canMove;
         character.canRun = canrun;
-        character.canRoll = canRoll;    
+        character.canRoll = canRoll;
 
     }
 
@@ -303,11 +294,37 @@ public class CharacterAnimatorManager : MonoBehaviour
        bool canMove = false,
        bool canRoll = false)
     {
+
         character.characterCombatManager.currentAttackType = attackType;
         character.characterCombatManager.lastAttackAnimationPerformed=targetAnimation;
         UpdateAnimatorController(weapon.weaponAnimator);
         character.applyRootMotion = applyRootMotion;
         character.animator.CrossFade(targetAnimation, 0.2f);
+
+        //can be used to stop character from attempting new Actions
+        character.isPerformingAction = isPerformingAction;
+        character.canRoll = canRoll;
+        character.canRotate = canRotate;
+        character.canMove = canMove;
+
+    }
+
+
+    public virtual void PlayOffHandAttackActionAnimation(WeaponItem weapon,
+       AttackType attackType,
+      string targetAnimation,
+      bool isPerformingAction,
+      bool applyRootMotion = true,
+      bool canRotate = false,
+      bool canMove = false,
+      bool canRoll = false)
+    {
+
+        character.characterCombatManager.currentAttackType = attackType;
+        character.characterCombatManager.lastAttackAnimationPerformed=targetAnimation;
+        character.applyRootMotion = applyRootMotion;
+        character.animator.CrossFade(targetAnimation, 0.2f);
+
 
         //can be used to stop character from attempting new Actions
         character.isPerformingAction = isPerformingAction;
@@ -338,6 +355,9 @@ public class CharacterAnimatorManager : MonoBehaviour
 
     public void UpdateAnimatorController(AnimatorOverrideController weaponController)
     {
+        if (character.isPerformingAction)
+            return;
+
         character.animator.runtimeAnimatorController = weaponController;
 
     }

@@ -243,6 +243,8 @@ public class AIBossCharacterManager : AICharacterManager
             GameObject bossHealthBar = Instantiate(PlayerUIManager.instance.playerUIHUDManager.BossHealthBar, PlayerUIManager.instance.playerUIHUDManager.BossHealthBarParent);
 
             UI_Boss_HP_Bar boss_HP_Bar = bossHealthBar.GetComponent<UI_Boss_HP_Bar>();
+            boss_HP_Bar.EnableBossHpBar(this);
+            PlayerUIManager.instance.playerUIHUDManager.currentBossHealthBar = boss_HP_Bar;
             LockOnBillboard LockOnUI = GetComponentInChildren<LockOnBillboard>(true);
 
             
@@ -251,7 +253,7 @@ public class AIBossCharacterManager : AICharacterManager
 
 
 
-            boss_HP_Bar.EnableBossHpBar(this);
+            
 
             characterStatsManager.uI_Character_HP_Bar = boss_HP_Bar;
             characterStatsManager.AIHealthUI = boss_HP_Bar;

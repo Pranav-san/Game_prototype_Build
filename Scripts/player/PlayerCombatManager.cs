@@ -8,6 +8,7 @@ public class PlayerCombatManager : CharacterCombatManager
 
     [SerializeField] playerManager player;
     [SerializeField] public bool isLockedOn = false;
+    [SerializeField] public bool isAimLockedOn = false;
 
     public ProjectileSlot currentProjectileBeingUsed;
 
@@ -74,11 +75,11 @@ public class PlayerCombatManager : CharacterCombatManager
 
     public void PerformWeaponBasedAction(WeaponItemBasedAction weaponAction, WeaponItem WeaponPerformiingAction)
     {
-        //if (weaponAction == null || WeaponPerformiingAction == null)
-        //{
-        //    Debug.LogError("One of the parameters is null.");
-        //    return;
-        //}
+        if (weaponAction == null || WeaponPerformiingAction == null)
+        {
+            Debug.LogError("One of the parameters is null.");
+            return;
+        }
 
         if (!isLockedOn)
         {
@@ -201,6 +202,11 @@ public class PlayerCombatManager : CharacterCombatManager
             case AttackType.LightAttack02:
                 staminaDeducted = currentWeaponBeingUsed.baseStaminaCost*currentWeaponBeingUsed.lightAttackStaminaCostMultiplier;
                 break;
+
+            case AttackType.HeavyAttack01:
+                staminaDeducted = currentWeaponBeingUsed.baseStaminaCost*currentWeaponBeingUsed.heavyAttackStaminaCostMultiplier;
+                break;
+
 
             default:
                 break;

@@ -6,7 +6,11 @@ using UnityEngine.TextCore.Text;
 
 public class CharacterManager : MonoBehaviour
 {
+    public Animator animator;
     [HideInInspector] public CharacterController characterController;
+
+
+    [Header("Scripts")]
     [HideInInspector] public CharacterEffectsManager characterEffectsManager;
     [HideInInspector] public CharacterAnimatorManager characterAnimatorManager;
     [HideInInspector]public CharacterCombatManager characterCombatManager;
@@ -14,20 +18,18 @@ public class CharacterManager : MonoBehaviour
     public CharacterStatsManager characterStatsManager;
     [HideInInspector] public CharacterSoundFxManager characterSoundFxManager;
 
-    //public bool isDead;
-
-    //public float maxHealth = 100;
-    //public float currentHealth = 100;   
 
 
-
-    public Animator animator;
+    
 
     [Header("Character Group")]
     public CharacterGroup characterGroup;
 
     [Header("NPC")]
     public bool isFriendly = false;
+
+    [Header("Current Weapon Type")]
+    public WeapomClass currentDamageType = WeapomClass.Unarmed;
 
 
 
@@ -43,21 +45,18 @@ public class CharacterManager : MonoBehaviour
     public bool isGrounded = true;
     public bool canRotate = true;
     public bool canMove = true;
+
     public bool isMoving = false;
     public bool canRun = true;
     public bool canRoll = true;
-
     public bool isSprinting = false;
 
     public bool isChargingAttack = false;
-
     public bool isBlocking = false;
     public bool isAttacking = false;
     public bool isInvulnerable = false;
-
     public bool isPerformingCriticalAttack =  false;
 
-    public bool isReloadedWeapon = false;
 
     public bool isGrappled = false;
 
@@ -66,6 +65,8 @@ public class CharacterManager : MonoBehaviour
     public bool isHoldingArrow = false;
     public bool isAiming = false;
     public bool FireBullet = false;
+    public bool isReloadedWeapon = false;
+    public bool isExitingToEmptyAfterReload = false;
 
 
 
@@ -97,7 +98,7 @@ public class CharacterManager : MonoBehaviour
         animator.SetBool("isMoving", isMoving);
 
         OnIsChargingAttack(isChargingAttack);
-        //OnIsBlocking(isBlocking);
+        OnIsBlocking(isBlocking);
 
     }
 
@@ -155,28 +156,6 @@ public class CharacterManager : MonoBehaviour
         Time.fixedDeltaTime = 0.02f;
     }
 
-    void OnAnimatorMove()
-    {
-        if (applyRootMotion && characterController != null)
-        {
-            // Animation movement this frame
-            Vector3 deltaPosition = animator.deltaPosition;
-
-            deltaPosition +=  characterLocomotionManager.yVelocity * Time.deltaTime;
-
-
-            if (isPerformingAction)
-            {
-                deltaPosition = Vector3.ClampMagnitude(deltaPosition, 0.08f);
-                // 0.08f is max per frame; tweak to match old feel
-            }
-
-            // Move using CharacterController (keeps collisions active)
-            characterController.Move(deltaPosition);
-
-            // Apply animation rotation
-            transform.rotation *= animator.deltaRotation;
-        }
-    }
+   
 
 }

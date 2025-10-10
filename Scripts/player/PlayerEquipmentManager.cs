@@ -24,7 +24,7 @@ public class PlayerEquipmentManager : CharacterEquipmentManager
     [SerializeField] bool equipNewItem = false;
 
     [Header("Two Handing")]
-    [SerializeField]  public bool isTwoHandingWeapon = false;
+    [SerializeField] public bool isTwoHandingWeapon = false;
     [SerializeField] public int currentWeaponBeingTwoHanded;
 
     [Header("Notched Arrow")]
@@ -32,7 +32,7 @@ public class PlayerEquipmentManager : CharacterEquipmentManager
 
 
     [Header("General Equipments Models")]
-    [HideInInspector]public GameObject HatsObject;
+    [HideInInspector] public GameObject HatsObject;
     [HideInInspector] public GameObject[] HalfHelmets;
     public GameObject HoodsObject;
     public GameObject[] hoods;
@@ -40,24 +40,25 @@ public class PlayerEquipmentManager : CharacterEquipmentManager
 
     [Header("Male Equipment Models")]
     public GameObject maleFullHelmetObject;
-    [HideInInspector]public GameObject[] maleHeadFullHelmets;
+    [HideInInspector] public GameObject[] maleHeadFullHelmets;
     public GameObject maleFullBodyObject;
-    /*[HideInInspector]*/ public GameObject[] maleBodies;
+    /*[HideInInspector]*/
+    public GameObject[] maleBodies;
     public GameObject maleFullLegObject;
-    [HideInInspector]public GameObject[] maleFullLegArmor;
+    [HideInInspector] public GameObject[] maleFullLegArmor;
     public GameObject maleFullHandObject;
     [HideInInspector] public GameObject[] maleFullHandArmor;
 
     [Header("Weapon Ik Targets")]
-    [SerializeField]RightHandIKTarget rightHandIKTarget;
-    [SerializeField]LeftHandIKTarget leftHandIKTarget;
+    [SerializeField] RightHandIKTarget rightHandIKTarget;
+    [SerializeField] LeftHandIKTarget leftHandIKTarget;
 
 
     private void Update()
     {
-        if(equipNewItem)
+        if (equipNewItem)
         {
-            equipNewItem = false ;
+            equipNewItem = false;
             DebugEquipNewItems();
         }
     }
@@ -65,17 +66,17 @@ public class PlayerEquipmentManager : CharacterEquipmentManager
     public void DebugEquipNewItems()
     {
         Debug.Log("Equipping new Items");
-        
+
         LoadHeadEquipment(player.playerInventoryManager.headEquipment);
-        
-        
+
+
         LoadBodyEquipment(player.playerInventoryManager.bodyEquipment);
-       
-        
+
+
         LoadLegEquipment(player.playerInventoryManager.legEquipment);
 
         LoadHandEquipment(player.playerInventoryManager.handEquipment);
-        
+
 
     }
 
@@ -85,7 +86,7 @@ public class PlayerEquipmentManager : CharacterEquipmentManager
         player = GetComponent<playerManager>();
         InitializeWeaponSlots();
 
-        
+
         List<GameObject> Hoodslist = new List<GameObject>();
 
         //foreach (Transform child in HoodsObject.transform)
@@ -325,7 +326,7 @@ public class PlayerEquipmentManager : CharacterEquipmentManager
 
     public void SwitchLeftWeapon()
     {
-        if(isTwoHandingWeapon)
+        if (isTwoHandingWeapon)
             return;
         WeaponItem selectedWeapon = null;
 
@@ -387,6 +388,7 @@ public class PlayerEquipmentManager : CharacterEquipmentManager
 
     }
 
+    //Two Hand
     public void LoadTwoHandWeapon()
     {
         WeaponItem weapon = player.playerInventoryManager.weaponsInTwoHandSlot[0];
@@ -407,8 +409,10 @@ public class PlayerEquipmentManager : CharacterEquipmentManager
         if (leftHandWeaponModel != null) Destroy(leftHandWeaponModel);
 
         bool isBow = weapon.weaponClass == WeapomClass.Bow;
+        bool isGun = weapon.weaponClass == WeapomClass.Gun;
 
-        isTwoHandingWeapon = true;
+        player.playerInventoryManager.currentTwoHandWeapon = weapon;
+        player.playerInventoryManager.currentTwoHandWeaponID = weapon.itemID;
         currentWeaponBeingTwoHanded = weapon.itemID;
 
         player.playerInventoryManager.currentRightHandWeapon = weapon;
@@ -432,18 +436,25 @@ public class PlayerEquipmentManager : CharacterEquipmentManager
             rightWeaponManager.SetWeaponDamage(player, weapon);
             rightHandIKTarget = rightWeaponHandSlot.GetComponentInChildren<RightHandIKTarget>();
             leftHandIKTarget = rightWeaponHandSlot.GetComponentInChildren<LeftHandIKTarget>();
-            projectileInstantiationTransform = rightWeaponHandSlot.GetComponentInChildren<projectileInstantiationLocation>().transform;
 
 
-            if (leftHandIKTarget != null && rightHandIKTarget !=null)
+
+            if (isGun)
             {
-                player.playerAnimatorManager.AssignHandIK(rightHandIKTarget, leftHandIKTarget);
-                player.playerAnimatorManager.EnableDisableIK(0, 0);
+                projectileInstantiationTransform = rightWeaponHandSlot.GetComponentInChildren<projectileInstantiationLocation>().transform;
+                if (leftHandIKTarget != null && rightHandIKTarget !=null)
+                {
+                    player.playerAnimatorManager.AssignHandIK(rightHandIKTarget, leftHandIKTarget);
+                    player.playerAnimatorManager.EnableDisableIK(0, 0);
+                }
+
             }
 
+            player.playerAnimatorManager.UpdateAnimatorController(weapon.weaponAnimator);
         }
 
-        player.playerAnimatorManager.UpdateAnimatorController(weapon.weaponAnimator);
+
+
     }
 
     public void SaveCurrentOneHandedWeapons()
@@ -472,7 +483,7 @@ public class PlayerEquipmentManager : CharacterEquipmentManager
         LoadWeaponOnBothHands();
     }
 
-   
+
 
 
 
@@ -552,7 +563,7 @@ public class PlayerEquipmentManager : CharacterEquipmentManager
         UnloadHeadEquipmentModel();
 
         // 2. IF EQUIPMENT IS NULL SIMPLY SET EQUIPMENT IN INVENTORY TO NULL AND RETURN
-        if(equipment == null)
+        if (equipment == null)
         {
             player.playerInventoryManager.headEquipment = null;
             return;
@@ -583,7 +594,7 @@ public class PlayerEquipmentManager : CharacterEquipmentManager
             default:
                 break;
         }
-        foreach(var model in equipment.equipmentModels)
+        foreach (var model in equipment.equipmentModels)
         {
             model.LoadModel(player, true);
 
@@ -592,7 +603,7 @@ public class PlayerEquipmentManager : CharacterEquipmentManager
         // 7. CALCULATE TOTAL ARMOR ABSORPTION
         player.playerStatsManager.calculateTotalArmorAbsorption();
 
-        
+
     }
 
     private void UnloadHeadEquipmentModel()
@@ -641,7 +652,7 @@ public class PlayerEquipmentManager : CharacterEquipmentManager
 
         player.playerBodyManager.DisableDefaultUpperBodyClothes();
 
-       
+
         foreach (var model in equipment.equipmentModels)
         {
             model.LoadModel(player, true);
@@ -655,7 +666,7 @@ public class PlayerEquipmentManager : CharacterEquipmentManager
     private void UnLoadBodyEquipmentModels()
     {
 
-        foreach(var model in maleBodies)
+        foreach (var model in maleBodies)
         {
             model.SetActive(false);
 
@@ -725,7 +736,7 @@ public class PlayerEquipmentManager : CharacterEquipmentManager
     {
         // 1. UNLOAD OLD EQUIPMENT MODELS (IF ANY)
         UnLoadHandEquipmentModels();
-        
+
         // 2. IF EQUIPMENT IS NULL SIMPLY SET EQUIPMENT IN INVENTORY TO NULL AND RETURN
         if (equipment == null)
         {
@@ -782,11 +793,11 @@ public class PlayerEquipmentManager : CharacterEquipmentManager
             LoadHeadEquipment(null);
         }
 
-        
-        
+
+
     }
 
-    
+
 
 
 
@@ -795,20 +806,20 @@ public class PlayerEquipmentManager : CharacterEquipmentManager
         Collider chararacterControllerCollider = GetComponent<Collider>();
         Collider[] damageableCharactersColliders = GetComponentsInChildren<Collider>();
 
-        List <Collider> ignoreColliders = new List <Collider>();
+        List<Collider> ignoreColliders = new List<Collider>();
 
-        foreach(var collider in damageableCharactersColliders)
+        foreach (var collider in damageableCharactersColliders)
         {
-            ignoreColliders.Add(collider);  
+            ignoreColliders.Add(collider);
         }
         ignoreColliders.Add(chararacterControllerCollider);
 
 
-        foreach(var collider in ignoreColliders)
+        foreach (var collider in ignoreColliders)
         {
-            foreach(var otherColliders in ignoreColliders)
+            foreach (var otherColliders in ignoreColliders)
             {
-                Physics.IgnoreCollision(collider, otherColliders,true);
+                Physics.IgnoreCollision(collider, otherColliders, true);
             }
         }
     }
@@ -817,16 +828,30 @@ public class PlayerEquipmentManager : CharacterEquipmentManager
 
     public void OpenDamageCollider()
     {
-        if(player.isUsingRightHand)
+        if (player.isUsingRightHand)
         {
             rightWeaponManager.meleeDamageCollider.EnableDamageCollider();
 
-            player.characterSoundFxManager.PlaySoundfx(WorldSoundFXManager.instance.ChooseRandomSoundFxFromArray(player.playerInventoryManager.currentRightHandWeapon.whooshes));
+            if (isTwoHandingWeapon&& player.playerInventoryManager.currentTwoHandWeapon.weaponClass != WeapomClass.Gun &&
+                player.playerInventoryManager.currentTwoHandWeapon.weaponClass != WeapomClass.Bow)
+            {
+                player.characterSoundFxManager.PlaySoundfx(WorldSoundFXManager.instance.ChooseRandomSoundFxFromArray(player.playerInventoryManager.currentTwoHandWeapon.whooshes));
+
+            }
+            else
+            {
+
+                player.characterSoundFxManager.PlaySoundfx(WorldSoundFXManager.instance.ChooseRandomSoundFxFromArray(player.playerInventoryManager.currentRightHandWeapon.whooshes));
+
+            }
+
+
 
         }
-        else if(player.isUsingLeftHand)
+        else if (player.isUsingLeftHand)
         {
             leftWeaponManager.meleeDamageCollider.EnableDamageCollider();
+            player.characterSoundFxManager.PlaySoundfx(WorldSoundFXManager.instance.ChooseRandomSoundFxFromArray(player.playerInventoryManager.currentLeftHandWeapon.whooshes));
 
         }
     }
@@ -864,9 +889,9 @@ public class PlayerEquipmentManager : CharacterEquipmentManager
 
         //Instantiate Arrow
 
-        notchedArrow = Instantiate(WorldItemDatabase.instance.GetProjectileByID(projectileID).drawProjectileModel, 
+        notchedArrow = Instantiate(WorldItemDatabase.instance.GetProjectileByID(projectileID).drawProjectileModel,
             player.playerEquipmentManager.rightWeaponHandSlot.transform);
-       
+
 
 
 
@@ -886,6 +911,8 @@ public class PlayerEquipmentManager : CharacterEquipmentManager
 
 
     }
-   
+
     
+
+
 }

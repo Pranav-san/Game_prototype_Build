@@ -10,6 +10,7 @@ public class PlayerUIInventoryManager : MonoBehaviour
 
     [Header("Menu")]
     [SerializeField] GameObject menu;
+    [SerializeField]MenuSlideAnimator menuAnimator;
 
     [Header("Highligt Icons")]
     [SerializeField] Image highlightedAllItemsIcon;
@@ -31,22 +32,24 @@ public class PlayerUIInventoryManager : MonoBehaviour
     {
         PlayerUIManager.instance.menuWindowOpen =true;
         menu.SetActive(true);
+        menuAnimator.ShowMenu();
         inventoryWindow.SetActive(true);
 
     }
     public void CloseInventoryManagermenu()
     {
         PlayerUIManager.instance.menuWindowOpen =false;
+        menuAnimator.HideMenu();    
         menu.SetActive(false);
     }
 
-    public void OpenIntemInfoWindow()
+    public void OpenItemInfoWindow()
     {
         itemInfoGameObject.SetActive(true);
 
     }
 
-    public void CloseIntemInfoWindow()
+    public void CloseItemInfoWindow()
     {
         itemInfoGameObject.SetActive(false);
 
@@ -110,13 +113,13 @@ public class PlayerUIInventoryManager : MonoBehaviour
             
 
             //This Will Select The First Button In The List
-            if (!hasSelectedFirstInventorySlot)
-            {
-                hasSelectedFirstInventorySlot = true;
-                Button inventorySlotButton = inventorySlotGameObject.GetComponent<Button>();
-                inventorySlotButton.Select();
-                inventorySlotButton.OnSelect(null);
-            }
+            //if (!hasSelectedFirstInventorySlot)
+            //{
+            //    hasSelectedFirstInventorySlot = true;
+            //    Button inventorySlotButton = inventorySlotGameObject.GetComponent<Button>();
+            //    inventorySlotButton.Select();
+            //    inventorySlotButton.OnSelect(null);
+            //}
         }
 
     }

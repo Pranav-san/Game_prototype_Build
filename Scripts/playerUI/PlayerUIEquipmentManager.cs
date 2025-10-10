@@ -10,6 +10,7 @@ public class PlayerUIEquipmentManager : MonoBehaviour
     
     [Header("Menu")]
     [SerializeField] GameObject menu;
+    [SerializeField] MenuSlideAnimator menuAnimator;
 
     [Header("Weapon Slots")]
     [SerializeField] Image rightHandSlot01;
@@ -90,6 +91,7 @@ public class PlayerUIEquipmentManager : MonoBehaviour
 
 
 
+
     
 
 
@@ -97,6 +99,7 @@ public class PlayerUIEquipmentManager : MonoBehaviour
     {
         PlayerUIManager.instance.menuWindowOpen =true;
         menu.SetActive(true);
+        menuAnimator.ShowMenu();
         equipmentInventoryWindow.SetActive(false);
         ClearEquipmentInventory();
         RefreshWeaponSlotsIcons();
@@ -105,6 +108,7 @@ public class PlayerUIEquipmentManager : MonoBehaviour
     public void CloseEquipmentManagerMenu()
     {
         PlayerUIManager.instance.menuWindowOpen =false;
+        menuAnimator.HideMenu();
         menu.SetActive(false);
 
     }

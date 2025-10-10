@@ -32,8 +32,9 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
     [Header("Jump")]
     [SerializeField] float jumpHeight = 3;
     private Vector3 jumpDirection;
+    [SerializeField] float jumpForwardSpeed = 7;
 
-    
+
 
     [Header("Surface Type")]
     public SurfaceType CurrentsurfaceType;
@@ -41,12 +42,16 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
     [Header("Ladder")]
     private Vector3 ladderBottom;
     private Vector3 ladderTop;
+    private Vector3 ladderTopStartPoint;
+
     private Vector3 ladderAxis;
-    private float ladderLength;
-    [SerializeField] float ladderProgress;
+    public float ladderLength;
+    public float ladderProgress;
+    public float vertical;
     [SerializeField, Range(0f, 1f)] private float topExitThreshold = 0.9f;
     [SerializeField, Range(0f, 1f)] private float bottomExitThreshold = 0.1f;
-    public bool isExitingLadder = false;
+    private int footStepPhase = 0;
+    private bool isPlayingLadderStepAnim = false;
 
 
 
@@ -95,11 +100,6 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
     {
         GetVerticalAndHorizontalInputs();
 
-        if (!player.canMove)
-        {
-            player.characterController.Move(Vector3.zero);
-            return;
-        }
 
         if (!player.canMove || player.playerInteractionManager.isInspectingObject)
             return;
@@ -181,79 +181,124 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
 
     private void HandleLadderMovement()
     {
-        if (!isClimbingLadder || currentLadderInteractable == null) return;
-        if (isExitingLadder)
+        if (!isClimbingLadder || currentLadderInteractable == null || isExitingLadder ) 
             return;
 
-        float vertical = PlayerInputManager.Instance.verticalInput;
+        ladderProgress = Vector3.Dot(transform.position - ladderBottom, ladderAxis) / ladderLength;
 
+        vertical = PlayerInputManager.Instance.verticalInput;
 
-
-        // Feed animator
-        player.playerAnimatorManager.UpdateAnimatorMovementParameters(0, vertical, false, false);
-
-        // Move using CharacterController
-        if (Mathf.Abs(vertical) > 0.05f)
+        if (ladderProgress >= 0.82f && vertical > 0)
         {
-            Vector3 climbDir = Vector3.up * vertical * currentLadderInteractable.climbSpeed * Time.deltaTime;
-            transform.position += climbDir;
+            PlayLadderExit(true);
+            return;// true = exit top
+        }
+        else if (ladderProgress <= 0.035f && vertical < 0)
+        {
+            PlayLadderExit(false);
+            return;// false = exit bottom
         }
 
-        Vector3 toPlayer = transform.position - ladderBottom;
-        ladderProgress = Vector3.Dot(toPlayer, ladderAxis) / ladderLength;
 
-        if (ladderProgress >= topExitThreshold && vertical > 0.05f) //Close to Top, Stop Climbing Up
+        if (Mathf.Abs(vertical) > 0.05f && !isPlayingLadderStepAnim)
         {
-            ExitLadder(currentLadderInteractable);
-            player.playerAnimatorManager.UpdateAnimatorMovementParameters(0, 0, false, false);
-            return;
-        }
-        if (ladderProgress <= bottomExitThreshold && vertical < -0.05f) //Close to Bottom, Stop Climbing down
-        {
-            ExitLadder(currentLadderInteractable);
-            player.playerAnimatorManager.UpdateAnimatorMovementParameters(0, 0, false, false);
-            return;
-        }
+            isPlayingLadderStepAnim = true;
+            footStepPhase = (footStepPhase + 1) % 2;
 
-        // keep facing the ladder
+            string animationName;
+
+            if (vertical > 0)
+            {
+                if (footStepPhase == 0)
+                    animationName = "Ladder_Up_LeftFootUp";
+                else
+                    animationName = "Ladder_Up_RightFootUp";
+            }
+            else
+            {
+                if (footStepPhase == 0)
+                    animationName = "Ladder_Down_LeftFootUp";
+                else
+                    animationName = "Ladder_Down_RightFootUp";
+            }
+
+            player.playerAnimatorManager.PlayTargetActionAnimation(animationName, false, true);
+        }
 
     }
 
+    public void OnLadderStepAnimationEnd()
+    {
+        isPlayingLadderStepAnim = false;
+        PlayLadderFootstepSfx();
+    }
 
+    public void OnLadderStartTopEnd()
+    {
+       //transform.position = ladderTopStartPoint;
+    }
+
+    public void LadderTopExitPosition()
+    {
+        transform.position = ladderTopStartPoint;
+    }
 
     public void EnterLadder(LadderInteractable ladder)
     {
 
         currentLadderInteractable = ladder;
+        ladderTop = currentLadderInteractable.ladderTopPoint.position;
+        ladderBottom = currentLadderInteractable.ladderBottomPoint.position;
+        ladderTopStartPoint = currentLadderInteractable.ladderTopStartPoint.position;
+        ladderProgress = 0f;
+        ladderAxis = (ladderTop - ladderBottom).normalized;
+        ladderLength = Vector3.Distance(currentLadderInteractable.ladderTopPoint.position, currentLadderInteractable.ladderBottomPoint.position);
+        player.HideWeaponmodel();
 
         if (currentLadderInteractable == null)
             return;
 
         if (ladder.isTopPoint && !isClimbingLadder)
         {
-            Vector3 targetDirection = ladder.ladderTopStartPoint.forward;
+            
+            Vector3 targetDirection = ladder.ladderTopPoint.forward;
             targetDirection.y = 0;
             if (targetDirection != Vector3.zero)
                 transform.rotation = Quaternion.LookRotation(targetDirection);
-
             transform.position = ladder.ladderTopStartPoint.position;
 
-            player.playerAnimatorManager.PlayTargetActionAnimation("Climb_Down_Start 0", false, false);
-            isClimbingLadder = true;
+
+            if (transform.position == ladder.ladderTopStartPoint.position)
+            {
+                isClimbingLadder = true;
+                player.characterController.Move(Vector3.zero);
+                player.playerAnimatorManager.PlayTargetActionAnimation("Ladder_StartTop", false, true);
+
+            }
 
 
         }
         else if (!ladder.isTopPoint && !isClimbingLadder)
         {
-            Vector3 targetDirection = ladder.ladderTopPoint.forward;
+
+            Vector3 targetDirection = ladder.ladderBottomPoint.forward;
             targetDirection.y = 0;
             if (targetDirection != Vector3.zero)
                 transform.rotation = Quaternion.LookRotation(targetDirection);
 
             transform.position = ladder.ladderBottomPoint.position;
 
-            player.playerAnimatorManager.PlayTargetActionAnimation("Climb_Up_Start", false, false);
-            isClimbingLadder =true;
+            if(transform.position == ladder.ladderBottomPoint.position)
+            {
+                isClimbingLadder =true;
+                player.characterController.Move(Vector3.zero);
+                player.playerAnimatorManager.PlayTargetActionAnimation("Ladder_StartBottom", false, false);
+
+
+            }
+
+
+
 
 
         }
@@ -262,45 +307,47 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
 
         // Enter ladder state
         isClimbingLadder = true;
+        isPlayingLadderStepAnim = false;
         player.animator.SetBool("isClimbingLadder", true);
-
-        ladderBottom = ladder.ladderBottomPoint.position;
-        ladderTop = ladder.ladderTopPoint.position;
-        ladderAxis = (ladderTop - ladderBottom);
-        ladderLength = ladderAxis.magnitude;
-        ladderAxis.Normalize();
     }
 
-    public void ExitLadder(LadderInteractable ladder)
+    private void PlayLadderExit(bool exitAtTop)
     {
-        if (!isClimbingLadder || currentLadderInteractable == null)
-            return;
+        if (!isClimbingLadder || isExitingLadder) return;
 
         isClimbingLadder = false;
         isExitingLadder = true;
 
+        string exitAnim;
 
-        // Decide if it's top or bottom based on ladderProgress
-        if (ladderProgress > 0.1)
+        if (exitAtTop)
         {
-            // Snap to top
-            transform.position = ladderTop;
-
-            // Play climb-up exit animation
-            player.playerAnimatorManager.PlayTargetActionAnimation("Climb_Up_To_Idle", true);
+            exitAnim = (footStepPhase == 0)
+                ? "Ladder_End_Top_LeftFootUp"
+                : "Ladder_End_Top_RightFootUp";
         }
-        else if (ladderProgress <= 0.01f)
+        else
         {
-            // Snap to bottom
-            transform.position = ladderBottom;
-
-            // Play climb-down exit animation
-            player.playerAnimatorManager.PlayTargetActionAnimation("Climb_Down_To_Idle", true);
+            exitAnim = (footStepPhase == 0)
+                ? "Ladder_End_Bottom_LeftFootUp"
+                : "Ladder_End_Bottom_RightFootUp";
         }
 
+        player.playerAnimatorManager.PlayTargetActionAnimation(exitAnim, false, true);
         currentLadderInteractable = null;
-
+        ladderProgress = 0;
+        player.UnHideWeaponmodel();
     }
+
+
+
+
+
+
+
+
+
+
 
     public void PlayFootstepSfx()
     {
@@ -322,6 +369,9 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
         if (player.isPerformingAction)
             return;
 
+        if(isClimbingLadder|| isExitingLadder)
+            return;
+
         Vector3 origin = transform.position + Vector3.up * 0.5f;
         if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, 2f, groundLayer))
         {
@@ -329,7 +379,8 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
 
             if (hit.collider.TryGetComponent<FootstepSurface>(out var surf))
                 CurrentsurfaceType = surf.surface;
-            player.characterSoundFxManager.PlayFootstepSfx(CurrentsurfaceType);
+            player.characterSoundFxManager.PlayFootStepSFX(CurrentsurfaceType);
+            WorldSoundFXManager.instance.AlertNearByCharactersToSound(transform.position, 10);
 
 
         }
@@ -337,9 +388,19 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
         {
             // fallback default
             CurrentsurfaceType = SurfaceType.Default;
-            player.characterSoundFxManager.PlayFootstepSfx(CurrentsurfaceType);
+            player.characterSoundFxManager.PlayFootStepSFX(CurrentsurfaceType);
+            WorldSoundFXManager.instance.AlertNearByCharactersToSound(transform.position, 10);
 
         }
+    }
+
+    public void PlayLadderFootstepSfx()
+    {
+
+        if (!isClimbingLadder|| isExitingLadder)
+            return;
+
+        player.characterSoundFxManager.PlayLadderFootStepSfx();
     }
 
 
@@ -444,7 +505,7 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
     {
         if (player.isJumping)
         {
-            player.characterController.Move(jumpDirection*runningSpeed* Time.deltaTime);
+            player.characterController.Move(jumpDirection*jumpForwardSpeed* Time.deltaTime);
         }
     }
 
@@ -502,7 +563,7 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
                 //perform Roll Animation
                 player.isMoving = false;
                 player.playerAnimatorManager.PlayTargetActionAnimation("Roll", true, true);
-                player.playerLocomotionManager.isRolling = true;
+                isRolling = true;
 
             }
             else
@@ -579,7 +640,7 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
 
     }
 
-    public void ApplyJumpVelocity()
+    public void ApplyJumpingVelocity()
     {
         yVelocity.y = Mathf.Sqrt(jumpHeight * -2 * gravityForce);
     }
@@ -639,6 +700,19 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
 
 
 
+    }
+
+    public void OnLadderExitAnimationEnd()
+    {
+        isExitingLadder = false;
+        currentLadderInteractable = null;
+        player.animator.SetBool("isClimbingLadder", false);
+
+        // Optional: snap to top/bottom point to avoid drift
+        //if (ladderProgress >= 0.95f)
+        //    transform.position = currentLadderInteractable.ladderTopPoint.position;
+        //else if (ladderProgress <= 0.05f)
+        //    transform.position = currentLadderInteractable.ladderBottomPoint.position;
     }
 
 

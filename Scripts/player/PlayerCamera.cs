@@ -20,8 +20,13 @@ public class PlayerCamera : MonoBehaviour
 
     public PlayerLocomotionManager playerLocomotionManager;
 
+    [Header("Debug")]
+    [SerializeField] private bool isGamepadConnected;
+
     [Header("Camera Settings")]
     public float cameraSmoothSpeed = 1;
+    public float cameraRollSmoothSpeed = 1;
+    public float cameraAimSmoothSpeed = 1;
     public float cameraRotateSpeedWhenPlayerIsTurning = 1;
     public float leftAndRightRotationSpeed = 220;
     public float upAndDownRotationSpeed = 220;
@@ -30,6 +35,7 @@ public class PlayerCamera : MonoBehaviour
     public float cameraCollisionRadius = 0.2f;
     public LayerMask collideWithLayers;
     public float CameraFOV = 60;
+    public float CameraAimingFOV = 45;
 
     [Header("Aim")]
     public Transform followTransformWhenAiming;
@@ -104,6 +110,7 @@ public class PlayerCamera : MonoBehaviour
 
     private void Update()
     {
+
         CheckInputActivity();
         HandleAllCameraActions();
 
@@ -186,13 +193,20 @@ public class PlayerCamera : MonoBehaviour
         if (player.isAiming)
         {
 
-            Vector3 targetCameraPosition = Vector3.SmoothDamp(transform.position, followTransformWhenAiming.transform.position, ref cameraVelocity, cameraSmoothSpeed);
+            Vector3 targetCameraPosition = Vector3.SmoothDamp(transform.position, followTransformWhenAiming.transform.position, ref cameraVelocity, cameraAimSmoothSpeed);
             transform.position = targetCameraPosition;
 
 
 
         }
-        else if (player.isGrappled)
+        else if (player.playerLocomotionManager.isRolling)
+        {
+                Vector3 targetCameraPosition = Vector3.SmoothDamp(transform.position, player.transform.position, ref cameraVelocity, cameraRollSmoothSpeed);
+                transform.position = targetCameraPosition;
+
+
+            }
+            else if (player.isGrappled)
         {
             Vector3 targetCameraPosition = Vector3.SmoothDamp(transform.position, followTransformWhenAiming.transform.position, ref cameraVelocity, cameraSmoothSpeed);
             transform.position = targetCameraPosition;
@@ -273,6 +287,13 @@ public class PlayerCamera : MonoBehaviour
             {
                 leftAndRightLookAngle = (PlayerInputManager.Instance.cameraHorizontalInput * leftAndRightRotationSpeed) * Time.deltaTime;
                 upAndDownLookAngle = -(PlayerInputManager.Instance.cameraVerticalInput * upAndDownRotationSpeed) * Time.deltaTime;
+
+                if (isGamepadConnected)
+                {
+                    leftAndRightLookAngle += (PlayerInputManager.Instance.cameraHorizontalInput * 100) * Time.deltaTime;
+                    upAndDownLookAngle -= (PlayerInputManager.Instance.cameraVerticalInput * 100) * Time.deltaTime;
+
+                }
 
                 if (touchField != null && touchField.SwipeDelta != Vector2.zero)
                 {
@@ -368,17 +389,25 @@ public class PlayerCamera : MonoBehaviour
     public void OnIsAimingChanged(bool isAiming)
     {
         //Reset Local EulerAngles Of the Camera Object When Not Aiming
-        if (!isAiming)
+        if (!isAiming ||player.isExitingToEmptyAfterReload)
         {
             hasInitializedAim = false;
             cameraObject.transform.localEulerAngles = new Vector3(0, 0, 0);
-            player.playerAnimatorManager.EnableDisableIK(0, 0);
-            player.playerAnimatorManager.UpdateAimedConstraints();
+            if (player.playerInventoryManager.currentTwoHandWeapon != null && player.playerInventoryManager.currentTwoHandWeapon.weaponClass == WeapomClass.Gun || player.playerInventoryManager.currentRightHandWeapon.weaponClass == WeapomClass.Gun)
+            {
+                player.playerAnimatorManager.EnableDisableIK(0, 0);
+                player.playerAnimatorManager.UpdateAimedConstraints();
+
+            } 
+           
+            player.isExitingToEmptyAfterReload = false;
+            
 
 
 
 
-            Debug.Log("Reset CamObj");
+
+            //Debug.Log("Reset CamObj");
 
 
         }
@@ -386,14 +415,16 @@ public class PlayerCamera : MonoBehaviour
         else
         {
 
-
+            
             leftAndRightLookAngle = transform.eulerAngles.y;
             upAndDownLookAngle = -4f;
             hasInitializedAim = true;
-            player.playerAnimatorManager.EnableDisableIK(1, 1);
-            player.playerAnimatorManager.UpdateAimedConstraints();
+            if(player.playerInventoryManager.currentTwoHandWeapon.weaponClass == WeapomClass.Gun || player.playerInventoryManager.currentRightHandWeapon.weaponClass == WeapomClass.Gun)
+            {
+                player.playerAnimatorManager.EnableDisableIK(1, 1);
+                player.playerAnimatorManager.UpdateAimedConstraints();
 
-
+            }
             Debug.Log("Reset CamPivot");
 
         }
@@ -687,6 +718,10 @@ public class PlayerCamera : MonoBehaviour
 
     }
 
+    
+
+
+   
 
 }
 

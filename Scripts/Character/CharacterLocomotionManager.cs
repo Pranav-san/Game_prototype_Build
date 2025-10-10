@@ -6,6 +6,8 @@ public class CharacterLocomotionManager : MonoBehaviour
 {
     public CharacterManager character;
 
+    [Header("Roll")]
+    [SerializeField] public bool isRolling = false;
 
     [Header("GroundCheck & Jumping")]
 
@@ -14,16 +16,17 @@ public class CharacterLocomotionManager : MonoBehaviour
     [SerializeField] protected LayerMask groundLayer;
     [SerializeField] public Vector3 yVelocity;
     [SerializeField] protected float groundedYVelocity=-20;//force at which character is sticking to the GROUND
-
-    [SerializeField] public bool isRolling=false;
     
     [SerializeField] protected float fallStartYVelocity = -5;
     protected bool fallingVelocityHasBeenSet = false;
     protected float inAirTimer=0;
 
-    [Header("Ladder")]
-    public bool isClimbingLadder = false;
-    public LadderInteractable currentLadderInteractable;
+    [Header("Fall Damage")]
+    [SerializeField] private float fallDamageThreshold = 5f;
+    [SerializeField] private float fallDamageMultiplier = 5f;
+    [SerializeField] private float maximumFallDurationBeforeDeath = 6f;
+    private float fallStartHeight;
+
 
     [Header("Slope Sliding")]
     [SerializeField] float slopeSlideStartPositionYOffeset = 1;
@@ -38,6 +41,11 @@ public class CharacterLocomotionManager : MonoBehaviour
     [SerializeField] float characterCollisionCheckSphereMultiplier = 1.5f;
     [SerializeField] float characterSlideOffCollisionMaxDistance = 5f;
 
+    [Header("Ladder")]
+    public bool isExitingLadder = false;
+    public bool isClimbingLadder = false;
+    public LadderInteractable currentLadderInteractable;
+
     protected virtual void Awake()
     {
         character = GetComponent<CharacterManager>();
@@ -46,17 +54,26 @@ public class CharacterLocomotionManager : MonoBehaviour
 
     protected virtual void Update()
     {
+        if (character.characterStatsManager.isDead)
+            return;
 
-        
         HandleGroundCheck();
         SetGroundedVelocity();
         HandleSlopeSlideCheck();
 
-        if (isClimbingLadder)
+       
+
+        if (isClimbingLadder || isExitingLadder)
         {
             // skip gravity and normal movement while climbing
             yVelocity = Vector3.zero;
             return;
+        }
+        //If inAirTimer is Greater thanor Equal To maximumFallDurationBeforeDeath Kill Player
+        if (!character.isGrounded && inAirTimer >= maximumFallDurationBeforeDeath && !character.characterStatsManager.isDead)
+        {
+            character.characterStatsManager.ConsumeHealth(character.characterStatsManager.maxHealth);
+
         }
         if (character.isGrounded)
         {
@@ -65,6 +82,7 @@ public class CharacterLocomotionManager : MonoBehaviour
                 inAirTimer = 0;
                 fallingVelocityHasBeenSet = false;
                 yVelocity.y = groundedYVelocity;
+                
             }
         }
         else
@@ -75,13 +93,13 @@ public class CharacterLocomotionManager : MonoBehaviour
                 yVelocity.y = fallStartYVelocity;
             }
             inAirTimer =inAirTimer + Time.deltaTime;
-            character.animator.SetFloat("inAirTimer", inAirTimer);
 
             yVelocity.y += gravityForce * Time.deltaTime;
 
             
         }
         character.characterController.Move(yVelocity*Time.deltaTime);
+        character.animator.SetFloat("inAirTimer", inAirTimer);
     }
 
     protected void HandleGroundCheck()
@@ -253,10 +271,24 @@ public class CharacterLocomotionManager : MonoBehaviour
 
         slideUntilGrounded = false;
 
+        
+
+
+        float fallDistance = fallStartHeight - transform.position.y;
+
+        // Apply fall damage if distance is large enough
+        if (fallDistance > fallDamageThreshold) // threshold, tweak as needed
+        {
+            float damage = (fallDistance - fallDamageThreshold) * fallDamageMultiplier; // scaling formula
+            int finalFallDamage= Mathf.RoundToInt(damage);
+            character.characterStatsManager.ConsumeHealth(finalFallDamage);
+        }
+
     }
 
     protected virtual void OnIsNotGrounded()
     {
+        fallStartHeight = transform.position.y;
 
     }
 

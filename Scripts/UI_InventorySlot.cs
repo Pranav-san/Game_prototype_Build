@@ -9,9 +9,19 @@ public class UI_InventorySlot : MonoBehaviour
 
     [SerializeField] public Item currentItem;
 
+    PlayerUIInventoryManager inventoryManager;
+
 
     [Header("Display Item Info")]
     public UI_ItemInfo uI_ItemInfo;
+
+    private void Awake()
+    {
+        if (inventoryManager == null)
+        {
+            inventoryManager = GetComponentInParent<PlayerUIInventoryManager>();
+        }
+    }
 
     public void AddItem(Item item)
     {
@@ -35,12 +45,14 @@ public class UI_InventorySlot : MonoBehaviour
     {
         highlightedItemIcon.enabled = true;
         uI_ItemInfo.DisplayItem(currentItem);
+        inventoryManager.OpenItemInfoWindow();
 
     }
 
     public void DeSelectSlot()
     {
         highlightedItemIcon.enabled = false;
+        inventoryManager.CloseItemInfoWindow();
 
 
     }

@@ -33,22 +33,22 @@ public class LadderInteractable : Interactable
         }
         else
         {
-            // this must be exit (but how do we know top vs bottom?)
+            // this must be exit 
         }
 
 
     }
 
-    private void OnDrawGizmos()
-    {
-        if (ladderTopPoint != null && ladderBottomPoint != null)
-        {
-            Gizmos.color = Color.green;
-            Gizmos.DrawLine(ladderBottomPoint.position, ladderTopPoint.position);
-            Gizmos.DrawSphere(ladderTopPoint.position, 0.2f);
-            Gizmos.DrawSphere(ladderBottomPoint.position, 0.2f);
-        }
-    }
+    //private void OnDrawGizmos()
+    //{
+    //    if (ladderTopPoint != null && ladderBottomPoint != null)
+    //    {
+    //        Gizmos.color = Color.green;
+    //        Gizmos.DrawLine(ladderBottomPoint.position, ladderTopPoint.position);
+    //        Gizmos.DrawSphere(ladderTopPoint.position, 0.2f);
+    //        Gizmos.DrawSphere(ladderBottomPoint.position, 0.2f);
+    //    }
+    //}
 
 
 }

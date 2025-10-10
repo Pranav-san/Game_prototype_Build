@@ -374,6 +374,15 @@ public partial class @PlayerControls2: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
+                    ""name"": ""Que LB"",
+                    ""type"": ""Button"",
+                    ""id"": ""9aa3d089-9489-4f73-abcf-d1bbed67edf2"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
                     ""name"": ""Hold RT"",
                     ""type"": ""PassThrough"",
                     ""id"": ""c0d81271-9182-4cad-997f-3e556cb946cf"",
@@ -594,11 +603,33 @@ public partial class @PlayerControls2: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""10bc079a-dd66-4f26-b8af-cdf8b8663429"",
-                    ""path"": ""<Keyboard>/e"",
+                    ""path"": ""<Mouse>/leftButton"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Que RB"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""7a084fc1-f83d-45e8-86d2-7454b093ecb3"",
+                    ""path"": ""<Gamepad>/leftShoulder"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Que LB"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""bfb9d761-003a-4b0b-97cd-b4a85cf18643"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Que LB"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -1009,6 +1040,7 @@ public partial class @PlayerControls2: IInputActionCollection2, IDisposable
         m_PlayerActions_LB = m_PlayerActions.FindAction("LB", throwIfNotFound: true);
         m_PlayerActions_TwoHandWeapon = m_PlayerActions.FindAction("Two Hand Weapon", throwIfNotFound: true);
         m_PlayerActions_QueRB = m_PlayerActions.FindAction("Que RB", throwIfNotFound: true);
+        m_PlayerActions_QueLB = m_PlayerActions.FindAction("Que LB", throwIfNotFound: true);
         m_PlayerActions_HoldRT = m_PlayerActions.FindAction("Hold RT", throwIfNotFound: true);
         m_PlayerActions_CameraSwitch = m_PlayerActions.FindAction("CameraSwitch", throwIfNotFound: true);
         m_PlayerActions_X = m_PlayerActions.FindAction("X", throwIfNotFound: true);
@@ -1308,6 +1340,7 @@ public partial class @PlayerControls2: IInputActionCollection2, IDisposable
     private readonly InputAction m_PlayerActions_LB;
     private readonly InputAction m_PlayerActions_TwoHandWeapon;
     private readonly InputAction m_PlayerActions_QueRB;
+    private readonly InputAction m_PlayerActions_QueLB;
     private readonly InputAction m_PlayerActions_HoldRT;
     private readonly InputAction m_PlayerActions_CameraSwitch;
     private readonly InputAction m_PlayerActions_X;
@@ -1364,6 +1397,10 @@ public partial class @PlayerControls2: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "PlayerActions/QueRB".
         /// </summary>
         public InputAction @QueRB => m_Wrapper.m_PlayerActions_QueRB;
+        /// <summary>
+        /// Provides access to the underlying input action "PlayerActions/QueLB".
+        /// </summary>
+        public InputAction @QueLB => m_Wrapper.m_PlayerActions_QueLB;
         /// <summary>
         /// Provides access to the underlying input action "PlayerActions/HoldRT".
         /// </summary>
@@ -1466,6 +1503,9 @@ public partial class @PlayerControls2: IInputActionCollection2, IDisposable
             @QueRB.started += instance.OnQueRB;
             @QueRB.performed += instance.OnQueRB;
             @QueRB.canceled += instance.OnQueRB;
+            @QueLB.started += instance.OnQueLB;
+            @QueLB.performed += instance.OnQueLB;
+            @QueLB.canceled += instance.OnQueLB;
             @HoldRT.started += instance.OnHoldRT;
             @HoldRT.performed += instance.OnHoldRT;
             @HoldRT.canceled += instance.OnHoldRT;
@@ -1540,6 +1580,9 @@ public partial class @PlayerControls2: IInputActionCollection2, IDisposable
             @QueRB.started -= instance.OnQueRB;
             @QueRB.performed -= instance.OnQueRB;
             @QueRB.canceled -= instance.OnQueRB;
+            @QueLB.started -= instance.OnQueLB;
+            @QueLB.performed -= instance.OnQueLB;
+            @QueLB.canceled -= instance.OnQueLB;
             @HoldRT.started -= instance.OnHoldRT;
             @HoldRT.performed -= instance.OnHoldRT;
             @HoldRT.canceled -= instance.OnHoldRT;
@@ -1814,6 +1857,13 @@ public partial class @PlayerControls2: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnQueRB(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Que LB" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnQueLB(InputAction.CallbackContext context);
         /// <summary>
         /// Method invoked when associated input action "Hold RT" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>

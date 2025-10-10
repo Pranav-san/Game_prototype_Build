@@ -19,9 +19,8 @@ public class PursueTargetState : AIState
 
         //Check If AI Target Is null, If we Do Not Have A Target Return To Idle State
         if (aiCharacter.aiCharacterCombatManager.currentTarget==null)
-        {
             return SwitchState(aiCharacter, aiCharacter.idle);
-        }
+        
 
         //Make Sure The Navmesh Agent Is Enabled, If Its Not Enable It
         if (!aiCharacter.navMeshAgent.enabled)
@@ -35,7 +34,7 @@ public class PursueTargetState : AIState
         //    aiCharacter.characterAnimatorManager.SetAnimatorMovementParameters(0, 2f);
 
         //}
-        //aiCharacter.characterAnimatorManager.SetAnimatorMovementParameters(0, 1f);
+        aiCharacter.characterAnimatorManager.SetAnimatorMovementParameters(0, 0.5f);
 
        
 
@@ -46,10 +45,8 @@ public class PursueTargetState : AIState
         {
             if (aiCharacter.aiCharacterCombatManager.viewableAngle < aiCharacter.aiCharacterCombatManager.minimumDetectionFOV||
             aiCharacter.aiCharacterCombatManager.viewableAngle > aiCharacter.aiCharacterCombatManager.maximumDetectionFOV)
-            {
                 aiCharacter.aiCharacterCombatManager.PivotTowardsTarget(aiCharacter);
-                return this;
-            }
+            
         }
         aiCharacter.aiCharacterLocomotionManager.RotateTowardsagent(aiCharacter);
 

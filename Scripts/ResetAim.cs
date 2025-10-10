@@ -3,23 +3,9 @@ using UnityEngine;
 public class ResetAim : StateMachineBehaviour
 {
     // OnStateEnter is called when a transition starts and the state machine starts to evaluate this state
-
-    public Archer archer;
     override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {
-        archer= animator.GetComponent<Archer>();
-
-
-        archer = animator.GetComponent<Archer>();
-
-        if (archer != null)
-        {
-            archer.isAiming = false;
-            archer.archerAnimator.SetBool("isAiming", false);
-            archer.bowAnimator.SetBool("isAiming", false);
-        }
-
-
+       
 
         }
 

@@ -91,24 +91,18 @@ public class PlayerInteractionManager : MonoBehaviour
     public void Interact()
     {
         // Clear pop-up windows on interaction
+
+        if(player.playerLocomotionManager.isClimbingLadder || player.playerLocomotionManager.isExitingLadder)
+            return;
+
+        if(player.playerStatsManager.isDead)
+            return;
+
+
         PlayerUIManager.instance.playerUIPopUPManager.CloseAllPopUpWindow();
 
         if (currentInteractable != null)
         {
-            
-
-            npc = currentInteractable.GetComponentInParent<AICharacterManager>();
-
-            if (npc ==null)
-            {
-                Debug.Log("Not an NPC");
-            }
-
-            if (npc != null)
-            {
-                npc.TryTalkToNPC(player); //Trigger dialogue here
-                return;
-            }
 
             currentInteractable.Interact(player);
 

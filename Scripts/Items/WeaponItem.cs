@@ -45,6 +45,7 @@ public class WeaponItem : EquipmentItem
     [Header("Stamina Costs")]
     public int baseStaminaCost = 20;
     public float lightAttackStaminaCostMultiplier = 0.9f;
+    public float heavyAttackStaminaCostMultiplier = 0.9f;
 
     [Header("weapon Blocking Absorption")]
     public float physicalBaseDamageAbsorption = 75;

@@ -46,6 +46,12 @@ public class WorldSaveGameManager : MonoBehaviour
     public CharacterSaveData characterSlot08;
     public CharacterSaveData characterSlot09;
     public CharacterSaveData characterSlot10;
+
+    [Header("Stage ID")]
+    public int namelessKnightStageID = 0;
+
+    [Header("Dialogues")]
+    [SerializeField] List<CharacterDialogue> namelessKinghtDialogues = new List<CharacterDialogue>();
     
 
     private void Awake()
@@ -418,6 +424,64 @@ public class WorldSaveGameManager : MonoBehaviour
 
         return serializableWeapon;
 
+
+    }
+
+
+    //Dialouge
+    public CharacterDialogue GetCharacterDialogueByEnum(characterDialogueID characterDialogueID)
+    {
+        CharacterDialogue dialogue = null;
+        switch(characterDialogueID)
+        {
+            case characterDialogueID.NoDialogueID:
+                break;
+            case characterDialogueID.NameLessKnightDialogueID:
+                dialogue = FindCharacterDialogueByStageID(namelessKnightStageID, namelessKinghtDialogues);
+                break;
+            default:
+                break;
+        }
+
+        if(dialogue!=null)
+            dialogue = Instantiate(dialogue);
+
+        return dialogue;
+    }
+
+
+    private CharacterDialogue FindCharacterDialogueByStageID(int stageID, List<CharacterDialogue>dialogueList)
+    {
+        CharacterDialogue dialogue = null;
+
+
+        for(int i = 0; i< dialogueList.Count; i++)
+        {
+            if (dialogueList[i] == null)
+                continue;
+            if (dialogueList[i].requiredStageID == stageID)
+            {
+                dialogue = dialogueList[i];
+                break;
+            }
+        }
+        return dialogue;
+
+    }
+
+    public void SetStageOfDialogue(characterDialogueID CharacterDialogue, int stageIndex)
+    {
+        switch (CharacterDialogue)
+        {
+            case characterDialogueID.NoDialogueID:
+                break;
+            case characterDialogueID.NameLessKnightDialogueID:
+                namelessKnightStageID = stageIndex;
+                break;
+            default:
+                break;
+
+        }
 
     }
 

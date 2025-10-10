@@ -32,7 +32,10 @@ public class RangedProjectileDamageCollider : DamageCollider
 
     private void OnCollisionEnter(Collision collision)
     {
+
         CreatePenetrationIntoObkect(collision);
+
+        WorldSoundFXManager.instance.AlertNearByCharactersToSound(transform.position, 5);
 
         CharacterManager potentialTarget = collision.transform.GetComponent<CharacterManager>();
 

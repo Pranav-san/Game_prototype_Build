@@ -23,6 +23,7 @@ public class AICharacterManager : CharacterManager
     public AICharacterCombatManager aiCharacterCombatManager;
     [HideInInspector] public AICharacterLocomotionManager aiCharacterLocomotionManager;
     [HideInInspector] public AICharacterInventoryManager aiCharacterInventoryManager;
+    [HideInInspector] public AICharacterSoundFXManager aiCharacterSoundFXManager;
 
     [Header("NavMesh Agent")]
     public NavMeshAgent navMeshAgent;
@@ -37,21 +38,27 @@ public class AICharacterManager : CharacterManager
 
 
     [Header("Current State")]
-    [SerializeField] protected AIState currentState;
+    public  AIState currentState;
 
     [Header("States")]
     public IdleState idle;
     public PursueTargetState pursueTarget;
     public CombatStanceState combatStance;
     public AttackState attackState;
+    public InvestigateSoundState investigateSound;
+
+    [Header("Beacon Activation Range")]
+    public List<playerManager>playersWithinActivationRange = new List<playerManager>();
+    [SerializeField]protected AIActivationBeacon beacon;
 
 
-    [Header("NPC Quest and  Dialogue")]
-    public Quest questToGive;
-    [TextArea] public string[] dialogueLines;
-    [SerializeField] private Sprite npcPortrait;
-
-
+    private void Start()
+    {
+        if(aiCharacterSoundFXManager.characterDialogueID != characterDialogueID.NoDialogueID)
+        {
+            aiCharacterSoundFXManager.dialogueInteractableGameObject = Instantiate(WorldAIManager.instance.dialogueInteractable, transform);
+        }
+    }
 
     protected override void Awake()
     {
@@ -59,6 +66,7 @@ public class AICharacterManager : CharacterManager
         base.Awake();
         aiCharacterCombatManager = GetComponent<AICharacterCombatManager>();
         aiCharacterInventoryManager = GetComponent<AICharacterInventoryManager>();
+        aiCharacterSoundFXManager = GetComponent<AICharacterSoundFXManager>();
 
         animator = GetComponent<Animator>();
         aiCharacterLocomotionManager = GetComponent<AICharacterLocomotionManager>();
@@ -71,8 +79,11 @@ public class AICharacterManager : CharacterManager
         pursueTarget = Instantiate(pursueTarget);
         combatStance = Instantiate(combatStance);
         attackState = Instantiate(attackState);
+        investigateSound = Instantiate(investigateSound);
 
         currentState = idle;
+
+        
     }
 
     protected override void Update()
@@ -104,7 +115,7 @@ public class AICharacterManager : CharacterManager
 
     }
 
-
+    
 
     private void ProcessStateMachine()
     {
@@ -179,7 +190,7 @@ public class AICharacterManager : CharacterManager
             }
            
 
-            playerManager killer = characterStatsManager.lastAttacker as playerManager;
+            playerManager killer = PlayerInputManager.Instance.player;
 
             
             PlayerInputManager.Instance.player.playerCombatManager.isLockedOn = false;
@@ -187,7 +198,7 @@ public class AICharacterManager : CharacterManager
             PlayerUIManager.instance.SetLockOnTarget(null);
             PlayerCamera.instance.SetLockCameraHeight();
 
-            if (killer != null)
+            if (killer != null && !killer.playerStatsManager.isDead)
             {
                 aiCharacterCombatManager.AwardRunesOnDeath(killer);
             }
@@ -204,24 +215,102 @@ public class AICharacterManager : CharacterManager
     }
 
 
-
-    public void TryTalkToNPC(playerManager player)
+    public void AddPlayersToPlayersWithinRange(playerManager player)
     {
-        if (!isFriendly || dialogueLines.Length == 0)
-        {
-            Debug.LogWarning("NPC has no dialogue lines.");
+        if(playersWithinActivationRange.Contains(player))
             return;
-        }
-          
 
-        PlayerUIManager.instance.playerUIPopUPManager.StartDialogue(characterName,dialogueLines);
+        playersWithinActivationRange.Add(player);
+
+        for(int i = 0; i < playersWithinActivationRange.Count; i++)
+        {
+            if(playersWithinActivationRange[i] == null)
+                playersWithinActivationRange.RemoveAt(i);
+        }
+
+    }
+
+    public void RemovePlayerFromPlayersWithinRage(playerManager player)
+    {
+        if (!playersWithinActivationRange.Contains(player))
+            return;
+
+        playersWithinActivationRange.Remove(player);
+
+        for (int i = 0; i < playersWithinActivationRange.Count; i++)
+        {
+            if (playersWithinActivationRange[i] == null)
+                playersWithinActivationRange.RemoveAt(i);
+        }
+
+    }
+    public void ActivateCharacter(playerManager player)
+    {
+        AddPlayersToPlayersWithinRange(player);
+
+
+        if(playersWithinActivationRange.Count > 0)
+        {
+            gameObject.SetActive(true);
+        }
+        else
+        {
+            gameObject.SetActive(false);
+        }
+
+
+    }
+
+    public void DeactivateCharacter(playerManager player)
+    {
+        RemovePlayerFromPlayersWithinRage(player);
+
+
+        if (beacon!=null)
+        {
+            beacon.gameObject.transform.position = transform.position;
+            beacon.gameObject.SetActive(true);
+
+        }
+
+
+        if(playersWithinActivationRange.Count>0)
+        {
+            gameObject.SetActive(true);
+        }
+        else
+        {
+            aiCharacterCombatManager.SetTarget(null);
+            gameObject.SetActive(false);
+        }
+
+    }
+
+
+
+    public void CreateActivationBeacon()
+    {
+        if(beacon==null)
+        {
+            GameObject beconGameObject = Instantiate(WorldAIManager.instance.beaconGameObject);
+            beconGameObject.transform.position = transform.position; 
+            
+            beacon = beconGameObject.GetComponent<AIActivationBeacon>(); 
+            beacon.SetOwnerOfBeacon(this);
+        }
+        else
+        {
+            beacon.transform.position = transform.position;
+            beacon.gameObject.SetActive(true);
+        }
     }
 
 
     public void ResetStateMachine()
     {
         // Reset state to Idle
-        currentState = idle;
+        currentState.SwitchState(this, idle);
+       
 
 
         combatStance.ResetStatemachine(this);

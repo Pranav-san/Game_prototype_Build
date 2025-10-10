@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class CharacterSoundFxManager : MonoBehaviour
 {
@@ -14,7 +15,10 @@ public class CharacterSoundFxManager : MonoBehaviour
 
 
 
-   
+   protected virtual void  Start()
+   {
+
+   }
     protected virtual void Awake()
     {
         audioSource = GetComponent<AudioSource>();
@@ -26,14 +30,14 @@ public class CharacterSoundFxManager : MonoBehaviour
     }
     public void PlaySoundfx(AudioClip soundFx, float volume =1, bool randomizePitch =true, float pitchRandom = 0.1f)
     {
-        audioSource.PlayOneShot(soundFx, volume);
-
         audioSource.pitch =1;
 
         if (randomizePitch)
         {
             audioSource.pitch +=Random.Range(-pitchRandom, pitchRandom);
         }
+
+        audioSource.PlayOneShot(soundFx, volume);
 
     }
 
@@ -54,10 +58,16 @@ public class CharacterSoundFxManager : MonoBehaviour
     }
 
 
-    public virtual void PlayFootstepSfx(SurfaceType surfaceType)
+    public virtual void PlayFootStepSFX(SurfaceType surfaceType)
     {
         
 
+
+    }
+
+    public virtual void PlayLadderFootStepSfx()
+    {
+        
 
     }
 

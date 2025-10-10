@@ -8,6 +8,13 @@ public class WorldSoundFXManager : MonoBehaviour
 
     public AudioSource audioSource;
 
+
+    [Header("Damage Sounds")]
+    public AudioClip[] unarmedDamageSFX;
+    public AudioClip[] weaponDamageSFX;
+    public AudioClip[] greatDamageSFX;
+    public AudioClip[] physicalDamageSFX;
+
     
 
 
@@ -31,6 +38,7 @@ public class WorldSoundFXManager : MonoBehaviour
     public AudioClip[] metalfootsteps;
     public AudioClip[] floorfootsteps;
     public AudioClip[] grassfootsteps;
+    public AudioClip[] ladderfootsteps;
 
 
     [Header("Door")]
@@ -121,6 +129,30 @@ public class WorldSoundFXManager : MonoBehaviour
     {
         int index = Random.Range(0, array.Length);
         return array[index];
+    }
+
+    public void AlertNearByCharactersToSound(Vector3 positionOfSound,  float rangeOfSound)
+    {
+        Collider[] characterColliders =  Physics.OverlapSphere(positionOfSound, rangeOfSound, WorldUtilityManager.Instance.GetCharacterLayer());
+
+        List<AICharacterManager> charactersToAlert = new List<AICharacterManager>();
+
+        for (int i = 0; i < characterColliders.Length; i++)
+        {
+            AICharacterManager aiCharacter = characterColliders[i].GetComponent<AICharacterManager>();
+
+            if(aiCharacter == null)
+                continue;
+            if(charactersToAlert.Contains(aiCharacter))
+                continue;
+
+            charactersToAlert.Add(aiCharacter);
+        }
+
+        for (int i = 0;i < charactersToAlert.Count; i++)
+        {
+            charactersToAlert[i].aiCharacterCombatManager.AlertCharacterToSound(positionOfSound);
+        }
     }
 
 

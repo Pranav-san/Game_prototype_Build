@@ -17,7 +17,7 @@ public class PlayerRespawnManager : MonoBehaviour
             Debug.LogWarning("No Site of Grace to respawn at.");
             return;
         }
-
+        player.playerStatsManager.isDead = false;
         player.transform.position = lastGraceTransform.position;
         player.transform.rotation = lastGraceTransform.rotation;
 
@@ -28,10 +28,8 @@ public class PlayerRespawnManager : MonoBehaviour
         WorldAIManager.instance.ResetAllCharacters();
 
         player.playerAnimatorManager.PlayTargetActionAnimation("Respwan", false);
+       
 
-
-
-        Debug.Log("Player respawned at last Site of Grace.");
     }
 }
 

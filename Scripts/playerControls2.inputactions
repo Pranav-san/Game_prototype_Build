@@ -288,6 +288,15 @@
                     "initialStateCheck": false
                 },
                 {
+                    "name": "Que LB",
+                    "type": "Button",
+                    "id": "9aa3d089-9489-4f73-abcf-d1bbed67edf2",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "Hold RT",
                     "type": "PassThrough",
                     "id": "c0d81271-9182-4cad-997f-3e556cb946cf",
@@ -508,11 +517,33 @@
                 {
                     "name": "",
                     "id": "10bc079a-dd66-4f26-b8af-cdf8b8663429",
-                    "path": "<Keyboard>/e",
+                    "path": "<Mouse>/leftButton",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
                     "action": "Que RB",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "7a084fc1-f83d-45e8-86d2-7454b093ecb3",
+                    "path": "<Gamepad>/leftShoulder",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Que LB",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "bfb9d761-003a-4b0b-97cd-b4a85cf18643",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Que LB",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

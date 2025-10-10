@@ -4,6 +4,7 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using System.IO.Pipes;
+using UnityEngine.Rendering;
 
 public class PlayerUIPopUPManager : MonoBehaviour
 {
@@ -39,15 +40,14 @@ public class PlayerUIPopUPManager : MonoBehaviour
     [SerializeField] TextMeshProUGUI graceRestoredPopUpText;
     [SerializeField] CanvasGroup graceRestoredPopUpCanvasGroup;
 
-    [Header("Dialogue")]
-    [SerializeField] private GameObject dialogueBox;
-    [SerializeField] private TextMeshProUGUI npcNameText;
-    [SerializeField] Image NpcImage;
-    [SerializeField] private TextMeshProUGUI dialogueText;
+    [Header("Dialogue Pop Up")]
+    [SerializeField] GameObject dialoguePopUpGameObject;
+    [SerializeField] TextMeshProUGUI dialoguePopUpText;
+    [SerializeField] CharacterDialogue currentDialogue;
+    
+    private Coroutine dialogueCoroutine;
 
-    private string[] currentDialogueLines;
-    private int currentDialogueIndex = 0;
-    private System.Action onDialogueCompleteCallback = null;
+
 
 
 
@@ -108,6 +108,57 @@ public class PlayerUIPopUPManager : MonoBehaviour
 
 
     }
+
+    public void SendDialoguePopUp(CharacterDialogue dialogue, AICharacterManager aiCharacter)
+    {
+        PlayerUIManager.instance.playerUIHUDManager.ToggleHUDOnly(false);
+        currentDialogue = dialogue;
+
+        if (dialogueCoroutine!=null)
+            StopCoroutine(dialogueCoroutine);
+
+       
+
+        PlayerUIManager.instance.playerUIPopUPManager.CloseAllPopUpWindow();
+        PlayerUIManager.instance.popUpWindowIsOpen = true;
+
+        dialogueCoroutine = StartCoroutine(dialogue.PlayDialogueCoroutine(aiCharacter));
+
+    }
+
+    public void SendNextDialoguePopUpInIndex(CharacterDialogue dialogue, AICharacterManager aiCharacter)
+    {
+        currentDialogue = dialogue;
+
+        if (dialogueCoroutine !=null)
+            StopCoroutine(dialogueCoroutine);
+
+        if(aiCharacter.aiCharacterSoundFXManager.dialogueIsPlaying)
+          aiCharacter.aiCharacterSoundFXManager.audioSource.Stop();
+
+        //Close All PopUpWindows
+        PlayerUIManager.instance.playerUIPopUPManager.CloseAllPopUpWindow();
+        PlayerUIManager.instance.popUpWindowIsOpen = true;
+
+        currentDialogue.dialogueIndex++;
+        dialogueCoroutine = StartCoroutine(dialogue.PlayDialogueCoroutine(aiCharacter));
+
+    }
+
+    public void SetDialoguePopUpSubtitles(string dialogueText)
+    {
+        dialoguePopUpGameObject.SetActive(true);
+        dialoguePopUpText.text = dialogueText;
+
+    }
+
+    public void EndDialoguePopUp()
+    {
+        dialoguePopUpGameObject.SetActive(false);
+        PlayerUIManager.instance.playerUIHUDManager.ToggleHUDOnly(true);
+    }
+
+    
 
     public void SendItemPopUp(Item item, int amount)
     {
@@ -214,49 +265,11 @@ public class PlayerUIPopUPManager : MonoBehaviour
 
     }
 
-    public void StartDialogue(string npcName, string[] lines)
-    {
-        MobileControls.instance.DisableMobileControls();
-        dialogueBox.SetActive(true);
-        currentDialogueLines = lines;
-        currentDialogueIndex = 0;
-       
+  
 
-       
+  
 
-        npcNameText.text = npcName;
-        dialogueText.text = currentDialogueLines[0];
-
-        dialogueBox.SetActive(true);
-        PlayerUIManager.instance.popUpWindowIsOpen = true;
-
-        
-    }
-
-    public void ContinueDialogue()
-    {
-        currentDialogueIndex++;
-
-        if (currentDialogueIndex >= currentDialogueLines.Length)
-        {
-            EndDialogue();
-            return;
-        }
-
-        dialogueText.text = currentDialogueLines[currentDialogueIndex];
-    }
-
-    public void EndDialogue()
-    {
-
-        dialogueBox.SetActive(false);
-        PlayerUIManager.instance.popUpWindowIsOpen = false;
-        MobileControls.instance.EnableMobileControls();
-
-
-        //Delegate Used tor trigger Missions 
-        onDialogueCompleteCallback?.Invoke();
-    }
+   
 
 
 }

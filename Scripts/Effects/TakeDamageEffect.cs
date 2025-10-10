@@ -66,7 +66,7 @@ public class TakeDamageEffect : InstantCharacterEffect
         }
         
         PlayeDamageVFX(character);
-        playDamageSFX(character);
+        PlayDamageSFX(character);
 
         //Run This After All Other Functions Attempt To play Animation
         CalculateStanceDamage(character);
@@ -133,9 +133,19 @@ public class TakeDamageEffect : InstantCharacterEffect
 
     }
 
-    protected void playDamageSFX(CharacterManager character)
+    protected void PlayDamageSFX(CharacterManager character)
     {
-        character.characterSoundFxManager.PlayAttackDamageSfx();
+        AudioClip physicalDamageSFX = WorldSoundFXManager.instance.ChooseRandomSoundFxFromArray(WorldSoundFXManager.instance.physicalDamageSFX);
+        AudioClip weaponDamageSFX = WorldSoundFXManager.instance.ChooseRandomSoundFxFromArray(WorldSoundFXManager.instance.weaponDamageSFX);
+        
+        character.characterSoundFxManager.PlaySoundfx(physicalDamageSFX);
+
+       
+        
+
+        
+
+
 
     }
 

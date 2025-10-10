@@ -50,7 +50,6 @@ public enum AttackType
 {
     LightAttack01,
     LightAttack02,
-
     HeavyAttack01,
     ChargedAttack01,
     ChargedAttack02,
@@ -129,12 +128,15 @@ public enum SpellClass
 
 public enum WeapomClass
 {
+    Unarmed,
     Sword,
     spear,
+    Dagger,
+    Axe,
     Bow,
-    Fist,
-    Shield,
     Gun,
+    Shield,
+    
 }
 
 public enum WeaponWieldingType
@@ -177,12 +179,22 @@ public enum ItemPickUpType
 }
 
 //AI States
-
 public enum IdleStateMode
 {
     Idle,
-    Patrol
+    Patrol,
+    Sleep,
+
 }
+
+//Used To Give Characters Proper DialogueSets
+public enum characterDialogueID
+{
+    NoDialogueID,
+    NameLessKnightDialogueID,
+}
+
+
 
 public enum InventoryCategory
 {

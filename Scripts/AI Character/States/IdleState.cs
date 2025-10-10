@@ -10,7 +10,7 @@ public class IdleState : AIState
 {
 
     [Header("Idle Options")]
-    [SerializeField]IdleStateMode idleStateMode;
+    public IdleStateMode idleStateMode;
 
     [Header("AI Target Check Timer")]
     float targetCheckTimer = 0f;
@@ -29,6 +29,12 @@ public class IdleState : AIState
     [SerializeField] float timeBetweenPatrols = 15;  // MINIMUM TIME BEFORE STARTING A NEW PATROL
     [SerializeField] float restTimer = 0;   // ACTIVE TIMER COUNTING THE TIME RESTED
 
+    [Header("Sleep Options")]
+    public bool willInvestigateSound = false;
+    private bool sleepAnimationSet = false;
+    [SerializeField] string sleepAnimation = "Sleep_01";
+    [SerializeField] string wakeAnimation = "Wake_01";
+
     public override AIState Tick(AICharacterManager aiCharacter)
     {
 
@@ -45,9 +51,10 @@ public class IdleState : AIState
         switch (idleStateMode)
         {
             case IdleStateMode.Idle: return Idle(aiCharacter);
-                
 
             case IdleStateMode.Patrol: return Patrol(aiCharacter);
+
+            case IdleStateMode.Sleep: return SleepUntilDisturbed(aiCharacter);
 
             default:
                 break;
@@ -196,6 +203,41 @@ public class IdleState : AIState
         return this;
         
 
+    }
+
+
+    protected virtual AIState SleepUntilDisturbed(AICharacterManager aiCharacter)
+    {
+        aiCharacter.navMeshAgent.enabled = false;
+
+        if (!sleepAnimationSet)
+        {
+            sleepAnimationSet = true;
+
+            aiCharacter.characterAnimatorManager.PlayTargetActionAnimation(sleepAnimation,true);
+        }
+
+        if(aiCharacter.characterCombatManager.currentTarget != null)
+        {
+            if(!aiCharacter.isPerformingAction && !aiCharacter.characterStatsManager.isDead)
+            {
+                aiCharacter.characterAnimatorManager.PlayTargetActionAnimation(wakeAnimation,true);
+            }
+
+
+            return SwitchState(aiCharacter, aiCharacter.pursueTarget);
+        }
+
+        return this;    
+          
+    }
+
+
+    protected override void ResetStateFlags(AICharacterManager aiCharacter)
+    {
+        base.ResetStateFlags(aiCharacter);
+
+        sleepAnimationSet = false;
     }
 
 

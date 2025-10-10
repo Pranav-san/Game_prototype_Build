@@ -5,7 +5,7 @@ using System.Linq;
 
 public class WorldAIManager : MonoBehaviour
 {
-   public static WorldAIManager instance;
+    public static WorldAIManager instance;
 
     [Header("Debug")]
     [SerializeField] bool deSpawnedCharacters = false;
@@ -13,6 +13,14 @@ public class WorldAIManager : MonoBehaviour
 
     [Header("Loading")]
     public bool isPerformingLoadingOperation = false;
+
+    [Header("Beacon Prefab")]
+    public GameObject beaconGameObject;
+
+    [Header("Dialouge Inteactrable Prefab")]
+    public GameObject dialogueInteractable;
+
+
 
 
     private Coroutine spwanAllCharactersCoroutine;
@@ -29,10 +37,10 @@ public class WorldAIManager : MonoBehaviour
     [Header("Patrol Paths")]
     [SerializeField] List<AIPatrolPath> aiPatrolPaths;
 
-    
+
     [SerializeField] List<AICharacterManager> spawnedInCharacters;
 
-    
+
 
     public void Awake()
     {
@@ -48,11 +56,11 @@ public class WorldAIManager : MonoBehaviour
 
     public void Start()
     {
-        
-        
+
+
     }
 
-   
+
 
     public void SpawnCharacter(AICharacterSpawner aiCharacterSpawner)
     {
@@ -61,10 +69,10 @@ public class WorldAIManager : MonoBehaviour
 
     }
 
-   
+
     public void AddCharacterToSpwanedCharacterList(AICharacterManager character)
     {
-        if(spawnedInCharacters.Contains(character))
+        if (spawnedInCharacters.Contains(character))
             return;
 
 
@@ -78,31 +86,47 @@ public class WorldAIManager : MonoBehaviour
         if (bossCharacter!=null)
         {
             if (spawnedInBosses.Contains(bossCharacter))
-            return;
+                return;
 
             spawnedInBosses.Add(bossCharacter);
         }
 
     }
-   
+
+    public void DisableAllBossFights()
+    {
+        for (int i = 0; i < spawnedInBosses.Count; i++)
+        {
+            if (spawnedInBosses[i] == null)
+                continue;
+
+            spawnedInBosses[i].BossFightIsActive = false;
+
+
+
+        }
+
+
+    }
+
 
     public void SpwanAllCharacters()
     {
 
         isPerformingLoadingOperation = true;
-        
-        if(spwanAllCharactersCoroutine != null)
+
+        if (spwanAllCharactersCoroutine != null)
             StopCoroutine(spwanAllCharactersCoroutine);
 
         spwanAllCharactersCoroutine = StartCoroutine(SpwanAllCharactersCoroutine());
 
-       
+
 
     }
 
     private IEnumerator SpwanAllCharactersCoroutine()
     {
-       for(int i = 0; i < aICharacterSpawners.Count; i++)
+        for (int i = 0; i < aICharacterSpawners.Count; i++)
         {
             yield return new WaitForFixedUpdate();
             aICharacterSpawners[i].AttemptToSpwanCharacter();
@@ -111,7 +135,7 @@ public class WorldAIManager : MonoBehaviour
 
         }
 
-       isPerformingLoadingOperation = false;
+        isPerformingLoadingOperation = false;
         yield return null;
 
     }
@@ -133,18 +157,18 @@ public class WorldAIManager : MonoBehaviour
 
     private IEnumerator DeSpwanAllCharactersCoroutine()
     {
-        for(int i =0; i<spawnedInBosses.Count; i++)
+        for (int i = 0; i<spawnedInBosses.Count; i++)
         {
             yield return new WaitForFixedUpdate();
 
-            var boss = spawnedInBosses[i];  
+            var boss = spawnedInBosses[i];
 
             if (boss != null && boss.BossFightIsActive)
             {
                 boss.OnBossFightIsActiveChanged(true, false);
             }
         }
-        for (int i= 0; i<spawnedInCharacters.Count; i++)
+        for (int i = 0; i<spawnedInCharacters.Count; i++)
         {
             yield return new WaitForFixedUpdate();
 
@@ -198,7 +222,7 @@ public class WorldAIManager : MonoBehaviour
 
     public AIBossCharacterManager GetBossByID(int ID)
     {
-        return spawnedInBosses.FirstOrDefault(boss=> boss.bossID == ID);
+        return spawnedInBosses.FirstOrDefault(boss => boss.bossID == ID);
 
     }
 
@@ -208,22 +232,24 @@ public class WorldAIManager : MonoBehaviour
     public void AddPatrolPathToList(AIPatrolPath patrolPath)
     {
         if (aiPatrolPaths.Contains(patrolPath))
-        return;
+            return;
 
         aiPatrolPaths.Add(patrolPath);
-        
+
     }
 
     public AIPatrolPath GetAIPatrolPathByID(int patrolPathID)
     {
         AIPatrolPath patrolPath = null;
 
-        for (int i = 0; i < aiPatrolPaths.Count; i++ )
+        for (int i = 0; i < aiPatrolPaths.Count; i++)
         {
             if (aiPatrolPaths[i].patrolpathID == patrolPathID)
-            patrolPath= aiPatrolPaths[i];
+                patrolPath= aiPatrolPaths[i];
         }
         return patrolPath;
 
     }
+
+
 }

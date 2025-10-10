@@ -9,8 +9,10 @@ public class AimAction : WeaponItemBasedAction
         base.AttemptToPerformAction(playerPerformingAction, weaponPerformingAction);
 
 
-        if(!playerPerformingAction.isGrounded)
+        if (!playerPerformingAction.isGrounded)
             return;
+        
+           
 
         if(playerPerformingAction.playerCombatManager.isLockedOn)
             return;

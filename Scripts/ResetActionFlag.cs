@@ -33,6 +33,7 @@ public class ResetActionFlag : StateMachineBehaviour
         character.canRoll = true;
         character.characterCombatManager.isRipostable = false;
         character.isPerformingCriticalAttack = false;
+        character.characterLocomotionManager.isExitingLadder = false;
 
        
 
@@ -48,13 +49,21 @@ public class ResetActionFlag : StateMachineBehaviour
             player.isUsingRightHand = false;
             player.isUsingLeftHand = false;
             player.isAiming = false;
+            player.playerCombatManager.isAimLockedOn = false;
+            player.isReloadedWeapon = false;
             player.animator.SetBool("isAiming",player.isAiming);
-            PlayerCamera.instance.OnIsAimingChanged(false);
+            if (player.playerInventoryManager.currentTwoHandWeapon!=null && player.playerInventoryManager.currentTwoHandWeapon.weaponClass == WeapomClass.Gun || player.playerInventoryManager.currentRightHandWeapon.weaponClass == WeapomClass.Gun)
+            {
+                PlayerCamera.instance.OnIsAimingChanged(false);
+            }
+            
             player.isGrappled = false;
             player.playerLocomotionManager.hasPlayedSprintStart = false;
             player.playerLocomotionManager.isExitingLadder = false;
             player.playerLocomotionManager.isClimbingLadder = false;
             player.animator.SetBool("isClimbingLadder", false);
+
+
 
         }
            

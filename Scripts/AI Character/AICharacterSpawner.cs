@@ -54,6 +54,11 @@ public class AICharacterSpawner : MonoBehaviour
                 aiCharacter.idle.aiPatrolPath = WorldAIManager.instance.GetAIPatrolPathByID(patrolPathID);
             }
 
+
+
+            aiCharacter.CreateActivationBeacon();
+            aiCharacter.gameObject.SetActive(false);
+
             
 
             

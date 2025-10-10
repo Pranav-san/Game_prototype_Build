@@ -35,25 +35,37 @@ public class PlayerAnimatorManager : CharacterAnimatorManager
 
     private void LateUpdate()
     {
-        if (player.isReloadedWeapon)
+        if (player.isReloadedWeapon && player.isAiming)
         {
             OnReloadEnd();
 
 
         }
 
+        //else if (player.isExitingToEmptyAfterReload && !player.isAiming)
+        //{
+        //    rightHandIk.weight = 0f;
+        //    lefttHandIk.weight = 0f;
+        //    player.isExitingToEmptyAfterReload = false;
+        //}
+
+       
+
     }
     private void OnAnimatorMove()
     {
+        if (!player.characterController.enabled)
+        {
+            player.animator.ApplyBuiltinRootMotion();
+        }
         if (player.applyRootMotion)
         {
+            player.canMove=false;
             Vector3 velocity = player.animator.deltaPosition;
             player.characterController.Move(velocity);
-
-            if (player.playerCombatManager.isLockedOn)
-            {
-                player.transform.rotation *= player.animator.deltaRotation;
-            }
+            player.transform.rotation *= player.animator.deltaRotation;
+           
+            
         }
     }
 

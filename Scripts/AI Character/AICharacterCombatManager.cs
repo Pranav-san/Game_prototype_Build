@@ -54,6 +54,10 @@ public class AICharacterCombatManager : CharacterCombatManager
     [Header("AI Equipments")]
     public ProjectileSlot currentProjectileBeingUsed;
 
+    [Header("Debug")]
+    [SerializeField] bool investigateSound = false;
+    [SerializeField] Vector3 positionofSound;
+
     protected override void Awake()
     {
         base.Awake();
@@ -65,10 +69,11 @@ public class AICharacterCombatManager : CharacterCombatManager
         
     }
 
-    private void FixedUpdate()
+    private void Update()
     {
-        
         HandleStanceBreak();
+
+       
     }
 
     private void HandleStanceBreak()
@@ -238,6 +243,86 @@ public class AICharacterCombatManager : CharacterCombatManager
             Debug.Log("180 degree Left");
         }
     }
+
+    public virtual void PivotTowardsPosition(AICharacterManager aiCharacter, Vector3 position)
+    {
+        if (aiCharacter.isPerformingAction)
+            return;
+
+        Vector3 targetDirection = position - aiCharacter.transform.position;
+        float viewableAngle = WorldUtilityManager.Instance.GetAngleOfTarget(aiCharacter.transform, targetDirection);
+
+        // Right turns
+        if (viewableAngle >= 20 && viewableAngle <= 60)
+        {
+            aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Turn Right 45", true);
+            Debug.Log("45 degree Right");
+        }
+        else if (viewableAngle >= 61 && viewableAngle <= 110)
+        {
+            aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Turn Right 90", true);
+            Debug.Log("90 degree Right");
+        }
+        else if (viewableAngle >= 111 && viewableAngle <= 160)
+        {
+            aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Turn Right 135", true);
+            Debug.Log("135 degree Right");
+        }
+        else if (viewableAngle >= 161 && viewableAngle <= 180)
+        {
+            aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Turn Right 180", true);
+            Debug.Log("180 degree Right");
+        }
+
+        // Left turns
+        else if (viewableAngle <= -20 && viewableAngle >= -60)
+        {
+            aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Turn Left 45", true);
+            Debug.Log("45 degree Left");
+        }
+        else if (viewableAngle <= -61 && viewableAngle >= -110)
+        {
+            aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Turn Left 90", true);
+            Debug.Log("90 degree Left");
+        }
+        else if (viewableAngle <= -111 && viewableAngle >= -160)
+        {
+            aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Turn Left 135", true);
+            Debug.Log("135 degree Left");
+        }
+        else if (viewableAngle <= -161 && viewableAngle >= -180)
+        {
+            aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Turn Left 180", true);
+            Debug.Log("180 degree Left");
+        }
+    }
+
+
+    public virtual void AlertCharacterToSound(Vector3 positionOfSound)
+    {
+        if(aiCharacter.characterStatsManager.isDead)
+            return;
+
+        if(aiCharacter.idle == null)
+            return;
+
+        if(aiCharacter.investigateSound == null)
+            return ;
+
+        if(!aiCharacter.idle.willInvestigateSound)
+            return ;
+
+        //If they are Sleeping, Here is Where You Wake Them Up
+       
+
+
+
+
+        aiCharacter.investigateSound.positionOfSound = positionOfSound;
+        aiCharacter.currentState = aiCharacter.currentState.SwitchState(aiCharacter, aiCharacter.investigateSound);
+
+    }
+
 
 
     public void HandleActionRecovery(AICharacterManager aiCharacter)

@@ -6,6 +6,10 @@ public class BossSleepState : AIState
 {
     public override AIState Tick(AICharacterManager aiCharacter)
     {
-        return base.Tick(aiCharacter);
+       aiCharacter.navMeshAgent.enabled = false;
+
+        return (this);
+
+        
     }
 }

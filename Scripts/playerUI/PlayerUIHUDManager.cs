@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Xml.Serialization;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -8,13 +9,14 @@ public class PlayerUIHUDManager : MonoBehaviour
 {
 
     [SerializeField] public CanvasGroup[] canvasGroup;
-    
+
     public UI_StatBar staminaBar;
     public UI_StatBar healthBar;
 
     [Header("Boss Health Bar")]
     public Transform BossHealthBarParent;
     public GameObject BossHealthBar;
+    public UI_Boss_HP_Bar currentBossHealthBar;
 
     [Header("Runes")]
     [SerializeField] float runeUpdateCountDelayTimer = 2.5f;
@@ -108,6 +110,24 @@ public class PlayerUIHUDManager : MonoBehaviour
 
         
 
+
+    }
+
+    public void ToggleHUDOnly(bool status)
+    {
+        if (status)
+        {
+
+            canvasGroup[0].alpha= 1.0f;
+
+        }
+
+
+        else
+        {
+
+            canvasGroup[0].alpha= 0f;
+        }
 
     }
 

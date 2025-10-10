@@ -108,14 +108,17 @@ public class playerManager : CharacterManager
         PlayerCamera.instance.SetLockCameraHeight();
         PlayerCamera.instance.ClearLockOnTargets();
 
+
+        //Disable All Boss Fight And Remove Boss HP Bar From UI
+        WorldAIManager.instance.DisableAllBossFights();
+        if(PlayerUIManager.instance.playerUIHUDManager.currentBossHealthBar != null)
+        {
+            PlayerUIManager.instance.playerUIHUDManager.currentBossHealthBar.RemoveHPBar(1);
+        }
+
         yield return new WaitForSeconds(4.5f); // Wait for animation or death screen
 
         playerRespawnManager.RespawnPlayer(this);
-
-        playerStatsManager.isDead = false;
-
-        
-
 
     }
 
