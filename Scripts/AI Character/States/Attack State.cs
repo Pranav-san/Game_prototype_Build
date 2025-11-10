@@ -20,9 +20,13 @@ public class AttackState : AIState
 
     [Header("Pivot After Attack")]
     [SerializeField] protected bool pivotAfterAttack = false;
+    [SerializeField] protected bool PivotAfterAttackFourAngles = false;
 
     public override AIState Tick(AICharacterManager aiCharacter)
     {
+
+        aiCharacter.isBlocking = false;
+
         if(aiCharacter.enemyType == EnemyType.Ranged)
         {
             return ProcessArcheryCombatStyle(aiCharacter);
@@ -64,6 +68,7 @@ public class AttackState : AIState
             //If we are Recovering from an Action, Wait before performing Another
             if (aiCharacter.aiCharacterCombatManager.actionRecoveryTimer > 0)
             {
+                aiCharacter.isBlocking = true;
                 return this;
 
             }
@@ -82,6 +87,10 @@ public class AttackState : AIState
         if(pivotAfterAttack)
         {
             aiCharacter.aiCharacterCombatManager.PivotTowardsTarget(aiCharacter);
+        }
+        else if (PivotAfterAttackFourAngles)
+        {
+            aiCharacter.aiCharacterCombatManager.PivotTowardsTargetFourRotations(aiCharacter);
         }
 
         aiCharacter.navMeshAgent.enabled = true;

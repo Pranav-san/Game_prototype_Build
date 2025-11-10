@@ -9,6 +9,8 @@ public class WorldItemDatabase : MonoBehaviour
 
     public WeaponItem unArmedWeapon;
 
+    public GameObject pickUpItemPrefab;
+
     [Header("Weapons")]
     [SerializeField] List<WeaponItem> weapons = new List<WeaponItem>();
 
@@ -110,6 +112,14 @@ public class WorldItemDatabase : MonoBehaviour
             items[i].itemID = i;
         }
     }
+
+
+    public Item GetItemByID(int ID)
+    {
+        return items.FirstOrDefault(items => items.itemID == ID);
+
+    }
+
 
     public WeaponItem GetWeaponByID(int ID)
     {

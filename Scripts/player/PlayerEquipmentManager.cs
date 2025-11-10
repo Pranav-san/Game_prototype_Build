@@ -215,6 +215,9 @@ public class PlayerEquipmentManager : CharacterEquipmentManager
 
         WeaponItem selectedWeapon = null;
 
+        //Play Equip Animation
+        player.playerAnimatorManager.PlayTargetActionAnimation("Equip_RightWeapon", false, false, true, true, true, true);
+
         // Add 1 to index to switch to the next weapon
         player.playerInventoryManager.rightHandWeaponIndex += 1;
 
@@ -330,6 +333,11 @@ public class PlayerEquipmentManager : CharacterEquipmentManager
             return;
         WeaponItem selectedWeapon = null;
 
+        //Play Equip Animation
+        player.playerAnimatorManager.PlayTargetActionAnimation("Equip_LeftWeapon", false,false,true,true,true,true);
+
+
+
         // Add 1 to index to switch to the next weapon
         player.playerInventoryManager.leftHandWeaponIndex += 1;
 
@@ -391,6 +399,11 @@ public class PlayerEquipmentManager : CharacterEquipmentManager
     //Two Hand
     public void LoadTwoHandWeapon()
     {
+        
+        //Play Equip Animation
+        player.playerAnimatorManager.PlayTargetActionAnimation("Equip_TwoHandWeapon", false, false, true, true, true, true);
+
+
         WeaponItem weapon = player.playerInventoryManager.weaponsInTwoHandSlot[0];
 
         if (weapon == null || weapon.itemID == WorldItemDatabase.instance.unArmedWeapon.itemID)
@@ -465,6 +478,10 @@ public class PlayerEquipmentManager : CharacterEquipmentManager
 
     public void UnloadTwoHandWeaponAndRestore()
     {
+
+        //Play Equip Animation
+        player.playerAnimatorManager.PlayTargetActionAnimation("UnEquip_TwoHandWeapon", false, false, true, true, true, true);
+
         isTwoHandingWeapon = false;
         currentWeaponBeingTwoHanded = -1;
         player.playerInventoryManager.currentTwoHandWeapon = null;

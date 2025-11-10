@@ -194,8 +194,7 @@ public enum characterDialogueID
     NameLessKnightDialogueID,
 }
 
-
-
+//Inventory Items Category
 public enum InventoryCategory
 {
     All,
@@ -230,7 +229,7 @@ public enum PasscodeButtonType
     Digit9,
 }
 
-
+//Used For Foot Step SFX
 public enum SurfaceType
 {
     Default,
@@ -240,6 +239,18 @@ public enum SurfaceType
     Wood,
     Metal,
 }
+
+//Used To Tag Sliders For LevelUp UI
+public enum CharacterAttributes
+{
+    Vitality,
+    Endurance,
+    Strength,
+    Dexterity,
+    Luck
+}
+
+
 
 
 

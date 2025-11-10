@@ -14,6 +14,7 @@ public class WorldCharacterEffectsManager : MonoBehaviour
     [Header("VFX")]
     [SerializeField] public GameObject bloodSplatterVFX;
     [SerializeField] public GameObject criticalBloodloodSplatterVFX;
+    [SerializeField] public GameObject deadSpotVFX;
 
     [SerializeField] List<InstantCharacterEffect> instantEffects;
 

@@ -5,6 +5,9 @@ public class AICharacterSoundFXManager : CharacterSoundFxManager
 
     AICharacterManager aiCharacter;
 
+    [Header("Blocking Sfx")]
+    [SerializeField]AudioClip[]blockingSfx;
+
     [Header("Dialogues")]
     public characterDialogueID characterDialogueID;
     public GameObject interactableDialogueGameObject;
@@ -24,6 +27,15 @@ public class AICharacterSoundFXManager : CharacterSoundFxManager
         base.Start();
 
         currentDialogue = WorldSaveGameManager.instance.GetCharacterDialogueByEnum(characterDialogueID);
+    }
+
+
+    public override void playBlockSoundfx()
+    {
+        if(blockingSfx.Length<0)
+            return;
+
+        PlaySoundfx(WorldSoundFXManager.instance.ChooseRandomSoundFxFromArray(blockingSfx));
     }
 
 

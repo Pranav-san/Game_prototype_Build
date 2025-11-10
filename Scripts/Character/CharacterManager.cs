@@ -20,7 +20,7 @@ public class CharacterManager : MonoBehaviour
 
 
 
-    
+
 
     [Header("Character Group")]
     public CharacterGroup characterGroup;

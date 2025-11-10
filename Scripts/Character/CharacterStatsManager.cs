@@ -7,9 +7,9 @@ public class CharacterStatsManager : MonoBehaviour
     [Header("Status")]
     public bool isDead = false;
 
+
     public float maxStamina = 100;
     public float currentStamina = 100;
-
     public int maxHealth = 100;
     public int currentHealth = 100;
 
@@ -18,6 +18,16 @@ public class CharacterStatsManager : MonoBehaviour
 
     public UI_StatBar uI_Character_HP_Bar;
     public AIHealthUI AIHealthUI;
+
+    [Header("Stats")]
+    public int vitality = 1;
+    public int endurance = 1;
+    public int strength = 1;
+    public int dexterity = 1;
+    public int luck = 1;
+
+    [Header("Currency")]
+    public int runes = 0;
 
     [Header("Poise")]
     public float totalPoiseDamage; //How Much Poise damage We have Taken
@@ -32,6 +42,7 @@ public class CharacterStatsManager : MonoBehaviour
     public float blockingFireAbsorption;
     public float blockingLightningAbsorption;
     public float blockingMagicAbsorption;
+    public float blockingStability;
 
 
     [Header("Armor Absorption")]
@@ -158,23 +169,35 @@ public class CharacterStatsManager : MonoBehaviour
         {
             currentStamina -= amount;
         }
-    }
 
-    
+        if(character is playerManager)
+        {
+            PlayerUIManager.instance.UpdateStaminaBar(Mathf.RoundToInt(currentStamina));
+        }
+
+        
+    }
 
     public void RegenerateStamina(float amountPerSecond)
     {
-        PlayerUIManager.instance.UpdateStaminaBar(Mathf.RoundToInt(currentStamina));
+        if(character is playerManager)
+        {
+            PlayerUIManager.instance.UpdateStaminaBar(Mathf.RoundToInt(currentStamina));
+        }
+        
 
-        if (player.isAttacking)
+        if (character.isAttacking)
             return;
 
-        if (player.isPerformingAction)
+        if (character.isPerformingAction)
             return;
        
 
-        if (player.isSprinting)
+        if (character.isSprinting)
             return ;
+
+        if(character.isBlocking)
+            return;
 
         if (currentStamina < maxStamina)
         {
@@ -184,12 +207,14 @@ public class CharacterStatsManager : MonoBehaviour
             {
                 currentStamina = maxStamina;
             }
-            PlayerUIManager.instance.UpdateStaminaBar(Mathf.RoundToInt(currentStamina));
-            PlayerInputManager.Instance.ForceStateUpdate();
+            if(character is playerManager)
+            {
+                PlayerUIManager.instance.UpdateStaminaBar(Mathf.RoundToInt(currentStamina));
+                PlayerInputManager.Instance.ForceStateUpdate();
+            }
+           
         }
     }
-
-
     protected virtual void HandlePoiseResetTimer()
     {
         if (poiseResetTimer>0)
@@ -200,5 +225,42 @@ public class CharacterStatsManager : MonoBehaviour
         {
             totalPoiseDamage = 0;
         }
+    }
+
+
+    public int CalculateCharacterLevelBasedOnAttributes(bool calculateProjvtedLevel = false)
+    {
+
+
+        if(calculateProjvtedLevel)
+        {
+            int totalProjectedAttributes = 
+                Mathf.RoundToInt(PlayerUIManager.instance.playerUILevelUpManager.vitalitySlider.value) +
+                Mathf.RoundToInt(PlayerUIManager.instance.playerUILevelUpManager.enduranceSlider.value)+
+                Mathf.RoundToInt(PlayerUIManager.instance.playerUILevelUpManager.strengthSlider.value)+
+                Mathf.RoundToInt(PlayerUIManager.instance.playerUILevelUpManager.dexteritySlider.value)+
+                Mathf.RoundToInt(PlayerUIManager.instance.playerUILevelUpManager.luckSlider.value);
+
+            int projectedCharacterLevel = totalProjectedAttributes- 5 + 1;
+
+            if (projectedCharacterLevel < 1)
+                projectedCharacterLevel = 1;
+
+
+            return projectedCharacterLevel;
+        }
+
+
+
+        int totalAttributes = vitality+endurance+strength+dexterity+luck;
+        int characterLevel = totalAttributes- 5 + 1;
+
+        if(characterLevel < 1)
+            characterLevel = 1;
+
+
+        return characterLevel;
+
+
     }
 }

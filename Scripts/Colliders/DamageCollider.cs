@@ -84,6 +84,7 @@ public class DamageCollider : MonoBehaviour
             damageEffect.lightininglDamage = lightininglDamage;
             damageEffect.contactPoint = contactPoint;
             damageEffect.poiseDamage = poiseDamage;
+            damageEffect.baseStaminaDamage = poiseDamage;//If You Want Give Stamina Damage Its Own Variable
 
             //Aplly Blocked Damage To The Target
             damageTarget.characterEffectsManager.ProcessInstantEffect(damageEffect);

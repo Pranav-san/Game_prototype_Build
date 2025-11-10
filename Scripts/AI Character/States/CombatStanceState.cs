@@ -27,8 +27,8 @@ public class CombatStanceState : AIState
 
     [Header("Ranged Attack Setting")]
     [SerializeField] bool hasAmmoLoaded = false;
-    [SerializeField] float minimumRangedDistanceEngageMentDistance = 4;
-    [SerializeField] float MaximumRangedDistanceEngageMentDistance = 9;
+    [SerializeField] float minimumRangedDistanceengageMentDistance = 4;
+    [SerializeField] float MaximumRangedDistanceengageMentDistance = 9;
 
 
 
@@ -48,6 +48,14 @@ public class CombatStanceState : AIState
     [SerializeField] bool willCircleTarget = false;
     private bool hasChoosenCirclePath = false;
     [SerializeField] float strafeMoveAmount = 0;
+
+    [Header("Blocking")]
+    [SerializeField] bool canBlock = false;
+    [SerializeField] int percentageOfTimeWillBlock =  75;
+    [SerializeField] bool hasRolledForBlockChance = false;
+    [SerializeField] bool willBlockDuringThisCombatRotation = false;
+
+
 
     [Header("Evasion")]
     [SerializeField] bool canEvade = false;
@@ -112,6 +120,29 @@ public class CombatStanceState : AIState
         if (willCircleTarget)
             SetCirclePath(aiCharacter);
 
+        if (!willBlockDuringThisCombatRotation)
+        {
+            aiCharacter.isBlocking = false;
+        }
+
+        if (canBlock && !hasRolledForBlockChance)
+        {
+            hasRolledForBlockChance = true;
+            willBlockDuringThisCombatRotation = RollForOutComeChance(percentageOfTimeWillBlock);
+        }
+
+        if ((willBlockDuringThisCombatRotation))
+        {
+            aiCharacter.isBlocking = true;
+        }
+        else
+        {
+            aiCharacter.isBlocking = false;
+            
+        }
+
+
+
 
         if (canEvade && !hasRolledorEvasionChance)
         {
@@ -156,6 +187,7 @@ public class CombatStanceState : AIState
         //If we are outside of its Combat EngagementDistance, switch to Pursue Target State
         if (aiCharacter.aiCharacterCombatManager.distanceFromTarget > maximumEngagementDistance)
         {
+
             return SwitchState(aiCharacter, aiCharacter.pursueTarget);
         }
 
@@ -459,6 +491,8 @@ public class CombatStanceState : AIState
         hasAttack = false;
         hasRolledForComboChance = false;
         hasRolledorEvasionChance = false;
+        hasRolledForBlockChance = false;
+        willBlockDuringThisCombatRotation = false;
         hasEvaded= false;
         strafeMoveAmount = 0;
         hasChoosenCirclePath = false;
@@ -475,6 +509,7 @@ public class CombatStanceState : AIState
         if (Physics.CheckSphere(aiCharacter.aiCharacterCombatManager.LockOnTransform.position, aiCharacter.characterController.radius+ 0.25f, WorldUtilityManager.Instance.GetEnviroLayer()))
         {
             //Stop Strafing/Circling Because We've Hit Something, Instead path Towards Enemy
+            //This Will Make Our Character Follow Navmesh Agent And Path Toward Our Target
             Debug.Log("AI Colliding with something, Ended Strafe");
             aiCharacter.characterAnimatorManager.SetAnimatorMovementParameters(0, Mathf.Abs(strafeMoveAmount));
 
@@ -482,7 +517,7 @@ public class CombatStanceState : AIState
         }
 
         //Strafe
-        Debug.Log("AI STRAFING");
+        //Debug.Log("AI STRAFING");
         aiCharacter.characterAnimatorManager.SetAnimatorMovementParameters(strafeMoveAmount, 0);
 
         if (hasChoosenCirclePath)
@@ -497,7 +532,7 @@ public class CombatStanceState : AIState
 
         int leftOrRightIndex = Random.Range(0, 100);
 
-        if (leftOrRightIndex >= 60)
+        if (leftOrRightIndex >= 50)
         {
             //Left
             strafeMoveAmount = -0.5f;
@@ -548,6 +583,8 @@ public class CombatStanceState : AIState
     public void ResetStatemachine(AICharacterManager aiCharacter)
     {
         ResetStateFlags(aiCharacter);
+
+
 
 
 

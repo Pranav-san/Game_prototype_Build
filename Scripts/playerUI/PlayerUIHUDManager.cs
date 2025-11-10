@@ -22,8 +22,10 @@ public class PlayerUIHUDManager : MonoBehaviour
     [SerializeField] float runeUpdateCountDelayTimer = 2.5f;
     private int PendingRunesToAdd = 0;
     private Coroutine waitThenAddRunesCoroutine;
+    private Coroutine runeCountAnimationCoroutine;
     [SerializeField] TextMeshProUGUI runesToAddText;
     [SerializeField] TextMeshProUGUI runesCountText;
+    [SerializeField] Image runeIcon;
 
     [Header("Quick Slots")]
     
@@ -62,7 +64,17 @@ public class PlayerUIHUDManager : MonoBehaviour
         //Wait for timer to reach 0, Increase more runes qued up
         float timer = runeUpdateCountDelayTimer;
         int runesToAdd = PendingRunesToAdd;
-        runesToAddText.text = "+" + runesToAdd.ToString();
+
+        if(runesToAdd >= 0)
+        {
+            runesToAddText.text = "+" + runesToAdd.ToString();
+
+        }
+        else
+        {
+            runesToAddText.text = "-" + Mathf.Abs(runesToAdd).ToString();
+        }
+        
         runesToAddText.enabled = true;
         while(timer > 0)
         {
@@ -76,13 +88,42 @@ public class PlayerUIHUDManager : MonoBehaviour
             }
             yield return null;
         }
-        // Update Rune Count, Reset pending Runes Count and Hide Pending Runes Text
-        runesToAddText.enabled= false;
+        //// Update Rune Count, Reset pending Runes Count and Hide Pending Runes Text
+        //runesToAddText.enabled= false;
+        //PendingRunesToAdd = 0;
+        //runesCountText.text = PlayerUIManager.instance.playerStatsManager.runes.ToString();
+        //yield return null;
+
+
+        runesToAddText.enabled = false;
+
+        int targetRunes = PlayerUIManager.instance.playerStatsManager.runes;
+        int startRunes = targetRunes - runesToAdd; 
         PendingRunesToAdd = 0;
-        runesCountText.text = PlayerUIManager.instance.playerStatsManager.runes.ToString();
-        yield return null;
+
+        if (runeCountAnimationCoroutine != null)
+            StopCoroutine(runeCountAnimationCoroutine);
+
+        runeCountAnimationCoroutine = StartCoroutine(AnimateRuneCount(startRunes, targetRunes, 0.8f));
+
 
     }
+
+    private IEnumerator AnimateRuneCount(int start, int end, float duration)
+    {
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            int displayValue = Mathf.RoundToInt(Mathf.Lerp(start, end, t));
+            runesCountText.text = displayValue.ToString("N0"); // adds commas if needed
+            yield return null;
+        }
+
+        runesCountText.text = end.ToString("N0");
+    }
+
 
     public void ToggleHUD(bool status)
     {

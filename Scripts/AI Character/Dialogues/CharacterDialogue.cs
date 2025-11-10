@@ -29,6 +29,9 @@ public class CharacterDialogue : ScriptableObject
     [SerializeField] bool setStageIndex = false; //This Will Be Used To Set The Stage ID, After Setting an ID, New Dialogue Will Be Selected Depending On ID
     [SerializeField] int stageID = 0;
 
+    [Header("Input")]
+    [HideInInspector] public bool waitingForPlayerInput = false;
+
 
     public void PlayDialogueEvent(AICharacterManager aiCharacterManager)
     {
@@ -54,12 +57,16 @@ public class CharacterDialogue : ScriptableObject
             yield return new WaitForSeconds(greetingDialogueAudio[randomGreetingDialogueIndex].length+1);
         }
 
+        waitingForPlayerInput = true;
+        yield return new WaitUntil(() => !waitingForPlayerInput);
+
         dialogueIndex = 0;
         while (dialogueIndex < dialogueString.Count)
         {
             PlayerUIManager.instance.playerUIPopUPManager.SetDialoguePopUpSubtitles(dialogueString[dialogueIndex]);
-          
-            yield return new WaitForSeconds(3f);
+            waitingForPlayerInput = true;
+
+            yield return new WaitUntil(() => !waitingForPlayerInput);
 
             dialogueIndex++;
         }
@@ -67,12 +74,14 @@ public class CharacterDialogue : ScriptableObject
         if (!farewellHasPlayed)
         {
             farewellHasPlayed = true;
+            waitingForPlayerInput = true;
             int randomGreetingDialogueIndex = Random.Range(0, farewellDialogueString.Count);
             PlayerUIManager.instance.playerUIPopUPManager.SetDialoguePopUpSubtitles(farewellDialogueString[randomGreetingDialogueIndex]);
             //aiCharacter.aiCharacterSoundFXManager.PlaySoundfx(greetingDialogueAudio[randomGreetingDialogueIndex]);
+            
 
-            yield return new WaitForSeconds(3f);
         }
+        yield return new WaitUntil(() => !waitingForPlayerInput);
 
 
 
@@ -87,9 +96,21 @@ public class CharacterDialogue : ScriptableObject
         //Do Stuff With Character Dialogue Scriptable
         greetingHasPlayed = false;
         dialogueIndex = 0;
+        farewellHasPlayed = false;
         aiCharacter.aiCharacterSoundFXManager.dialogueIsPlaying = false;
-        MobileControls.instance.EnableMobileControls();
-        
+        PlayerUIManager.instance.mobileControls.EnableMobileControls();
+
+        // Refresh the interactable collider after dialogue ends
+        if (aiCharacter.aiCharacterSoundFXManager.dialogueInteractableGameObject != null)
+        {
+            DialogueInteractable dialogueInteractable =
+                aiCharacter.aiCharacterSoundFXManager.dialogueInteractableGameObject.GetComponent<DialogueInteractable>();
+            if (dialogueInteractable != null)
+            {
+                dialogueInteractable.RefreshInteractableColliders();
+            }
+        }
+
 
         if (setStageIndex)
             WorldSaveGameManager.instance.SetStageOfDialogue(aiCharacter.aiCharacterSoundFXManager.characterDialogueID, stageID);
@@ -104,6 +125,8 @@ public class CharacterDialogue : ScriptableObject
     {
         
     }
+
+   
 
 
 

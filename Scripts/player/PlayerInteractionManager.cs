@@ -183,11 +183,11 @@ public class PlayerInteractionManager : MonoBehaviour
             // Handle item loot status if it's a world spawn item
             if (pickUpItemInteractable.pickUpType == ItemPickUpType.WorldSpwan)
             {
-                if (WorldSaveGameManager.instance.currentCharacterData.worldItemsLooted.ContainsKey((int)pickUpItemInteractable.itemID))
+                if (WorldSaveGameManager.instance.currentCharacterData.worldItemsLooted.ContainsKey((int)pickUpItemInteractable.worldSpwanInteractableItemID))
                 {
-                    WorldSaveGameManager.instance.currentCharacterData.worldItemsLooted.Remove(pickUpItemInteractable.itemID);
+                    WorldSaveGameManager.instance.currentCharacterData.worldItemsLooted.Remove(pickUpItemInteractable.worldSpwanInteractableItemID);
                 }
-                WorldSaveGameManager.instance.currentCharacterData.worldItemsLooted.Add((int)pickUpItemInteractable.itemID, true);
+                WorldSaveGameManager.instance.currentCharacterData.worldItemsLooted.Add((int)pickUpItemInteractable.worldSpwanInteractableItemID, true);
             }
 
             // Destroy the item after it has been picked up (or deactivate it if it's a world spawn)
@@ -199,7 +199,7 @@ public class PlayerInteractionManager : MonoBehaviour
             PlayerUIManager.instance.playerUIPopUPManager.CloseAllPopUpWindow();
             PlayerUIManager.instance.playerUIHUDManager.ToggleHUD(true);
             PlayerUIManager.instance.inspectObjectTouchField.SetActive(false);
-            MobileControls.instance.EnableMobileControls();
+            PlayerUIManager.instance.mobileControls.EnableMobileControls();
 
 
 

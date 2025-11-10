@@ -19,6 +19,8 @@ public class TitleScreenManager : MonoBehaviour
     public float TargetFrameRate = 60.0f;
     float currentFrameTime;
 
+   
+
 
 
     [Header("Menu objects")]
@@ -36,7 +38,7 @@ public class TitleScreenManager : MonoBehaviour
     [SerializeField] Button SettingsMenuButton;
     [SerializeField] Button deleteCharacterPopUpConfirmbutton;
 
-    [Header("Character Creation Main panel Buttions")]
+    [Header("Character Creation Main panel Buttons")]
     [SerializeField] Button characterNameButton;
     [SerializeField] TextMeshProUGUI characterNameText;
     [SerializeField] Button characterClassButton;
@@ -48,8 +50,10 @@ public class TitleScreenManager : MonoBehaviour
 
     [Header("Character Creation Secondary panel Buttons")]
     [SerializeField] GameObject characterClassMenu;
+    MenuSlideAnimator characterClassMenuAnimator;
     [SerializeField] GameObject characterNameMenu;
     [SerializeField] GameObject characterHairMenu;
+    MenuSlideAnimator characterHairMenuAnimator;
     [SerializeField] TMP_InputField characterNameInputField;
 
 
@@ -85,10 +89,6 @@ public class TitleScreenManager : MonoBehaviour
     {
         WorldSaveGameManager.instance.DisableMobileControlsOnSceneChange();
 
-        
-
-
-
 
         for (int i = 0; i< PlayerUIManager.instance.playerUIHUDManager.canvasGroup.Length; i++)
         {
@@ -96,7 +96,9 @@ public class TitleScreenManager : MonoBehaviour
 
         }
 
-        WorldSoundFXManager.instance.PlayTitleScreenMusic();
+        //WorldSoundFXManager.instance.PlayTitleScreenMusic();
+
+        
 
 
 
@@ -118,7 +120,9 @@ public class TitleScreenManager : MonoBehaviour
             Destroy(gameObject);
         }
 
-        
+
+
+
 
 
 
@@ -127,6 +131,11 @@ public class TitleScreenManager : MonoBehaviour
 
         QualitySettings.vSyncCount = 0;
         Application.targetFrameRate = MaxFrameRate;
+
+        characterClassMenuAnimator = characterClassMenu.GetComponent<MenuSlideAnimator>();
+        characterHairMenuAnimator = characterHairMenu.GetComponent<MenuSlideAnimator>();
+
+
        
 
 
@@ -152,11 +161,21 @@ public class TitleScreenManager : MonoBehaviour
 
     public void StartNewGame()
     {
-       
+        playerManager player = WorldSaveGameManager.instance.player;
+        string inputName = characterNameInputField?.text;
+
+        //Set A Name For Character If Its Null
+        if (string.IsNullOrWhiteSpace(inputName))
+        {
+            string saveFileName = "Log";
+            characterNameInputField.text = saveFileName;
+            player.characterName = characterNameInputField.text;
+
+            player.ismale  = isMale;
+
+        }
 
         WorldSaveGameManager.instance.AttemptCreateNewGame();
-
-        playerManager player = WorldSaveGameManager.instance.player;
 
         //Assign Character Info in Save Slot
         player.characterName = characterNameInputField.text;
@@ -198,12 +217,15 @@ public class TitleScreenManager : MonoBehaviour
     public void OpenCharacterCreationMenu()
     {
         PlayerCamera.instance.player.transform.position = PlayerCamera.instance.player.defaultPlayerposition;
+        PlayerCamera.instance.player.transform.rotation = Quaternion.identity;
         titleScreenCharacterCreationMenu.SetActive(true);
 
 
         isMale = true;
         characterSexText.text = "Male";
+        PlayerInputManager.Instance.player.playerAnimatorManager.PlayTargetActionAnimationInstantly("Empty", false);
         PlayerCamera.instance.player.playerBodyManager.ToggleBodyType(isMale);
+        
 
 
     }
@@ -212,6 +234,20 @@ public class TitleScreenManager : MonoBehaviour
         titleScreenCharacterCreationMenu.SetActive(false);
         CloseChooseCharacterClassSubMenu();
         CloseChooseNameSubMenu();
+        PlayerInputManager.Instance.player.transform.position =PlayerInputManager.Instance.player.titleScreenPlayerPosition;
+
+
+    }
+
+    public void ReturnToTitleScreenMenu()
+    {
+        titleScreenCharacterCreationMenu.SetActive(false);
+        CloseChooseCharacterClassSubMenu();
+        CloseChooseNameSubMenu();
+        PlayerInputManager.Instance.player.transform.position =PlayerInputManager.Instance.player.titleScreenPlayerPosition;
+        PlayerInputManager.Instance.player.transform.rotation = PlayerInputManager.Instance.player.titleScreenPlayerRotation;
+        PlayerInputManager.Instance.player.playerAnimatorManager.PlayTargetActionAnimationInstantly("Title Screen Animation", false);
+
 
 
     }
@@ -220,6 +256,11 @@ public class TitleScreenManager : MonoBehaviour
     {
         ToggleCharacterCreationScreenMainMenuButtons(false);
         characterClassMenu.SetActive(true);
+        if(characterClassMenuAnimator != null)
+        {
+            characterClassMenuAnimator.ShowMenu();
+        }
+        
 
         //if(characterClassButtons.Length > 0)
         //{
@@ -233,15 +274,17 @@ public class TitleScreenManager : MonoBehaviour
         ToggleCharacterCreationScreenMainMenuButtons(true);
         characterClassMenu.SetActive(false);
 
-        characterClassButton.Select();
-        characterClassButton.OnSelect(null);
-
     }
 
     public void OpenChooseHairStyleSubMenu()
     {
         ToggleCharacterCreationScreenMainMenuButtons(false);
         characterHairMenu.SetActive(true);
+
+        if (characterHairMenuAnimator != null)
+        { 
+            characterHairMenuAnimator.ShowMenu(); 
+        }
 
         if (characterHairButtons.Length > 0)
         {
@@ -407,8 +450,6 @@ public class TitleScreenManager : MonoBehaviour
         //disable and Enable Load Menu To refresh Deleted slots
         titleScreenLoadMenu.SetActive(false );
         titleScreenLoadMenu.SetActive(true);
-
-        loadMenuReturnButton.Select();
         
 
     }
@@ -463,17 +504,16 @@ public class TitleScreenManager : MonoBehaviour
 
         
     }
-    public void SetCharacterClass(playerManager player, int vitality, int stamina, int mind, int strength, 
-        int dexterity, int faith, WeaponItem[] mainHandWeapons, WeaponItem[]offHandWeapons, HeadEquipmentItem headEquipment,
+    public void SetCharacterClass(playerManager player, int vitality, int endurance, int mind, int strength, 
+        int dexterity, int luck, WeaponItem[] mainHandWeapons, WeaponItem[]offHandWeapons, HeadEquipmentItem headEquipment,
         BodyEquipmentItem bodyEquipment, LegEquipmentItem legEquipment, HandEquipmentItem handEquipment)
     {
         //Set Stats
         player.playerStatsManager.vitality = vitality;
-        player.playerStatsManager.stamina = stamina;
-        player.playerStatsManager.mind = mind;
+        player.playerStatsManager.endurance = endurance;
         player.playerStatsManager.strength = strength;
         player.playerStatsManager.dexterity = dexterity;
-        player.playerStatsManager.faith = faith;
+        player.playerStatsManager.luck = luck;
 
         //Set Weapons
         player.playerInventoryManager.weaponsInRightHandSlot[0]=Instantiate(mainHandWeapons[0]);

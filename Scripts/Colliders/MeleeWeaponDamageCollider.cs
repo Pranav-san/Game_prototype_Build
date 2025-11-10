@@ -34,6 +34,7 @@ public class MeleeWeaponDamageCollider : DamageCollider
 
             contactPoint = other.GetComponent<Collider>().ClosestPointOnBounds(transform.position);
         }
+        CheckForBlock(damageTarget);
         DamageTarget(damageTarget);
 
     }

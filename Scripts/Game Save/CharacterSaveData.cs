@@ -28,8 +28,23 @@ public class CharacterSaveData
     public float currentStamina;
 
     [Header("Stats")]
-    public int endurance;
     public int vitality;
+    public int endurance;
+    public int strength;
+    public int dexterity;
+    public int luck;
+
+    [Header("Currency")]
+    public int runes;
+
+
+    [Header("Dead Spot")]
+    public bool hasDeadSpot = false;
+    public float deadSpotPositionX;
+    public float deadSpotPositionY;
+    public float deadSpotPositionZ;
+    public int deadSpotRuneCount;
+
 
     [Header("Bosses")]
     public SerializableDictionary<int, bool> bossesAwakened;//Int is Boss ID, Bool is Awakened Status

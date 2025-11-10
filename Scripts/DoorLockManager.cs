@@ -33,8 +33,8 @@ public class DoorLockManager : MonoBehaviour
 
     public void OpenDoorlockUI(Door door, playerManager player)
     {
-       
-        MobileControls.instance.DisableMobileControls();
+
+        PlayerUIManager.instance.mobileControls.DisableMobileControls();
 
         if(door!= null && door.isLocked && !door.requireKey)
         {
@@ -85,7 +85,7 @@ public class DoorLockManager : MonoBehaviour
         
         passCodeMenu.SetActive(false);
         lockKeyMenu.SetActive(false);
-        MobileControls.instance.EnableMobileControls();
+        PlayerUIManager.instance.mobileControls.EnableMobileControls();
         PlayerUIManager.instance.menuWindowOpen = false;
         currentDoor = null;
     }

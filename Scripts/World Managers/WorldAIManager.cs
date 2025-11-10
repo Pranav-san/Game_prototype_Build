@@ -198,7 +198,7 @@ public class WorldAIManager : MonoBehaviour
         if (resetAllCharactersCoroutine != null)
             StopCoroutine(ResetAllCharactersCoroutine());
 
-        spwanAllCharactersCoroutine = StartCoroutine(ResetAllCharactersCoroutine());
+        resetAllCharactersCoroutine = StartCoroutine(ResetAllCharactersCoroutine());
 
 
     }

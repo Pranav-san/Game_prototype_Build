@@ -5,12 +5,8 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class PlayerUIEquipmentManager : MonoBehaviour
+public class PlayerUIEquipmentManager : PlayerUIMenu
 {
-    
-    [Header("Menu")]
-    [SerializeField] GameObject menu;
-    [SerializeField] MenuSlideAnimator menuAnimator;
 
     [Header("Weapon Slots")]
     [SerializeField] Image rightHandSlot01;
@@ -90,28 +86,17 @@ public class PlayerUIEquipmentManager : MonoBehaviour
     [SerializeField] Item currentSelectedItem;
 
 
-
-
-    
-
-
-    public void OpenEquipmentManagerMenu()
+    public override void OpenMenu()
     {
-        PlayerUIManager.instance.menuWindowOpen =true;
-        menu.SetActive(true);
-        menuAnimator.ShowMenu();
+        base.OpenMenu();
+
         equipmentInventoryWindow.SetActive(false);
         ClearEquipmentInventory();
         RefreshWeaponSlotsIcons();
 
-    }
-    public void CloseEquipmentManagerMenu()
-    {
-        PlayerUIManager.instance.menuWindowOpen =false;
-        menuAnimator.HideMenu();
-        menu.SetActive(false);
 
     }
+    
 
     public void RefreshWeaponSlotsIcons()
     {
@@ -915,14 +900,14 @@ public class PlayerUIEquipmentManager : MonoBehaviour
             //    {
             //        character.playerInventoryManager.weaponsInRightHandSlot[2] = Instantiate(WorldItemDatabase.instance.unArmedWeapon);
 
-            //        if (unEquippedItem.itemID != WorldItemDatabase.instance.unArmedWeapon.itemID)
+            //        if (unEquippedItem.worldSpwanInteractableItemID != WorldItemDatabase.instance.unArmedWeapon.worldSpwanInteractableItemID)
             //        {
             //            character.playerInventoryManager.AddItemToInventory(unEquippedItem);
             //        }
             //    }
             //    if (character.playerInventoryManager.rightHandWeaponIndex ==2)
             //    {
-            //        character.playerInventoryManager.currentRightHandWeaponID = WorldItemDatabase.instance.unArmedWeapon.itemID;
+            //        character.playerInventoryManager.currentRightHandWeaponID = WorldItemDatabase.instance.unArmedWeapon.worldSpwanInteractableItemID;
             //        //character.playerEquipmentManager.SwitchRightWeapon();
             //    }
             //    break;
@@ -973,14 +958,14 @@ public class PlayerUIEquipmentManager : MonoBehaviour
             //    {
             //        character.playerInventoryManager.weaponsInLeftHandSlot[2] = Instantiate(WorldItemDatabase.instance.unArmedWeapon);
 
-            //        if (unEquippedItem.itemID != WorldItemDatabase.instance.unArmedWeapon.itemID)
+            //        if (unEquippedItem.worldSpwanInteractableItemID != WorldItemDatabase.instance.unArmedWeapon.worldSpwanInteractableItemID)
             //        {
             //            character.playerInventoryManager.AddItemToInventory(unEquippedItem);
             //        }
             //    }
             //    if (character.playerInventoryManager.leftHandWeaponIndex ==2)
             //    {
-            //        character.playerInventoryManager.currentLeftHandWeaponID = WorldItemDatabase.instance.unArmedWeapon.itemID;
+            //        character.playerInventoryManager.currentLeftHandWeaponID = WorldItemDatabase.instance.unArmedWeapon.worldSpwanInteractableItemID;
             //    }
             //    break;
             case EquipmentType.TwoHandWeapon:

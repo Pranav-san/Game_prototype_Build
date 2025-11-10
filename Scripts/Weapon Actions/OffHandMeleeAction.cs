@@ -26,12 +26,12 @@ public class OffHandMeleeAction : WeaponItemBasedAction
         if(playerPerformingAction.isBlocking)
             return;
         
-        if(playerPerformingAction.playerInventoryManager.currentLeftHandWeapon.weaponClass != WeapomClass.Shield)
+        if(playerPerformingAction.playerInventoryManager.currentLeftHandWeapon.weaponClass != WeapomClass.Shield && !playerPerformingAction.playerInventoryManager.currentLeftHandWeapon.canBlockUsingOffHand)
         {
             PerformOffHandAttack(playerPerformingAction, weaponPerformingAction);
         }
 
-        if (playerPerformingAction.playerInventoryManager.currentLeftHandWeapon.weaponClass == WeapomClass.Shield)
+        if (playerPerformingAction.playerInventoryManager.currentLeftHandWeapon.weaponClass == WeapomClass.Shield || playerPerformingAction.playerInventoryManager.currentLeftHandWeapon.canBlockUsingOffHand)
         {
             playerPerformingAction.isBlocking = true;
             playerPerformingAction.isUsingLeftHand = true;

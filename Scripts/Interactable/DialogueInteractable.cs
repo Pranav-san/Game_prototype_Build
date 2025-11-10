@@ -14,6 +14,7 @@ public class DialogueInteractable : Interactable
 
     public override void Interact(playerManager player)
     {
+        base.Interact(player);
 
         if (PlayerUIManager.instance.menuWindowOpen)
             return;
@@ -25,8 +26,7 @@ public class DialogueInteractable : Interactable
         }
 
         //Play Current Dialogue
-        MobileControls.instance.DisableMobileControls();
-        
+        PlayerUIManager.instance.mobileControls.DisableMobileControls();
         aiCharacter.aiCharacterSoundFXManager.PlayCurrentDialogueEvent();
 
 
@@ -34,6 +34,8 @@ public class DialogueInteractable : Interactable
 
     public override void OnTriggerEnter(Collider other)
     {
+        base.OnTriggerEnter(other);
+
         if (aiCharacter.characterStatsManager.isDead)
         {
             interactableCollider.enabled = false;
@@ -45,7 +47,7 @@ public class DialogueInteractable : Interactable
             
 
         }
-        base.OnTriggerEnter(other);
+        
 
 
     }

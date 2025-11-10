@@ -19,6 +19,7 @@ public class WeaponItem : EquipmentItem
 
     [Header("Weapon Class")]
     public WeapomClass weaponClass;
+    public bool canBlockUsingOffHand=true;
 
     [Header("Weapon Requirements")]
     public int strengthREQ = 0;
@@ -52,8 +53,7 @@ public class WeaponItem : EquipmentItem
     public float fireBaseDamageAbsorption = 40;
     public float magicBaseDamageAbsorption = 40;
     public float lightningBaseDamageAbsorption = 20;
-
-    public float stabilty = 20;//Reduces stamina lost from Blocking
+    public float stabilty = 40;//Reduces stamina lost from Blocking
     
 
 

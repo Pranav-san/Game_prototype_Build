@@ -109,6 +109,7 @@ public class AIBossCharacterManager : AICharacterManager
             }
             gameObject.SetActive(false);
 
+
         }
 
 
@@ -138,7 +139,7 @@ public class AIBossCharacterManager : AICharacterManager
 
             PlayerInputManager.Instance.player.playerCombatManager.isLockedOn = false;
             PlayerInputManager.Instance.player.playerCombatManager.currentTarget = null;
-            PlayerCamera.instance.SetLockCameraHeight();
+            //PlayerCamera.instance.SetLockCameraHeight();
 
             if (killer != null)
             {

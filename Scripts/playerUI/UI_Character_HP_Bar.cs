@@ -71,6 +71,11 @@ public class UI_Character_HP_Bar : UI_StatBar, AIHealthUI
         characterDamage.enabled = true;
     }
 
+    public void ResetHPBar()
+    {
+        gameObject.SetActive(false);
+    }
+
 
 
 

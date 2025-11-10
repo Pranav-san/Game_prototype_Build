@@ -6,6 +6,8 @@ public class PlayerBodyManager : MonoBehaviour
 {
     //Enable Body Parts
 
+    
+
     [Header("Hair game object")]
     [SerializeField] public GameObject hair;
     [SerializeField] public GameObject[] hairObjects;
@@ -42,10 +44,15 @@ public class PlayerBodyManager : MonoBehaviour
     private void Awake()
     {
         meshRenderers = GetComponentsInChildren<SkinnedMeshRenderer>();
+       
     }
 
 
 
+    //Dead Spot
+   
+
+    //Equipment
     public void EnableHead()
     {
         //Enable Head Object

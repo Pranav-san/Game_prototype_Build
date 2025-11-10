@@ -119,7 +119,7 @@ public class AiUndeadCombatManager : AICharacterCombatManager
         lefttExploderCollider.explosionVfx.SetActive(false);
         PlayerInputManager.Instance.player.playerCombatManager.isLockedOn = false;
         PlayerInputManager.Instance.player.playerCombatManager.currentTarget = null;
-        PlayerCamera.instance.SetLockCameraHeight();
+        //PlayerCamera.instance.SetLockCameraHeight();
 
     }
 

@@ -31,6 +31,9 @@ public class PlayerCombatManager : CharacterCombatManager
     [Header("Rotate and Face The Target When Performing Attack")]
    [SerializeField] float lockedOnAttackRotationRadius = 2.5f;
 
+    [Header("Last DeadSpot")]
+    public GameObject lastDeadSpot;
+
     protected override void Awake()
     {
         base.Awake();
@@ -96,6 +99,61 @@ public class PlayerCombatManager : CharacterCombatManager
         weaponAction.AttemptToPerformAction(player, WeaponPerformiingAction);
     }
 
+    //Create Dead Spot 
+    public void CreateDeadSpot(Vector3 position, int runeCount, bool removePlayersRunes = true)
+    {
+        if (lastDeadSpot==null)
+        {
+            //Spwan The Dead Spot VFX
+            GameObject deadSpotFX = Instantiate(WorldCharacterEffectsManager.instance.deadSpotVFX);
+            lastDeadSpot = deadSpotFX;  
+
+            //Set Its World Position
+            deadSpotFX.transform.position = position;
+
+            //Set The Rune Count
+            PickUpRunesInteractable pickUpRunes = deadSpotFX.GetComponent<PickUpRunesInteractable>();
+            pickUpRunes.runes = runeCount;
+            if (removePlayersRunes)
+                player.playerStatsManager.AddRunes(-player.playerStatsManager.runes);
+
+            WorldSaveGameManager.instance.currentCharacterData.hasDeadSpot = true;
+            WorldSaveGameManager.instance.currentCharacterData.deadSpotRuneCount = pickUpRunes.runes;
+            WorldSaveGameManager.instance.currentCharacterData.deadSpotPositionX = position.x;
+            WorldSaveGameManager.instance.currentCharacterData.deadSpotPositionY = position.y;
+            WorldSaveGameManager.instance.currentCharacterData.deadSpotPositionZ = position.z;
+
+        }
+        else
+        {
+            Destroy(lastDeadSpot);
+
+            //Spwan The Dead Spot VFX
+            GameObject deadSpotFX = Instantiate(WorldCharacterEffectsManager.instance.deadSpotVFX);
+            lastDeadSpot = deadSpotFX;
+
+            //Set Its World Position
+            deadSpotFX.transform.position = position;
+
+            //Set The Rune Count
+            PickUpRunesInteractable pickUpRunes = deadSpotFX.GetComponent<PickUpRunesInteractable>();
+            pickUpRunes.runes = runeCount;
+            if (removePlayersRunes)
+                player.playerStatsManager.AddRunes(-player.playerStatsManager.runes);
+
+            WorldSaveGameManager.instance.currentCharacterData.hasDeadSpot = true;
+            WorldSaveGameManager.instance.currentCharacterData.deadSpotRuneCount = pickUpRunes.runes;
+            WorldSaveGameManager.instance.currentCharacterData.deadSpotPositionX = position.x;
+            WorldSaveGameManager.instance.currentCharacterData.deadSpotPositionY = position.y;
+            WorldSaveGameManager.instance.currentCharacterData.deadSpotPositionZ = position.z;
+
+
+
+
+
+        }
+
+    }
     public override void AttemptRiposte(RaycastHit hit)
     {
       
@@ -238,10 +296,7 @@ public class PlayerCombatManager : CharacterCombatManager
     public override void SetTarget(CharacterManager newTarget)
     {
         base.SetTarget(newTarget);
-
-       
-
-        PlayerCamera.instance.SetLockCameraHeight();
+        //PlayerCamera.instance.SetLockCameraHeight();
     }
 
     public void CheckIfTargetIsDead(CharacterManager targetToCheck)

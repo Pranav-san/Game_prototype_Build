@@ -84,6 +84,7 @@ public class IdleState : AIState
         {
             //Return This State, To Continually Search For a Target
             //Debug.Log("Searching for Target");
+            aiCharacter.navMeshAgent.enabled = false;
 
 
             return this;
@@ -238,6 +239,7 @@ public class IdleState : AIState
         base.ResetStateFlags(aiCharacter);
 
         sleepAnimationSet = false;
+
     }
 
 

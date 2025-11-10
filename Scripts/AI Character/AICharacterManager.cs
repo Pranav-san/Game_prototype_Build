@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.TextCore.Text;
 
 public class AICharacterManager : CharacterManager
 {
@@ -176,6 +177,7 @@ public class AICharacterManager : CharacterManager
 
         aiCharacterCombatManager.currentTarget= null;
         characterController.enabled = false;
+        isBlocking = false;
         isMoving = false;
         canMove = false;
 
@@ -196,7 +198,7 @@ public class AICharacterManager : CharacterManager
             PlayerInputManager.Instance.player.playerCombatManager.isLockedOn = false;
             PlayerInputManager.Instance.player.playerCombatManager.currentTarget = null;
             PlayerUIManager.instance.SetLockOnTarget(null);
-            PlayerCamera.instance.SetLockCameraHeight();
+            //PlayerCamera.instance.SetLockCameraHeight();
 
             if (killer != null && !killer.playerStatsManager.isDead)
             {
@@ -210,8 +212,9 @@ public class AICharacterManager : CharacterManager
 
         }
 
-        yield return new WaitForSeconds(5);
+        yield return new WaitForSeconds(3);
 
+        aiCharacterInventoryManager.DropItem();
     }
 
 
@@ -308,29 +311,36 @@ public class AICharacterManager : CharacterManager
 
     public void ResetStateMachine()
     {
-        // Reset state to Idle
-        currentState.SwitchState(this, idle);
-       
-
-
-        combatStance.ResetStatemachine(this);
-        attackState.ResetStateMachine(this);
-
-        // Clear combat values
+        
+        
+        isMoving = false;
+        isHoldingArrow = false;
+        isBlocking = false;
+        hasExploded = false;
         aiCharacterCombatManager.currentTarget = null;
         aiCharacterCombatManager.targetDirection = Vector3.zero;
         aiCharacterCombatManager.distanceFromTarget = 0f;
         aiCharacterCombatManager.viewableAngle = 0f;
         aiCharacterCombatManager.actionRecoveryTimer = 0f;
 
-        // Reset locomotion
-        isMoving = false;
-        if (navMeshAgent != null && navMeshAgent.enabled)
+        if (navMeshAgent != null)
         {
             navMeshAgent.isStopped = true;
             navMeshAgent.ResetPath();
             navMeshAgent.velocity = Vector3.zero;
+            navMeshAgent.updatePosition = true;
+            navMeshAgent.updateRotation = true;
+            navMeshAgent.enabled = false;
         }
+
+        // Reset state to Idle
+        currentState.SwitchState(this, idle);
+
+        combatStance.ResetStatemachine(this);
+        attackState.ResetStateMachine(this);
+       
+        
+        
 
         // Reset animator
         if (animator != null)
@@ -342,6 +352,8 @@ public class AICharacterManager : CharacterManager
         // Reset stance & health related values
         aiCharacterCombatManager.stanceRegenerationTimer = 0f;
         aiCharacterCombatManager.currentStance = aiCharacterCombatManager.maxStance;
+        characterStatsManager.currentHealth = characterStatsManager.maxHealth;
+        characterStatsManager.isDead = false;
     }
 
 

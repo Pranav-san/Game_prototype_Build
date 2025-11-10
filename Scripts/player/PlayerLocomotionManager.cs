@@ -15,8 +15,6 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
     public float movementAmount;
 
     [Header("Movement Settings")]
-
-
     [SerializeField] float walkingSpeed = 2;
     [SerializeField] float runningSpeed = 5;
     [SerializeField] float sprintingSpeed = 7;
@@ -90,11 +88,23 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
 
     }
 
-    private void GetVerticalAndHorizontalInputs()
+    public void GetVerticalAndHorizontalInputs()
     {
         verticalMovement = PlayerInputManager.Instance.verticalInput;
         horizontalMovement = PlayerInputManager.Instance.horizontalInput;
         movementAmount = PlayerInputManager.Instance.moveAmount;
+    }
+
+    public Vector3 GetMovementDirection()
+    {
+        // Get the CharacterController's velocity
+        Vector3 velocity = player.characterController.velocity;
+
+        // Remove vertical component for top-down movement
+        velocity.y = 0;
+
+        // Return normalized direction (or Vector3.zero if not moving)
+        return velocity.magnitude > 0.01f ? velocity.normalized : Vector3.zero;
     }
     private void HandleGroundedMovement()
     {
@@ -479,8 +489,16 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
             Vector3 targetRotationDirection = Vector3.zero;
             if (PlayerInputManager.Instance.moveAmount > 0)
             {
-                targetRotationDirection = PlayerCamera.instance.cameraObject.transform.forward * verticalMovement;
-                targetRotationDirection += PlayerCamera.instance.cameraObject.transform.right * horizontalMovement;
+                Vector3 camForward = PlayerCamera.instance.cameraObject.transform.forward;
+                Vector3 camRight = PlayerCamera.instance.cameraObject.transform.right;
+
+                camForward.y = 0;
+                camRight.y = 0;
+
+                camForward.Normalize();
+                camRight.Normalize();
+
+                targetRotationDirection = camForward * verticalMovement + camRight * horizontalMovement;
             }
             else
             {
@@ -545,8 +563,12 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
         if (!player.isGrounded)
             return;
 
+        
+
         if (player.canRoll)
         {
+            if (player.playerStatsManager.currentStamina < player.playerStatsManager.dodgeStaminaCost)
+                return;
 
 
             if (PlayerInputManager.Instance.moveAmount > 0 && !player.playerCombatManager.isLockedOn)
@@ -563,6 +585,7 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
                 //perform Roll Animation
                 player.isMoving = false;
                 player.playerAnimatorManager.PlayTargetActionAnimation("Roll", true, true);
+                player.playerStatsManager.ConsumeStamina(player.playerStatsManager.dodgeStaminaCost);
                 isRolling = true;
 
             }
@@ -575,29 +598,38 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
             //OmniDirectional Dodge when character is Locked ON
             if (PlayerInputManager.Instance.moveAmount > 0 && player.playerCombatManager.isLockedOn)
             {
+                if (player.playerStatsManager.currentStamina < player.playerStatsManager.dodgeStaminaCost)
+                    return;
+
                 float horizontal = PlayerInputManager.Instance.horizontalInput;
                 float vertical = PlayerInputManager.Instance.verticalInput;
+
+               
 
                 if (vertical > 0.5f)
                 {
                     player.canMove = false;
                     player.playerAnimatorManager.PlayTargetActionAnimation("Roll Forward", true, true);
+                    player.playerStatsManager.ConsumeStamina(player.playerStatsManager.dodgeStaminaCost);
 
                 }
 
                 else if (vertical < -0.5f)
                 {
                     player.playerAnimatorManager.PlayTargetActionAnimation("Roll Backward", true, true);
+                    player.playerStatsManager.ConsumeStamina(player.playerStatsManager.dodgeStaminaCost);
 
                 }
 
                 else if (horizontal > 0.5f)
                 {
                     player.playerAnimatorManager.PlayTargetActionAnimation("Roll Right", true, true);
+                    player.playerStatsManager.ConsumeStamina(player.playerStatsManager.dodgeStaminaCost);
                 }
                 else if (horizontal < -0.5f)
                 {
                     player.playerAnimatorManager.PlayTargetActionAnimation("Roll Left", true, true);
+                    player.playerStatsManager.ConsumeStamina(player.playerStatsManager.dodgeStaminaCost);
                 }
             }
         }
@@ -611,7 +643,7 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
         if (player.isAiming)
             return;
         float currentStamina = player.playerStatsManager.currentStamina;
-        float sprintingStaminaCost = player.sprintingStaminaCost;
+        float sprintingStaminaCost = player.playerStatsManager.sprintingStaminaCost;
 
         // Calculate new stamina based on whether the character is starting or stopping sprinting
 
@@ -662,7 +694,7 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
         player.playerAnimatorManager.PlayTargetActionAnimation("Jump_01", true);
 
 
-        player.playerStatsManager.ConsumeStamina(player.jumpStaminaCost);
+        player.playerStatsManager.ConsumeStamina(player.playerStatsManager.jumpStaminaCost);
 
         player.isJumping = true;
 

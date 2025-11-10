@@ -5,7 +5,7 @@ using UnityEngine;
 public class ResetActionFlag : StateMachineBehaviour
 {
     [SerializeField]CharacterManager character;
-    playerManager player;
+    [SerializeField] playerManager player;
     //OnStateEnter is called when a transition starts and the state machine starts to evaluate this state
     override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {
@@ -14,31 +14,27 @@ public class ResetActionFlag : StateMachineBehaviour
         if (character == null)
         {
             character= animator.GetComponent<CharacterManager>();
+            player = character as playerManager;
             
         }
-        if (player == null)
+        
+        if (character != null)
         {
-            player = animator.GetComponent<playerManager>();
-
+            character.isPerformingAction = false;
+            character.canRotate = true;
+            character.canMove = true;
+            character.characterAnimatorManager.DisableCanDoCombo();
+            character.characterLocomotionManager.isRolling = false;
+            character.isAttacking = false;
+            character.isInvulnerable = false;
+            character.isJumping = false;
+            character.canRoll = true;
+            character.characterCombatManager.isRipostable = false;
+            character.isPerformingCriticalAttack = false;
+            character.characterLocomotionManager.isExitingLadder = false;
+            character.canRun =true;
         }
-        character.isPerformingAction = false;
-        character.canRotate = true;
-        character.canMove = true;
-        character.applyRootMotion = false;
-        character.characterAnimatorManager.DisableCanDoCombo();
-        character.characterLocomotionManager.isRolling = false;
-        character.isAttacking = false;
-        character.isInvulnerable = false;
-        character.isJumping = false;
-        character.canRoll = true;
-        character.characterCombatManager.isRipostable = false;
-        character.isPerformingCriticalAttack = false;
-        character.characterLocomotionManager.isExitingLadder = false;
-
        
-
-
-        character.canRun =true;
 
         if(character.characterEffectsManager.activeQuickSlotItemFx != null)
             Destroy(character.characterEffectsManager.activeQuickSlotItemFx);
@@ -46,6 +42,7 @@ public class ResetActionFlag : StateMachineBehaviour
 
         if (player != null)
         {
+            player.applyRootMotion = false;
             player.isUsingRightHand = false;
             player.isUsingLeftHand = false;
             player.isAiming = false;

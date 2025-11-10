@@ -141,10 +141,10 @@ public class CharacterAnimatorManager : MonoBehaviour
         }
 
         
+       
+        
 
-
-
-        if (!isAiming)
+        if (!isAiming && !PlayerCamera.instance.player.playerCombatManager.isLockedOn)
         {
             if (horizontalMovement > 0.0f &&  horizontalMovement<=0.5f)
             {
@@ -175,7 +175,7 @@ public class CharacterAnimatorManager : MonoBehaviour
             }
             else if (verticalMovement> 0.5f&& verticalMovement<=1)
             {
-                snappedVerticalAmount =1f;
+                snappedVerticalAmount =2f;
 
             }
             else if (verticalMovement<0.0f &&  verticalMovement>= -0.5f)
@@ -185,7 +185,7 @@ public class CharacterAnimatorManager : MonoBehaviour
             }
             else if (verticalMovement < -0.5f&& verticalMovement >=-1)
             {
-                snappedVerticalAmount =-1f;
+                snappedVerticalAmount =-2f;
 
             }
             else
@@ -204,12 +204,28 @@ public class CharacterAnimatorManager : MonoBehaviour
 
         }
 
+        if (PlayerCamera.instance.player.playerCombatManager.isLockedOn)
+        {
+            // Use raw input for smooth strafe blending
+            snappedHorizontalAmount = horizontalMovement;
+            snappedVerticalAmount = verticalMovement;
 
-       
+            // Optional: mild smoothing
+            character.animator.SetFloat(horizontal, snappedHorizontalAmount, 0.1f, Time.deltaTime);
+            character.animator.SetFloat(vertical, snappedVerticalAmount, 0.1f, Time.deltaTime);
+            
+        }
 
-        
-       
-        
+
+
+
+
+
+
+
+
+
+
 
     }
 
@@ -240,8 +256,8 @@ public class CharacterAnimatorManager : MonoBehaviour
 
     public void SetAnimatorMovementParameters(float horizontalMovement, float verticalMovement)
     {
-        character.animator.SetFloat(vertical, verticalMovement, 0, Time.deltaTime);
-        character.animator.SetFloat(horizontal, horizontalMovement, 0f, Time.deltaTime);
+        character.animator.SetFloat(vertical, verticalMovement, 0.1f, Time.deltaTime);
+        character.animator.SetFloat(horizontal, horizontalMovement, 0.1f, Time.deltaTime);
     }
 
     public virtual void PlayTargetActionAnimation(

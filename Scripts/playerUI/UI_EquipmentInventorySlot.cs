@@ -104,7 +104,7 @@ public class UI_EquipmentInventorySlot : MonoBehaviour
 
             //    //If our current weapon slot is not unArmed item, Add to inventory
             //    equipedItem = character.playerInventoryManager.weaponsInRightHandSlot[2];
-            //    if (equipedItem.itemID != WorldItemDatabase.instance.unArmedWeapon.itemID)
+            //    if (equipedItem.worldSpwanInteractableItemID != WorldItemDatabase.instance.unArmedWeapon.worldSpwanInteractableItemID)
             //    {
             //        character.playerInventoryManager.AddItemToInventory(equipedItem);
             //    }
@@ -118,7 +118,7 @@ public class UI_EquipmentInventorySlot : MonoBehaviour
             //    //Re-Equip Weapon If we holding the CurrentWeapon in this slott
             //    if (character.playerInventoryManager.rightHandWeaponIndex ==2)
             //    {
-            //        character.playerInventoryManager.currentRightHandWeaponID = currentItem.itemID;
+            //        character.playerInventoryManager.currentRightHandWeaponID = currentItem.worldSpwanInteractableItemID;
             //        character.playerInventoryManager.OnCurrentRightHandWeaponIDChange(2, character.playerInventoryManager.currentRightHandWeaponID);
             //    }
             //    //Refresh Equipment Window 
@@ -204,7 +204,7 @@ public class UI_EquipmentInventorySlot : MonoBehaviour
 
             //    //If our current weapon slot is not unArmed item, Add to inventory
             //    equipedItem = character.playerInventoryManager.weaponsInLeftHandSlot[2];
-            //    if (equipedItem.itemID != WorldItemDatabase.instance.unArmedWeapon.itemID)
+            //    if (equipedItem.worldSpwanInteractableItemID != WorldItemDatabase.instance.unArmedWeapon.worldSpwanInteractableItemID)
             //    {
             //        character.playerInventoryManager.AddItemToInventory(equipedItem);
             //    }
@@ -218,7 +218,7 @@ public class UI_EquipmentInventorySlot : MonoBehaviour
             //    //Re-Equip Weapon If we holding the CurrentWeapon in this slott
             //    if (character.playerInventoryManager.leftHandWeaponIndex ==2)
             //    {
-            //        character.playerInventoryManager.currentLeftHandWeaponID = currentItem.itemID;
+            //        character.playerInventoryManager.currentLeftHandWeaponID = currentItem.worldSpwanInteractableItemID;
             //        character.playerInventoryManager.OnCurrentLeftHandWeaponIDChange(2, character.playerInventoryManager.currentLeftHandWeaponID);
             //    }
             //    //Refresh Equipment Window 

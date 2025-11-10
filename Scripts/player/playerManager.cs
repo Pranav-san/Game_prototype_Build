@@ -1,4 +1,5 @@
 using System.Collections;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -11,6 +12,8 @@ public class playerManager : CharacterManager
 
     [Header("Default Player Position")]
     public Vector3 defaultPlayerposition;
+    public Vector3 titleScreenPlayerPosition;
+    public Quaternion titleScreenPlayerRotation;
 
     [Header("Sex, HairID")]
     public bool ismale = true;
@@ -40,8 +43,7 @@ public class playerManager : CharacterManager
 
     public PlayerUIHUDManager playerUIHUDManager;
 
-    public float sprintingStaminaCost = 0.2f;
-    public float jumpStaminaCost = 10f;
+    
 
     protected override void Awake()
     {
@@ -84,7 +86,14 @@ public class playerManager : CharacterManager
         DebugMenu();
     }
 
-   
+    private void Start()
+    {
+        titleScreenPlayerPosition = transform.position;
+        transform.rotation = titleScreenPlayerRotation;
+        playerAnimatorManager.PlayTargetActionAnimationInstantly("Title Screen Animation", false);
+    }
+
+
 
     protected override void LateUpdate()
     {
@@ -98,14 +107,14 @@ public class playerManager : CharacterManager
         
         isMoving = false;
         canMove = false;
+        PlayerUIManager.instance.mobileControls.DisableMobileControls();
         PlayerInputManager.Instance.player.playerCombatManager.isLockedOn = false;
         PlayerInputManager.Instance.player.playerCombatManager.currentTarget = null;
         PlayerUIManager.instance.SetLockOnTarget(null);
-       
 
         playerAnimatorManager.PlayTargetActionAnimation("Dead_01", true);
 
-        PlayerCamera.instance.SetLockCameraHeight();
+        //PlayerCamera.instance.SetLockCameraHeight();
         PlayerCamera.instance.ClearLockOnTargets();
 
 
@@ -116,21 +125,27 @@ public class playerManager : CharacterManager
             PlayerUIManager.instance.playerUIHUDManager.currentBossHealthBar.RemoveHPBar(1);
         }
 
-        yield return new WaitForSeconds(4.5f); // Wait for animation or death screen
+        yield return new WaitForSeconds(5f);// Wait for animation or death screen
 
+        //Activate Loading Screen
+        PlayerUIManager.instance.playerUILoadingScreenManager.ActivateLoadingScreen();
+        
+        //Create DeadSpot
+        playerCombatManager.CreateDeadSpot(transform.position, playerStatsManager.runes);
+
+        //RespawnPlayer
         playerRespawnManager.RespawnPlayer(this);
 
     }
 
     public void SaveGameDataToCurrentCharacterData(ref CharacterSaveData currentCharacterData)
     {
-        currentCharacterData.characterName= characterName; // Assign character name
+        currentCharacterData.characterName = characterName; // Assign character name
         currentCharacterData.sceneIndex = SceneManager.GetActiveScene().buildIndex;
         
         currentCharacterData.timePlayed = Time.time;
 
-        //Save Sex, Name and hairId 
-
+        //Save Sex, Name and hairId
         currentCharacterData.isMale = ismale;
         currentCharacterData.hairStyleID = hairID;
 
@@ -142,6 +157,16 @@ public class playerManager : CharacterManager
         //Save Player StatBars
         currentCharacterData.currentStamina = characterStatsManager.currentStamina;
         currentCharacterData.currentHealth = characterStatsManager.currentHealth;
+
+        //Save PlayerLevelStats
+        currentCharacterData.vitality = characterStatsManager.vitality;
+        currentCharacterData.endurance = characterStatsManager.endurance;
+        currentCharacterData.strength = characterStatsManager.strength;
+        currentCharacterData.dexterity = characterStatsManager.dexterity;
+        currentCharacterData.luck = characterStatsManager.luck;
+
+        //Save Currency
+        currentCharacterData.runes = characterStatsManager.runes;
 
         //Equipment
         currentCharacterData.rightWeaponIndex = playerInventoryManager.rightHandWeaponIndex;
@@ -158,13 +183,15 @@ public class playerManager : CharacterManager
     {
         //Load Character Sex, Name, HairID
         characterName = currentCharacterSaveData.characterName;
-        playerBodyManager.ToggleBodyType(currentCharacterSaveData.isMale);
-        playerBodyManager.ToggleHairType(currentCharacterSaveData.hairStyleID);
+        //playerBodyManager.ToggleBodyType(currentCharacterSaveData.isMale);
+        //playerBodyManager.ToggleHairType(currentCharacterSaveData.hairStyleID);
 
 
         // Example: Load and assign position
         Vector3 myPosition = new Vector3(currentCharacterSaveData.xPosition, currentCharacterSaveData.yPosition, currentCharacterSaveData.zPosition);
         transform.position = myPosition;
+
+        PlayerCamera.instance.transform.position = myPosition;
 
         //Load Player StatBars
         characterStatsManager.currentStamina= currentCharacterSaveData.currentStamina;
@@ -173,6 +200,26 @@ public class playerManager : CharacterManager
         //Update UI
         PlayerUIManager.instance.UpdateStaminaBar(Mathf.RoundToInt(characterStatsManager.currentStamina));
         PlayerUIManager.instance.UpdateHealthBar(characterStatsManager.currentHealth);
+
+        //Load PlayerLevelStats
+        characterStatsManager.vitality= currentCharacterSaveData.vitality;
+        characterStatsManager.endurance= currentCharacterSaveData.endurance;
+        characterStatsManager.strength= currentCharacterSaveData.strength;
+        characterStatsManager.dexterity= currentCharacterSaveData.dexterity;
+        characterStatsManager.luck= currentCharacterSaveData.luck;
+
+        //Load Currency
+        characterStatsManager.runes = currentCharacterSaveData.runes;   
+        PlayerUIManager.instance.playerUIHUDManager.SetRunesCount(currentCharacterSaveData.runes);
+
+
+        //Load The DeadSpot If We Have One
+        if(currentCharacterSaveData.hasDeadSpot)
+        {
+            Vector3 deadSpotPosition = new Vector3(currentCharacterSaveData.deadSpotPositionX, currentCharacterSaveData.deadSpotPositionY, currentCharacterSaveData.deadSpotPositionZ);
+            //We Dont Remove Players Rune Here, The Were Already Removed, When Loading A Previous Save Set CreateDeadSpot Bool Parameter To False 
+            playerCombatManager.CreateDeadSpot(deadSpotPosition, currentCharacterSaveData.deadSpotRuneCount, false);
+        }
 
         //Load Equipments
         playerInventoryManager.currentRightHandWeapon =  playerInventoryManager.weaponsInRightHandSlot[currentCharacterSaveData.rightWeaponIndex];
@@ -264,5 +311,7 @@ public class playerManager : CharacterManager
         playerStatsManager.blockingFireAbsorption = playerCombatManager.currentWeaponBeingUsed.fireBaseDamageAbsorption;
         playerStatsManager.blockingMagicAbsorption = playerCombatManager.currentWeaponBeingUsed.magicBaseDamageAbsorption;
         playerStatsManager.blockingLightningAbsorption = playerCombatManager.currentWeaponBeingUsed.lightningBaseDamageAbsorption;
+        playerStatsManager.blockingStability = playerCombatManager.currentWeaponBeingUsed.stabilty;
+
     }
 }

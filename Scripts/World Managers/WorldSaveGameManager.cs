@@ -188,11 +188,6 @@ public class WorldSaveGameManager : MonoBehaviour
 
 
 
-
-
-
-
-
         saveFileDataWriter = new SaveFileDataWriter();
         saveFileDataWriter.saveDataDirectoryPath = Application.persistentDataPath;
 
@@ -358,30 +353,47 @@ public class WorldSaveGameManager : MonoBehaviour
 
         AsyncOperation loadOperation = SceneManager.LoadSceneAsync(worldSceneIndex);
 
+        
+
         loadOperation.completed += (AsyncOperation op) =>
         {
-
-
-
 
             if (!saveFileDataWriter.CheckToSeeIfFileExists())
             {
                 player.transform.position = player.defaultPlayerposition;
+
             }
             else
             {
-                player.LoadGameDataToCharacterData(ref currentCharacterData);
-
-
+                StartCoroutine(ApplyLoadedData());
             }
 
-            // When the scene has fully loaded, Enable Mobile Controls
-           
-
-
-
+            
         };
        
+    }
+
+
+
+    private IEnumerator ApplyLoadedData()
+    {
+        yield return new WaitForSeconds(1f); // wait 1 frame to ensure player initialized
+
+
+        if (currentCharacterData != null && player != null)
+        {
+            player.LoadGameDataToCharacterData(ref currentCharacterData);
+            
+            Debug.Log("Loaded player data applied successfully!");
+        }
+        else
+        {
+            Debug.LogWarning("Player or save data missing!");
+        }
+
+       
+
+
     }
 
     public void DisableMobileControlsOnSceneChange()

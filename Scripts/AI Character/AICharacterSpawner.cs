@@ -1,4 +1,7 @@
 using UnityEngine;
+using System.Collections;
+using UnityEngine.AI;
+using System.Collections.Generic;
 
 public class AICharacterSpawner : MonoBehaviour
 {
@@ -12,6 +15,12 @@ public class AICharacterSpawner : MonoBehaviour
     [Header("Patrol")]
     [SerializeField] bool hasPatrolPath=false;
     [SerializeField] int patrolPathID = 0;
+
+    [Header("Manually Set Stats")]
+    [SerializeField] bool manuallySetStats;
+    [SerializeField] int Stamina = 150;
+    [SerializeField] int health=500;
+
 
     private void Start()
     {
@@ -54,6 +63,14 @@ public class AICharacterSpawner : MonoBehaviour
                 aiCharacter.idle.aiPatrolPath = WorldAIManager.instance.GetAIPatrolPathByID(patrolPathID);
             }
 
+            if (manuallySetStats)
+            {
+                aiCharacter.characterStatsManager.maxHealth = health;
+                aiCharacter.characterStatsManager.currentHealth = health;
+                aiCharacter.characterStatsManager.maxStamina = Stamina;
+                aiCharacter.characterStatsManager.currentStamina = Stamina;
+            }
+
 
 
             aiCharacter.CreateActivationBeacon();
@@ -78,30 +95,33 @@ public class AICharacterSpawner : MonoBehaviour
             aiCharacter.characterController.enabled = true;
             instantiatedGameObject.transform.position = transform.position;
             instantiatedGameObject.transform.rotation = transform.rotation;
-            aiCharacter.characterStatsManager.currentHealth = aiCharacter.characterStatsManager.maxHealth;
-            aiCharacter.aiCharacterCombatManager.currentStance = aiCharacter.aiCharacterCombatManager.maxStance;
-            aiCharacter.aiCharacterCombatManager.stanceRegenerationTimer = 0f;
-            aiCharacter.aiCharacterCombatManager.currentTarget = null;
-            aiCharacter.ResetStateMachine();
 
-
-            if (aiCharacter.characterStatsManager.isDead)
+            if (!instantiatedGameObject.activeSelf)
             {
-                aiCharacter.characterStatsManager.isDead = false;
-                aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Empty", false, false, true, true);
-                aiCharacter.isHoldingArrow = false;
-                aiCharacter.ResetStateMachine();
-                aiCharacter.hasExploded = false;
-
-                
-
-
+                instantiatedGameObject.SetActive(true);
+               
 
             }
-           
+            var agent = aiCharacter.navMeshAgent;
+            if (agent != null && !agent.isOnNavMesh)
+            {
+                if (!agent.enabled)
+                    agent.enabled = true;
 
+                if (NavMesh.SamplePosition(transform.position, out NavMeshHit hit, 1.5f, NavMesh.AllAreas))
+                    agent.Warp(hit.position);
+                else
+                    agent.Warp(transform.position);
+            }
+
+            aiCharacter.ResetStateMachine();
+
+            instantiatedGameObject.SetActive(false);
 
         }
 
     }
+
+
+    
 }

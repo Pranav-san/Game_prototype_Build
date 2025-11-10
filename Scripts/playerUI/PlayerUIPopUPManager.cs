@@ -44,7 +44,7 @@ public class PlayerUIPopUPManager : MonoBehaviour
     [SerializeField] GameObject dialoguePopUpGameObject;
     [SerializeField] TextMeshProUGUI dialoguePopUpText;
     [SerializeField] CharacterDialogue currentDialogue;
-    
+    [SerializeField] private GameObject continueButton;
     private Coroutine dialogueCoroutine;
 
 
@@ -75,8 +75,8 @@ public class PlayerUIPopUPManager : MonoBehaviour
         youDiedPopUpGameObject.SetActive(true);
         youDiedPopUPBackGroundText.characterSpacing = 0;
         StartCoroutine(StretchPopUpTextOverTime(youDiedPopUPBackGroundText, 8, 8.32f));
-        StartCoroutine(FadeInPopUpOverTime(youDiedPopUpCanvasGroup, 5));
-        StartCoroutine(WaitThenFadePopUpOverTime(youDiedPopUpCanvasGroup, 2, 5, youDiedPopUpGameObject));
+        StartCoroutine(FadeInPopUpOverTime(youDiedPopUpCanvasGroup, 4f));
+        StartCoroutine(WaitThenFadePopUpOverTime(youDiedPopUpCanvasGroup, 2, 4.5f, youDiedPopUpGameObject));
     }
 
     public void SendBossDefeatedPopUp(string BossDefeatedMessage)
@@ -87,9 +87,9 @@ public class PlayerUIPopUPManager : MonoBehaviour
 
         BossDefeatedPopUpGameObject.SetActive(true);
         BossDefeatedPopUPBackGroundText.characterSpacing = 0;
-        StartCoroutine(StretchPopUpTextOverTime(youDiedPopUPBackGroundText, 8, 8.32f));
+        StartCoroutine(StretchPopUpTextOverTime(BossDefeatedPopUPBackGroundText, 8, 8.32f));
         StartCoroutine(FadeInPopUpOverTime(BossDefeatedPopUpCanvasGroup, 5));
-        StartCoroutine(WaitThenFadePopUpOverTime(BossDefeatedPopUpCanvasGroup, 2, 5, youDiedPopUpGameObject));
+        StartCoroutine(WaitThenFadePopUpOverTime(BossDefeatedPopUpCanvasGroup, 2, 5, BossDefeatedPopUpGameObject));
     }
     public void SendGraceRestoredPop(string graceRestoredMesage)
     {
@@ -99,7 +99,6 @@ public class PlayerUIPopUPManager : MonoBehaviour
         graceRestoredPopUpBackGroundText.characterSpacing= 0;
 
 
-        
         StartCoroutine(StretchPopUpTextOverTime(graceRestoredPopUpBackGroundText, 8, 8.32f));
         StartCoroutine(FadeInPopUpOverTime(graceRestoredPopUpCanvasGroup, 5));
         StartCoroutine(WaitThenFadePopUpOverTime(graceRestoredPopUpCanvasGroup, 2, 5, graceRestoredPopUpGameObject));
@@ -120,7 +119,7 @@ public class PlayerUIPopUPManager : MonoBehaviour
        
 
         PlayerUIManager.instance.playerUIPopUPManager.CloseAllPopUpWindow();
-        PlayerUIManager.instance.popUpWindowIsOpen = true;
+        //PlayerUIManager.instance.popUpWindowIsOpen = true;
 
         dialogueCoroutine = StartCoroutine(dialogue.PlayDialogueCoroutine(aiCharacter));
 
@@ -138,7 +137,7 @@ public class PlayerUIPopUPManager : MonoBehaviour
 
         //Close All PopUpWindows
         PlayerUIManager.instance.playerUIPopUPManager.CloseAllPopUpWindow();
-        PlayerUIManager.instance.popUpWindowIsOpen = true;
+        //PlayerUIManager.instance.popUpWindowIsOpen = true;
 
         currentDialogue.dialogueIndex++;
         dialogueCoroutine = StartCoroutine(dialogue.PlayDialogueCoroutine(aiCharacter));
@@ -158,7 +157,15 @@ public class PlayerUIPopUPManager : MonoBehaviour
         PlayerUIManager.instance.playerUIHUDManager.ToggleHUDOnly(true);
     }
 
-    
+
+    public void OnContinueButtonPressed()
+    {
+
+        if (currentDialogue != null)
+            currentDialogue.waitingForPlayerInput = false;
+    }
+
+
 
     public void SendItemPopUp(Item item, int amount)
     {

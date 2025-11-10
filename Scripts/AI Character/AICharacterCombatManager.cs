@@ -40,10 +40,16 @@ public class AICharacterCombatManager : CharacterCombatManager
 
 
 
+
+
     [Header("Detection")]
     [SerializeField] float detectionRadius = 15f;
     public float minimumDetectionFOV = -35f;
     public  float maximumDetectionFOV = 35f;
+
+    [Header("PivotRotation Type")]
+    [SerializeField] bool eightRotations = false;
+    [SerializeField] bool fourRotations = true;
 
     [Header("Action Recovery")]
     public float actionRecoveryTimer = 0;
@@ -182,7 +188,18 @@ public class AICharacterCombatManager : CharacterCombatManager
                         targetDirection=targetCharacter.transform.position - transform.position;
                         viewableAngle = WorldUtilityManager.Instance.GetAngleOfTarget(transform, targetDirection);
                         aiCharacter.characterCombatManager.SetTarget(targetCharacter);
-                        PivotTowardsTarget(aiCharacter);
+
+                        if (eightRotations)
+                        {
+                            PivotTowardsTarget(aiCharacter);
+                        }
+                        
+                        else if (fourRotations)
+                        {
+                            PivotTowardsTargetFourRotations(aiCharacter);
+                        }
+                            
+
                     }
                 }
             }
@@ -193,7 +210,7 @@ public class AICharacterCombatManager : CharacterCombatManager
 
     }
 
-    //Rotatate and Facte Target Using Animations
+    //Rotatate and Face Target Using Animations
     public virtual void PivotTowardsTarget(AICharacterManager aiCharacter)
     {
         if (aiCharacter.isPerformingAction)
@@ -237,6 +254,39 @@ public class AICharacterCombatManager : CharacterCombatManager
             aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Turn Left 135", true);
             Debug.Log("135 degree Left");
         }
+        else if (viewableAngle <= -161 && viewableAngle >= -180)
+        {
+            aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Turn Left 180", true);
+            Debug.Log("180 degree Left");
+        }
+    }
+
+    public virtual void PivotTowardsTargetFourRotations(AICharacterManager aiCharacter)
+    {
+        if (aiCharacter.isPerformingAction)
+            return;
+
+        // Right turns
+       
+        if (viewableAngle >= 61 && viewableAngle <= 110)
+        {
+            aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Turn Right 90", true);
+            Debug.Log("90 degree Right");
+        }
+        else if (viewableAngle >= 161 && viewableAngle <= 180)
+        {
+            aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Turn Right 180", true);
+            Debug.Log("180 degree Right");
+        }
+
+        // Left turns
+        
+        else if (viewableAngle <= -61 && viewableAngle >= -110)
+        {
+            aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Turn Left 90", true);
+            Debug.Log("90 degree Left");
+        }
+        
         else if (viewableAngle <= -161 && viewableAngle >= -180)
         {
             aiCharacter.characterAnimatorManager.PlayTargetActionAnimation("Turn Left 180", true);

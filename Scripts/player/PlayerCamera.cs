@@ -7,6 +7,7 @@ using UnityEngine.InputSystem;
 using ETouch = UnityEngine.InputSystem.EnhancedTouch;
 using static UnityEngine.GraphicsBuffer;
 
+
 public class PlayerCamera : MonoBehaviour
 {
     public static PlayerCamera instance;
@@ -27,7 +28,7 @@ public class PlayerCamera : MonoBehaviour
     public float cameraSmoothSpeed = 1;
     public float cameraRollSmoothSpeed = 1;
     public float cameraAimSmoothSpeed = 1;
-    public float cameraRotateSpeedWhenPlayerIsTurning = 1;
+   
     public float leftAndRightRotationSpeed = 220;
     public float upAndDownRotationSpeed = 220;
     public float minimumpivot = -30;
@@ -36,6 +37,27 @@ public class PlayerCamera : MonoBehaviour
     public LayerMask collideWithLayers;
     public float CameraFOV = 60;
     public float CameraAimingFOV = 45;
+
+    [Header("Camera Values")]
+    [SerializeField] float cameraZPosition;
+    private Vector3 cameraVelocity;
+    private Vector3 cameraObjectPosition;
+    private float targetCameraZPosition;
+    public float cameraPivotAngle;
+    public float leftAndRightLookAngle;
+    public float upAndDownLookAngle;
+
+    [Header("Camera Recentering")]
+    [SerializeField] private bool enableRecentering;
+    [SerializeField] private float lastCameraInputTime;
+    [SerializeField] private bool isRecentering;
+    [SerializeField] private float recenterTimer;
+    [SerializeField] private float recenterDelay = 2f;
+    public float cameraRotateSpeedWhenPlayerIsTurning = 1;
+    [SerializeField] float camerPivotAngleRecenterThreshold = 75;
+
+
+
 
     [Header("Aim")]
     public Transform followTransformWhenAiming;
@@ -55,14 +77,7 @@ public class PlayerCamera : MonoBehaviour
     [SerializeField] private LayerMask inspectLayerMask;
     [SerializeField] private Transform currentInspectRoot;
 
-    [Header("Camera Values")]
-    private Vector3 cameraVelocity;
-    private Vector3 cameraObjectPosition;
-    [SerializeField] float cameraZPosition;
-    private float targetCameraZPosition;
-    public float cameraPivotAngle;
-    public float leftAndRightLookAngle;
-    public float upAndDownLookAngle;
+    
 
     [Header("Mobile")]
     public TouchField touchField;
@@ -110,6 +125,8 @@ public class PlayerCamera : MonoBehaviour
 
     private void Update()
     {
+        if (PlayerUIManager.instance.isLoadingScreenActive)
+            return;
 
         CheckInputActivity();
         HandleAllCameraActions();
@@ -243,6 +260,157 @@ public class PlayerCamera : MonoBehaviour
 
     }
 
+
+    //Old HandleStandardRotation Logic
+    //private void HandleStandardRotation()
+    //{
+    //    //if (character.playerInteractionManager.isInspectingObject & character.playerInteractionManager.currentInteractable!=null)
+    //    //{
+    //    //    GameObject parentObject = character.playerInteractionManager.currentInteractable.transform.parent.gameObject;
+    //    //    character.playerInteractionManager.RotateObject(parentObject);
+    //    //    return;
+
+
+    //    //}
+    //    //IF Locked on Force Rotation towards target 
+
+    //    cameraObject.transform.localRotation = Quaternion.Euler(0, 0, 0);
+
+
+
+    //    if (player.playerCombatManager.isLockedOn)
+    //    {
+    //        Vector3 rotationDirection = player.playerCombatManager.currentTarget.characterCombatManager.LockOnTransform.position - transform.position;
+    //        rotationDirection.Normalize();
+    //        rotationDirection.y = 0;
+
+    //        Quaternion targetRotation = Quaternion.LookRotation(rotationDirection);
+    //        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, lockOnTargetFollowSpeed);
+
+    //        //Rotates The Pivot  Object
+    //        rotationDirection = player.playerCombatManager.currentTarget.characterCombatManager.LockOnTransform.position - cameraPivotTransform.position;
+    //        rotationDirection.Normalize();
+
+    //        targetRotation = Quaternion.LookRotation(rotationDirection);
+    //        cameraPivotTransform.transform.rotation = Quaternion.Slerp(cameraPivotTransform.rotation, targetRotation, lockOnTargetFollowSpeed);
+
+
+    //        float tiltAmount = 13.5f; // degrees of downward camera tilt
+
+    //        Quaternion tiltRotation = Quaternion.Euler(tiltAmount, 0f, 0f);
+    //        cameraPivotTransform.localRotation = tiltRotation;
+
+    //        //Save our rotation to our look Angles, so when we unlock it doesnt snap too far away
+    //        leftAndRightLookAngle = transform.eulerAngles.y;
+    //        upAndDownLookAngle = transform.eulerAngles.x;
+    //        return;
+
+    //    }
+
+    //    //other wise Rotate regularly
+
+
+
+    //    else
+    //    {
+    //        bool hasCameraInput = false;
+
+
+    //        if (isInputActive)
+    //        {
+
+    //            recenterTimer = 0f;
+    //            isRecentering = false;
+
+
+
+    //            leftAndRightLookAngle = (PlayerInputManager.Instance.cameraHorizontalInput * leftAndRightRotationSpeed) * Time.deltaTime;
+    //            upAndDownLookAngle = -(PlayerInputManager.Instance.cameraVerticalInput * upAndDownRotationSpeed) * Time.deltaTime;
+
+    //            if (isGamepadConnected)
+    //            {
+    //                leftAndRightLookAngle += (PlayerInputManager.Instance.cameraHorizontalInput * 100) * Time.deltaTime;
+    //                upAndDownLookAngle -= (PlayerInputManager.Instance.cameraVerticalInput * 100) * Time.deltaTime;
+
+    //            }
+
+    //            if (touchField != null && touchField.SwipeDelta != Vector2.zero)
+    //            {
+    //                leftAndRightLookAngle = (touchField.SwipeDelta.x * touchSensitivity * leftAndRightRotationSpeed / Screen.width) * Time.deltaTime;
+    //                upAndDownLookAngle = -(touchField.SwipeDelta.y * touchSensitivity * upAndDownRotationSpeed / Screen.height) * Time.deltaTime;
+    //            }
+
+    //            Vector3 cameraRotation = Vector3.zero;
+    //            Quaternion targetRotation;
+
+    //            cameraRotation.y = leftAndRightLookAngle;
+    //            targetRotation = Quaternion.Euler(cameraRotation);
+    //            transform.rotation *= targetRotation;
+
+    //            cameraPivotAngle += upAndDownLookAngle;
+    //            cameraPivotAngle = Mathf.Clamp(cameraPivotAngle, minimumpivot, maximumpivot);
+
+    //            cameraRotation = Vector3.zero;
+    //            cameraRotation.x = cameraPivotAngle;
+    //            targetRotation = Quaternion.Euler(cameraRotation);
+    //            cameraPivotTransform.localRotation = targetRotation;
+
+    //            hasCameraInput = true;
+    //        }
+
+    //        else
+    //        {
+    //            if (enableRecentering)
+    //            {
+
+    //                recenterTimer += Time.deltaTime;
+
+    //                if (recenterTimer < recenterDelay) // <<=== delay before starting to recenter
+    //                {
+    //                    isRecentering = false;
+    //                    return;
+    //                }
+
+
+
+    //                // Check if the character is moving forward or backward
+    //                if (PlayerInputManager.Instance.movementInput.magnitude > 0.1f)
+    //                {
+    //                    // Only lock the camera to the character's direction if moving forward
+    //                    if (playerLocomotionManager.horizontalMovement > 0.2f ||playerLocomotionManager.horizontalMovement < -0.2f)
+    //                    {
+    //                        // Lock the camera to the character's direction
+    //                        Vector3 direction = player.transform.forward;
+    //                        Quaternion targetRotation = Quaternion.LookRotation(direction);
+    //                        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, cameraRotateSpeedWhenPlayerIsTurning * Time.deltaTime);
+    //                        isRecentering = true;
+
+    //                    }
+    //                    else
+    //                    {
+    //                        // Allow free look when moving backward or when no input is present
+    //                        transform.rotation = Quaternion.Slerp(transform.rotation, transform.rotation, cameraRotateSpeedWhenPlayerIsTurning * Time.deltaTime);
+    //                        isRecentering = false;
+    //                    }
+    //                }
+    //            }
+    //            else
+    //            {
+    //                // Allow free look when the character is not moving
+    //                transform.rotation = Quaternion.Slerp(transform.rotation, transform.rotation, cameraSmoothSpeed * Time.deltaTime);
+
+    //                recenterTimer = 0f;
+    //                isRecentering = false;
+    //            }
+
+
+
+
+    //        }
+    //    }
+
+    //}
+
     private void HandleStandardRotation()
     {
         //if (character.playerInteractionManager.isInspectingObject & character.playerInteractionManager.currentInteractable!=null)
@@ -250,12 +418,11 @@ public class PlayerCamera : MonoBehaviour
         //    GameObject parentObject = character.playerInteractionManager.currentInteractable.transform.parent.gameObject;
         //    character.playerInteractionManager.RotateObject(parentObject);
         //    return;
-
-
         //}
         //IF Locked on Force Rotation towards target 
 
         cameraObject.transform.localRotation = Quaternion.Euler(0, 0, 0);
+
         if (player.playerCombatManager.isLockedOn)
         {
             Vector3 rotationDirection = player.playerCombatManager.currentTarget.characterCombatManager.LockOnTransform.position - transform.position;
@@ -272,19 +439,26 @@ public class PlayerCamera : MonoBehaviour
             targetRotation = Quaternion.LookRotation(rotationDirection);
             cameraPivotTransform.transform.rotation = Quaternion.Slerp(cameraPivotTransform.rotation, targetRotation, lockOnTargetFollowSpeed);
 
+            float tiltAmount = 13.5f; // degrees of downward camera tilt
+            Quaternion tiltRotation = Quaternion.Euler(tiltAmount, 0f, 0f);
+            cameraPivotTransform.localRotation = tiltRotation;
+
             //Save our rotation to our look Angles, so when we unlock it doesnt snap too far away
             leftAndRightLookAngle = transform.eulerAngles.y;
             upAndDownLookAngle = transform.eulerAngles.x;
-
+            return;
         }
 
-        //other wise Rotate regularly 
+        // Otherwise rotate regularly
         else
         {
-
+            bool hasCameraInput = false;
 
             if (isInputActive)
             {
+                recenterTimer = 0f;
+                isRecentering = false;
+
                 leftAndRightLookAngle = (PlayerInputManager.Instance.cameraHorizontalInput * leftAndRightRotationSpeed) * Time.deltaTime;
                 upAndDownLookAngle = -(PlayerInputManager.Instance.cameraVerticalInput * upAndDownRotationSpeed) * Time.deltaTime;
 
@@ -292,7 +466,6 @@ public class PlayerCamera : MonoBehaviour
                 {
                     leftAndRightLookAngle += (PlayerInputManager.Instance.cameraHorizontalInput * 100) * Time.deltaTime;
                     upAndDownLookAngle -= (PlayerInputManager.Instance.cameraVerticalInput * 100) * Time.deltaTime;
-
                 }
 
                 if (touchField != null && touchField.SwipeDelta != Vector2.zero)
@@ -315,35 +488,93 @@ public class PlayerCamera : MonoBehaviour
                 cameraRotation.x = cameraPivotAngle;
                 targetRotation = Quaternion.Euler(cameraRotation);
                 cameraPivotTransform.localRotation = targetRotation;
+
+                hasCameraInput = true;
             }
             else
             {
-                // Check if the character is moving forward or backward
-                if (PlayerInputManager.Instance.movementInput.magnitude > 0.1f)
+                // Auto-align/recenter behavior like in CameraController
+                if (enableRecentering)
                 {
-                    // Only lock the camera to the character's direction if moving forward
-                    if (playerLocomotionManager.verticalMovement > 0)
+                    if(cameraPivotAngle >= camerPivotAngleRecenterThreshold)
+                        return;
+
+                    // Check if player is actually moving before we try to recenter
+                    bool isPlayerMoving = PlayerInputManager.Instance.movementInput.magnitude > 0.1f;
+
+                    if (!isPlayerMoving)
                     {
-                        // Lock the camera to the character's direction
-                        Vector3 direction = player.transform.forward;
-                        Quaternion targetRotation = Quaternion.LookRotation(direction);
-                        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, cameraRotateSpeedWhenPlayerIsTurning * Time.deltaTime);
+                        // Player is idle — don't recenter at all
+                        recenterTimer = 0f;
+                        isRecentering = false;
+                        return;
                     }
-                    else
-                    {
-                        // Allow free look when moving backward or when no input is present
-                        transform.rotation = Quaternion.Slerp(transform.rotation, transform.rotation, cameraRotateSpeedWhenPlayerIsTurning * Time.deltaTime);
+
+                    Vector3 characterForward = player.transform.forward;
+                    characterForward.y = 0f; // Keep horizontal plane
+
+                    if (PlayerInputManager.Instance.horizontalInput > 0.2f || PlayerInputManager.Instance.horizontalInput < -0.2f)
+                    { 
+                        
+                        if (characterForward != Vector3.zero)
+                        {
+                            Vector3 cameraForward = transform.forward;
+                            cameraForward.y = 0f;
+
+                            if (cameraForward != Vector3.zero)
+                            {
+                                float angleDifference = Vector3.SignedAngle(cameraForward, characterForward, Vector3.up);
+                                recenterTimer += Time.deltaTime;
+
+                                // Start recentering only after delay and if difference is meaningful
+                                if (recenterTimer >= recenterDelay && Mathf.Abs(angleDifference) > 5f)
+                                {
+                                    isRecentering = true;
+
+                                    float targetYaw = Mathf.MoveTowardsAngle(
+                                        transform.eulerAngles.y,
+                                        player.transform.eulerAngles.y,
+                                        cameraRotateSpeedWhenPlayerIsTurning * Time.deltaTime
+                                    );
+
+                                    transform.rotation = Quaternion.Euler(0f, targetYaw, 0f);
+
+                                    float targetPitch = Mathf.MoveTowards(
+                                        cameraPivotAngle,
+                                        0f,
+                                        cameraRotateSpeedWhenPlayerIsTurning * Time.deltaTime
+                                    );
+                                    cameraPivotAngle = targetPitch;
+                                    cameraPivotTransform.localRotation = Quaternion.Euler(cameraPivotAngle, 0f, 0f);
+
+                                    leftAndRightLookAngle = targetYaw;
+                                    upAndDownLookAngle = targetPitch;
+                                }
+                            }
+                            else
+                            {
+                                isRecentering = false;
+                            }
+                        }
                     }
                 }
                 else
                 {
-                    // Allow free look when the character is not moving
+                    // Maintain current rotation when recentering is disabled
                     transform.rotation = Quaternion.Slerp(transform.rotation, transform.rotation, cameraSmoothSpeed * Time.deltaTime);
+                    recenterTimer = 0f;
+                    isRecentering = false;
                 }
             }
         }
-
     }
+
+
+
+
+
+
+
 
     private void HandndleAimedRotation()
     {
@@ -613,7 +844,7 @@ public class PlayerCamera : MonoBehaviour
                 if (player.playerCombatManager.currentTarget!=null)
                 {
                     cameraPivotTransform.transform.localPosition = Vector3.SmoothDamp(cameraPivotTransform.transform.localPosition, newLockedCameraheight, ref velocity, cameraHeightSpeed);
-                    cameraPivotTransform.transform.localRotation = Quaternion.Slerp(cameraPivotTransform.localRotation, Quaternion.Euler(0, 0, 0), lockOnTargetFollowSpeed);
+                    //cameraPivotTransform.transform.localRotation = Quaternion.Slerp(cameraPivotTransform.localRotation, Quaternion.Euler(0, 0, 0), lockOnTargetFollowSpeed);
 
                 }
                 else
@@ -680,7 +911,7 @@ public class PlayerCamera : MonoBehaviour
         player.canMove=false;
         cameraObject.transform.position = target.position;
         cameraObject.transform.rotation = target.rotation;
-        MobileControls.instance.DisableMobileControls();
+        PlayerUIManager.instance.mobileControls.DisableMobileControls();
         player.playerBodyManager.TogglePlayerObject(false);
 
 
@@ -691,7 +922,7 @@ public class PlayerCamera : MonoBehaviour
         player.canMove = true;
         cameraObject.transform.localPosition = new Vector3(0, 0, cameraZPosition); // Reset and Set it back to default Z offset
         cameraObject.transform.localRotation = Quaternion.identity;//reset Rotation
-        MobileControls.instance.EnableMobileControls();
+        PlayerUIManager.instance.mobileControls.EnableMobileControls();
         player.playerBodyManager.TogglePlayerObject(true);
 
     }
@@ -715,6 +946,17 @@ public class PlayerCamera : MonoBehaviour
             if (interactable != null)
                 interactable.Interact(player);
         }
+
+    }
+
+
+    public void ResetCamera()
+    {
+        transform.rotation = Quaternion.identity;
+        cameraPivotTransform.rotation = Quaternion.identity;
+        leftAndRightLookAngle = 0;
+        upAndDownLookAngle = 0;
+        cameraPivotAngle = 10;
 
     }
 

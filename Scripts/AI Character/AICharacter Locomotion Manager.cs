@@ -61,8 +61,6 @@ public class AICharacterLocomotionManager : CharacterLocomotionManager
     protected override void Update()
     {
         base.Update();
-
-
         
     }
 

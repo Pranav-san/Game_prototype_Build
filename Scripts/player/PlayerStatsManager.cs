@@ -6,19 +6,13 @@ public class PlayerStatsManager : CharacterStatsManager
 {
     
 
-    public int runes = 0;
+    [Header("Stamina Costs")]
+    public float sprintingStaminaCost = 5f;
+    public float jumpStaminaCost = 10f;
+    public float dodgeStaminaCost = 15f;
 
 
-    [Header("Stats")]
-    public int vitality = 10;
-    public int stamina = 10;
-    public int mind = 10;
-    public int strength = 10;
-    public int dexterity = 10;
-    public int faith = 10;
 
-   
-    
 
     protected override void Awake()
     {

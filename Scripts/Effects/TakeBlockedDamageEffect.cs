@@ -11,9 +11,14 @@ public class TakeBlockedDamageEffect : InstantCharacterEffect
     public float magicDamage = 0;
     public float firelDamage = 0;
     public float lightininglDamage = 0;
+   
 
     [Header("Final Damage")]
     private int finalDamageDealt = 0;
+
+    [Header("Stamina")]
+    public float baseStaminaDamage = 0;
+    public float finalStaminaDamage = 0;
 
     [Header("Poise")]
     public float poiseDamage = 0;
@@ -38,11 +43,11 @@ public class TakeBlockedDamageEffect : InstantCharacterEffect
         Debug.Log("Hit was blocked");
 
         if (character.characterStatsManager.isDead)
-        {
             return;
-        }
+        
 
-        CalculateDamage(character.characterStatsManager);
+        CalculateDamage(character);
+        CalculateStaminaDamage(character);
         if (!character.characterStatsManager.isDead)
         {
             PlayDirectionalBasedBlockingAnimation(character);
@@ -51,17 +56,18 @@ public class TakeBlockedDamageEffect : InstantCharacterEffect
 
         playDamageSfX(character);
         playBlockDamageVFX(character);
+        CheckForGuardBreak(character);
 
 
     }
-    private void CalculateDamage(CharacterStatsManager character)
+    private void CalculateDamage(CharacterManager character)
     {
         Debug.Log("original Damage " + physicalDamage );
 
-        physicalDamage -=(physicalDamage*(character.blockingPhysicalAbsorption/100));
-        firelDamage -=(firelDamage*(character.blockingFireAbsorption/100));
-        lightininglDamage -=(lightininglDamage*(character.blockingLightningAbsorption/100));
-        magicDamage -=(magicDamage*(character.blockingMagicAbsorption/100));
+        physicalDamage -=(physicalDamage*(character.characterStatsManager.blockingPhysicalAbsorption/100));
+        firelDamage -=(firelDamage*(character.characterStatsManager.blockingFireAbsorption/100));
+        lightininglDamage -=(lightininglDamage*(character.characterStatsManager.blockingLightningAbsorption/100));
+        magicDamage -=(magicDamage*(character.characterStatsManager.blockingMagicAbsorption/100));
 
 
         finalDamageDealt= Mathf.RoundToInt(physicalDamage + magicDamage + firelDamage + lightininglDamage);
@@ -71,11 +77,38 @@ public class TakeBlockedDamageEffect : InstantCharacterEffect
             finalDamageDealt =1;
         }
         Debug.Log("Blocked Final Damage" + physicalDamage);
-        character.ConsumeHealth(finalDamageDealt);
+        character.characterStatsManager.ConsumeHealth(finalDamageDealt);
+        
 
 
 
 
+    }
+
+    private void CalculateStaminaDamage(CharacterManager character)
+    {
+        finalStaminaDamage = baseStaminaDamage;
+
+        float staminaDamageAbsorption = finalStaminaDamage*(character.characterStatsManager.blockingStability/100);
+        float staminaDamageAfterAbsorption = finalStaminaDamage - staminaDamageAbsorption;
+
+        character.characterStatsManager.ConsumeStamina(staminaDamageAfterAbsorption);
+
+        Debug.Log("AIStaminaAfterBlock:--->"+staminaDamageAbsorption.ToString());
+
+
+    }
+
+    private void CheckForGuardBreak(CharacterManager character)
+    {
+        if (character.characterStatsManager.currentStamina <= 0)
+        {
+            character.characterAnimatorManager.PlayTargetActionAnimation("Guard_Break_01", true);
+            character.isBlocking = false;
+
+            //Playe Guard Break Sfx
+            Debug.Log("Guard Broke");
+        }
     }
 
     private void PlayDirectionalBasedBlockingAnimation(CharacterManager character)

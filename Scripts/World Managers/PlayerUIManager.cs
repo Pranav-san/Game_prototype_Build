@@ -14,6 +14,11 @@ public class PlayerUIManager : MonoBehaviour
     [HideInInspector]public PlayerUITeleportLocationManager playerUITeleportLocationManager;
     [SerializeField] public PlayerStatsManager playerStatsManager;
     [HideInInspector] public PlayerUILoadingScreenManager playerUILoadingScreenManager;
+    [HideInInspector] public PlayerUILevelUpManager playerUILevelUpManager;
+    [HideInInspector] public MobileControls mobileControls;
+
+    [Header("isLodingScreenActive")]
+    public bool isLoadingScreenActive = false;
 
     [Header("Puzzles")]
     [SerializeField]public  DoorLockManager doorLockManager;
@@ -53,14 +58,20 @@ public class PlayerUIManager : MonoBehaviour
         playerUITeleportLocationManager = GetComponentInChildren<PlayerUITeleportLocationManager>();
         playerUILoadingScreenManager = GetComponentInChildren<PlayerUILoadingScreenManager>();
         playerUIInventoryManager = GetComponentInChildren<PlayerUIInventoryManager>();
+        playerUILevelUpManager = GetComponentInChildren<PlayerUILevelUpManager>();
+        mobileControls = GetComponentInChildren<MobileControls>();
+
+
+
         doorLockManager = GetComponentInChildren<DoorLockManager>();
+        
        
     }
 
     private void Start()
     {
         DontDestroyOnLoad(gameObject);
-        playerStatsManager = playerManager.instance.playerStatsManager;
+        playerStatsManager = PlayerInputManager.Instance.player.playerStatsManager;
     }
 
     public void SetNewStaminaValue(int oldValue, float newValue)
@@ -143,11 +154,15 @@ public class PlayerUIManager : MonoBehaviour
 
     public void CloseAllMenu()
     {
-        playerUICharacterMenuManager.CloseCharacterMenu();
-        playerUIEquipmentManager.CloseEquipmentManagerMenu();
-        playerUIInventoryManager.CloseInventoryManagermenu();
+        playerUICharacterMenuManager.CloseMenu();
+        playerUIEquipmentManager.CloseMenu();
+        playerUIInventoryManager.CloseMenu();
         playerUISiteOfGraceManager.CloseSiteOfGraceManagerMenu();
         playerUITeleportLocationManager.CloseTeleportLocationManagerMenu();
+        playerUILevelUpManager.CloseMenu();
+
+
+
         doorLockManager.CloseDoorLockUI();
 
       

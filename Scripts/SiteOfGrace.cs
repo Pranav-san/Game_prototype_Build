@@ -101,7 +101,7 @@ public class SiteOfGrace : Interactable
 
         PlayerUIManager.instance.playerUISiteOfGraceManager.OpenSiteOfGraceManagerMenu();
 
-        MobileControls.instance.DisableMobileControls();
+        PlayerUIManager.instance.mobileControls.DisableMobileControls();
 
         interactableCollider.enabled  = true; //Temporarily Enable for testing
 
@@ -112,7 +112,7 @@ public class SiteOfGrace : Interactable
         PlayerUIManager.instance.UpdateHealthBar(player.playerStatsManager.currentHealth);
         player.playerInventoryManager.remainingHealthFlasks = player.playerInventoryManager.maximunFlasks;
 
-        player.isMoving = true;
+        
 
 
     }

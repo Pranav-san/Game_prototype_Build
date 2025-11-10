@@ -7,15 +7,27 @@ using UnityEngine.AI;
 public class PursueTargetState : AIState
 {
     [SerializeField] protected bool enablePivot = false;
+    [SerializeField] protected bool canBlocWhenPursuingTarget = false;
 
 
     public override AIState Tick(AICharacterManager aiCharacter)
     {
         //Debug.Log("Pursue Target State");
 
+        if (canBlocWhenPursuingTarget)
+        {
+            aiCharacter.isBlocking = true;
+        }
         //Check If AI is Performing An Action 
         if (aiCharacter.isPerformingAction)
-        return this;
+        {
+            aiCharacter.characterAnimatorManager.SetAnimatorMovementParameters(0, 0);
+            return this;
+
+        }
+       
+
+        aiCharacter.characterAnimatorManager.SetAnimatorMovementParameters(0, 1);
 
         //Check If AI Target Is null, If we Do Not Have A Target Return To Idle State
         if (aiCharacter.aiCharacterCombatManager.currentTarget==null)
@@ -51,16 +63,14 @@ public class PursueTargetState : AIState
         aiCharacter.aiCharacterLocomotionManager.RotateTowardsagent(aiCharacter);
 
         //Option_1
-        //if (aiCharacter.aiCharacterCombatManager.distanceFromTarget<=aiCharacter.combatStance.maximumEngagementDistance)
+        if (aiCharacter.aiCharacterCombatManager.distanceFromTarget <= aiCharacter.combatStance.maximumEngagementDistance)
+            return SwitchState(aiCharacter, aiCharacter.combatStance);
+
+        //Option_2
+        //if (aiCharacter.aiCharacterCombatManager.distanceFromTarget <= aiCharacter.navMeshAgent.stoppingDistance)
         //{
         //    return SwitchState(aiCharacter, aiCharacter.combatStance);
         //}
-
-        //Option_2
-        if (aiCharacter.aiCharacterCombatManager.distanceFromTarget <= aiCharacter.navMeshAgent.stoppingDistance)
-        {
-            return SwitchState(aiCharacter, aiCharacter.combatStance);
-        }
 
 
         //Pursue Target

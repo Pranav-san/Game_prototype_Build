@@ -14,8 +14,13 @@ public class PickUpItemInteractable : Interactable
    
 
     [Header("World Spwan Pickup")]
-    [SerializeField] public int itemID;
+    [SerializeField] public int worldSpwanInteractableItemID;// This Is An Unique ID Given To Each World Spwan Item
     [SerializeField] public bool hasBeenLooted;
+
+    [Header("Creature Loot Pick Up")]
+    public int itemID;
+    public Vector3 itemPosition;
+
 
 
 
@@ -35,13 +40,13 @@ public class PickUpItemInteractable : Interactable
 
     private void CheckIfWorldItemWasAlreadyLooted()
     {
-        if (!WorldSaveGameManager.instance.currentCharacterData.worldItemsLooted.ContainsKey(itemID))
+        if (!WorldSaveGameManager.instance.currentCharacterData.worldItemsLooted.ContainsKey(worldSpwanInteractableItemID))
         {
-            WorldSaveGameManager.instance.currentCharacterData.worldItemsLooted.Add(itemID, false);
+            WorldSaveGameManager.instance.currentCharacterData.worldItemsLooted.Add(worldSpwanInteractableItemID, false);
 
         }
 
-        hasBeenLooted = WorldSaveGameManager.instance.currentCharacterData.worldItemsLooted[itemID];
+        hasBeenLooted = WorldSaveGameManager.instance.currentCharacterData.worldItemsLooted[worldSpwanInteractableItemID];
 
         //If HasBeenLooted, Hide Gameobject
         if(hasBeenLooted)
@@ -80,18 +85,28 @@ public class PickUpItemInteractable : Interactable
         //Save Loot Status If its a World Spwan
         if (pickUpType == ItemPickUpType.WorldSpwan)
             {
-                if (WorldSaveGameManager.instance.currentCharacterData.worldItemsLooted.ContainsKey((int)itemID))
+                if (WorldSaveGameManager.instance.currentCharacterData.worldItemsLooted.ContainsKey((int)worldSpwanInteractableItemID))
                 {
-                    WorldSaveGameManager.instance.currentCharacterData.worldItemsLooted.Remove(itemID);
+                    WorldSaveGameManager.instance.currentCharacterData.worldItemsLooted.Remove(worldSpwanInteractableItemID);
 
                 }
-                WorldSaveGameManager.instance.currentCharacterData.worldItemsLooted.Add(itemID, true);
+                WorldSaveGameManager.instance.currentCharacterData.worldItemsLooted.Add(worldSpwanInteractableItemID, true);
 
             }
 
         Destroy(gameObject);
         
 
+    }
+
+    public void SetItemPosition(Vector3 position)
+    {
+        if (pickUpType != ItemPickUpType.CharacterDrop)
+            return;
+
+        WorldItemDatabase.instance.GetItemByID(itemID);
+
+        transform.position = position;
     }
 
    

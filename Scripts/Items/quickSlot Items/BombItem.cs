@@ -21,7 +21,7 @@ public class BombItem : QuickSlotItem
     {
         if (player.playerInventoryManager.remainingBombs>0)
         {
-            player.playerAnimatorManager.PlayTargetActionAnimation(useItemAnimation, false, false, true, true, false);
+            player.playerAnimatorManager.PlayTargetActionAnimation(useItemAnimation, true);
             player.playerEffectsManager.activeQuickSlotItemFx = Instantiate(itemModel, player.playerEquipmentManager.rightWeaponHandSlot.transform);
 
         }

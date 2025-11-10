@@ -11,11 +11,11 @@ public class PlayerEffectsManager : CharacterEffectsManager
 
     private void Update()
     {
-        if (processEffect)
-        {
-            processEffect = false;
-            InstantCharacterEffect effect = Instantiate(effectTest);
-            ProcessInstantEffect(effect);
-        }
+        //if (processEffect)
+        //{
+        //    processEffect = false;
+        //    InstantCharacterEffect effect = Instantiate(effectTest);
+        //    ProcessInstantEffect(effect);
+        //}
     }
 }

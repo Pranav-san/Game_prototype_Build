@@ -7,7 +7,7 @@ public class PlayerUIToggleHud : MonoBehaviour
     private void OnEnable()
     {
         PlayerUIManager.instance.playerUIHUDManager.ToggleHUD(false);
-        MobileControls.instance.DisableMobileControls();
+        PlayerUIManager.instance.mobileControls.DisableMobileControls();
         
         
         
@@ -16,7 +16,7 @@ public class PlayerUIToggleHud : MonoBehaviour
     private void OnDisable()
     {
         PlayerUIManager.instance.playerUIHUDManager.ToggleHUD(true);
-        MobileControls.instance.EnableMobileControls();
+        PlayerUIManager.instance.mobileControls.EnableMobileControls();
 
 
 

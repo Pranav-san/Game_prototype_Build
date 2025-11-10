@@ -5,13 +5,11 @@ using UnityEngine.UI;
 
 public class MobileControls : MonoBehaviour
 {
-    public static MobileControls instance;
 
     [Header("Canvas Group")]
     [SerializeField] CanvasGroup Actionbuttons;
 
     [SerializeField]FloatingJoystick joystick;
-    Canvas canvas;
 
    
 
@@ -46,21 +44,6 @@ public class MobileControls : MonoBehaviour
     }
     private void Awake()
     {
-        if (instance == null)
-        {
-            instance = this;
-            DontDestroyOnLoad(gameObject); // Make sure this GameObject is not destroyed when loading new scenes
-
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
-
-        
-
-        
-        canvas = GetComponentInChildren<Canvas>();
         
     }
 

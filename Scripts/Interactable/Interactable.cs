@@ -6,7 +6,7 @@ public class Interactable : MonoBehaviour
 {
     public string interactableText;
     [SerializeField]public Collider interactableCollider;
-    [SerializeField] protected bool hostOnlyInteractable;
+    //[SerializeField] protected bool hostOnlyInteractable;
 
 
     [Header("Puzzle/Inspect Camera Settings")]
@@ -40,12 +40,10 @@ public class Interactable : MonoBehaviour
         interactableCollider.enabled = false;
 
         player.playerInteractionManager.RemoveInteractionFromList(this);
-        
-
-
-
-
         PlayerUIManager.instance.playerUIPopUPManager.CloseAllPopUpWindow();
+
+        //Save Game
+        WorldSaveGameManager.instance.SaveGame();
 
         
         
@@ -88,6 +86,12 @@ public class Interactable : MonoBehaviour
             PlayerUIManager.instance.playerUIPopUPManager.CloseAllPopUpWindow();
 
         }
+
+    }
+
+    public void RefreshInteractableColliders()
+    {
+        interactableCollider.enabled = true;
 
     }
 

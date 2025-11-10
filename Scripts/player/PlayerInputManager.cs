@@ -124,6 +124,9 @@ public class PlayerInputManager : MonoBehaviour
         }
         else
         {
+            cameraVerticalInput = 0;
+            cameraHorizontalInput = 0;
+
             Instance.enabled = false;
         }
 
@@ -309,15 +312,12 @@ public class PlayerInputManager : MonoBehaviour
         if (player.playerCombatManager.isLockedOn)
             {
                 if (player.playerCombatManager.currentTarget==null)
-                {
-                    return;
+                return;
 
-                }
+                
                 if (player.characterStatsManager.isDead)
                 {
                     player.playerCombatManager.isLockedOn = false;
-
-
                 }
 
                 //Attempt to Find new Target 
@@ -403,7 +403,7 @@ public class PlayerInputManager : MonoBehaviour
                 // Unload two-hand weapon, restore previous one-handed weapons
                 player.playerEquipmentManager.UnloadTwoHandWeaponAndRestore();
                 player.playerEquipmentManager.isTwoHandingWeapon = false;
-                MobileControls.instance.ToggleTwoHandButtonIcon(false);
+                PlayerUIManager.instance.mobileControls.ToggleTwoHandButtonIcon(false);
 
             }
             else
@@ -411,7 +411,7 @@ public class PlayerInputManager : MonoBehaviour
                 // Save current one-handed weapons before switching to 2H
                 player.playerEquipmentManager.SaveCurrentOneHandedWeapons();
                 player.playerEquipmentManager.isTwoHandingWeapon = true;
-                MobileControls.instance.ToggleTwoHandButtonIcon(true);
+                PlayerUIManager.instance.mobileControls.ToggleTwoHandButtonIcon(true);
                 player.playerEquipmentManager.LoadTwoHandWeapon();
 
             }
@@ -625,6 +625,8 @@ public class PlayerInputManager : MonoBehaviour
     private void HandleRBInput()
     {
         if (PlayerUIManager.instance.menuWindowOpen)
+            return;
+        if(PlayerUIManager.instance.isLoadingScreenActive)
             return;
 
         //We Are Using An Item Return
@@ -866,7 +868,7 @@ public class PlayerInputManager : MonoBehaviour
          else
           {
             // Open the menu if it's not open
-            PlayerUIManager.instance.playerUICharacterMenuManager.OpenCharacterMenu();
+            PlayerUIManager.instance.playerUICharacterMenuManager.OpenMenu();
           }
         }
     }
