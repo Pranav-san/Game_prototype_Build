@@ -1,11 +1,16 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.InputSystem.EnhancedTouch;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.EnhancedTouch;
+using UnityEngine.Rendering.Universal;
+using static CartoonFX.CFXR_Effect;
+using static Unity.Cinemachine.AxisState;
 using ETouch = UnityEngine.InputSystem.EnhancedTouch;
-using static UnityEngine.GraphicsBuffer;
+using InputTouchPhase = UnityEngine.InputSystem.TouchPhase;
+
 
 
 public class PlayerCamera : MonoBehaviour
@@ -24,19 +29,11 @@ public class PlayerCamera : MonoBehaviour
     [Header("Debug")]
     [SerializeField] private bool isGamepadConnected;
 
-    [Header("Camera Settings")]
-    public float cameraSmoothSpeed = 1;
-    public float cameraRollSmoothSpeed = 1;
-    public float cameraAimSmoothSpeed = 1;
-   
-    public float leftAndRightRotationSpeed = 220;
-    public float upAndDownRotationSpeed = 220;
-    public float minimumpivot = -30;
-    public float maximumpivot = 60;
-    public float cameraCollisionRadius = 0.2f;
-    public LayerMask collideWithLayers;
-    public float CameraFOV = 60;
-    public float CameraAimingFOV = 45;
+    [Header("Camera offset")]
+    [SerializeField] Vector3 titleScreenOffset;
+    public float titleScreenCameraPivotAngle;
+    public float titleScreenCameraUpDownAngle;
+    public Vector3 resetCameraPosition;
 
     [Header("Camera Values")]
     [SerializeField] float cameraZPosition;
@@ -46,6 +43,28 @@ public class PlayerCamera : MonoBehaviour
     public float cameraPivotAngle;
     public float leftAndRightLookAngle;
     public float upAndDownLookAngle;
+
+    [Header("Camera Settings")]
+    public float cameraSmoothSpeed = 1;
+    public float cameraRollSmoothSpeed = 1;
+    public float cameraAimSmoothSpeed = 1;
+    public float leftAndRightRotationSpeed = 220;
+    public float upAndDownRotationSpeed = 220;
+    public float minimumpivot = -30;
+    public float maximumpivot = 60;
+    public float cameraCollisionRadius = 0.2f;
+    public LayerMask collideWithLayers;
+    public float CameraFOV = 60;
+    public float CameraAimingFOV = 45;
+
+    [Header("Mobile")]
+    [SerializeField] private bool isInputActive;
+    private int cameraFingerId = -1;
+    private Vector2 lastTouchPos;
+    [SerializeField] FloatingJoystick joystick;
+    [SerializeField] RectTransform joystickRect;
+    public float touchSensitivity = 1f;
+    [SerializeField] private bool cameraInputEnabled = true;
 
     [Header("Camera Recentering")]
     [SerializeField] private bool enableRecentering;
@@ -61,29 +80,18 @@ public class PlayerCamera : MonoBehaviour
 
     [Header("Aim")]
     public Transform followTransformWhenAiming;
+    [SerializeField] float cameraAimZPosition;
     public float leftAndRightAimRotationSpeed = 220;
     public float upAndDownAimRotationSpeed = 220;
     public float aimedMinimumpivot = -30;
     public float aimedMaximumpivot = 60;
     private bool hasInitializedAim = false;
     [SerializeField] float CameraOffsetLeftRight = 0.76f;
-
-
+    [SerializeField] float AimCameraHeight = 2f;
+    private Coroutine aimCameraHeightCoroutine;
     public Vector3 aimDirection;
 
-    [Header("Focus")]
-    public bool isInFocusMode = false;
-    [SerializeField] private float inspectRayDistance =7f;
-    [SerializeField] private LayerMask inspectLayerMask;
-    [SerializeField] private Transform currentInspectRoot;
 
-    
-
-    [Header("Mobile")]
-    public TouchField touchField;
-    public TouchField inspectObjectTouchField;
-    public float touchSensitivity = 1f;
-    [SerializeField] private bool isInputActive;
 
     [Header("Lock On")]
     [SerializeField] float lockOnRadius = 20f;
@@ -92,12 +100,29 @@ public class PlayerCamera : MonoBehaviour
     [SerializeField] float lockOnTargetFollowSpeed = 0.2f;
     [SerializeField] float unlockedCameraHeight = 1.64f;
     [SerializeField] float lockedCameraHeight = 2.0f;
+    [SerializeField] float lockedonTiltAngle = 20f;
     [SerializeField] float cameraHeightSpeed = 1f;
     private Coroutine cameraLockOnCoroutine;
     private List<CharacterManager> availableTargets = new List<CharacterManager>();
     public CharacterManager nearestLockOnTarget;
     public CharacterManager leftLockOnTarget;
     public CharacterManager RightLockOnTarget;
+
+    [Header("LockOn Settings")]
+    public bool autoLockOn = true;
+    public bool autoSwitchToNearestTarget = false;
+
+    [Header("Camera Shake")]
+    CameraShake cameraShake;
+    public float shakeMagnitude = 0.1f;
+
+
+
+
+
+
+
+
 
 
     private void Awake()
@@ -110,14 +135,28 @@ public class PlayerCamera : MonoBehaviour
         {
             Destroy(gameObject);
         }
+
+        EnhancedTouchSupport.Enable();
+
+        TitleScreenCameraOffset();
+
+        cameraShake = GetComponentInChildren<CameraShake>();
+
+
     }
 
     private void Start()
     {
         DontDestroyOnLoad(gameObject);
         cameraZPosition = cameraObject.transform.localPosition.z;
-        //touchField = FindObjectOfType<TouchField>();
-        inspectObjectTouchField = PlayerUIManager.instance.inspectObjectTouchField.GetComponent<TouchField>();
+ 
+
+        joystick = PlayerUIManager.instance.mobileControls.joystick;
+        joystickRect =  PlayerUIManager.instance.mobileControls.joystick.joyStickrect;
+
+
+
+
 
 
 
@@ -128,7 +167,25 @@ public class PlayerCamera : MonoBehaviour
         if (PlayerUIManager.instance.isLoadingScreenActive)
             return;
 
-        CheckInputActivity();
+        bool fingerStillActive = false;
+
+        foreach (var touch in ETouch.Touch.activeTouches)
+        {
+            if (touch.finger.index == cameraFingerId)
+            {
+                fingerStillActive = true;
+                break;
+            }
+        }
+
+        if (!fingerStillActive)
+        {
+            cameraFingerId = -1;
+            lastTouchPos = Vector2.zero;
+        }
+
+
+        
         HandleAllCameraActions();
 
         if (player.playerCombatManager.currentTarget!=null)
@@ -136,67 +193,19 @@ public class PlayerCamera : MonoBehaviour
             PlayerUIManager.instance.UpdateLockOnDotPosition();
         }
 
-        if (isInFocusMode)
-        {
-            //  Mouse input (Editor/PC)
-            if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
-            {
-                InspectObjectBasedOn(Mouse.current.position.ReadValue());
-            }
-
-            //  Touch input (Mobile)
-            foreach (var touch in ETouch.Touch.activeTouches)
-            {
-                if (touch.phase == UnityEngine.InputSystem.TouchPhase.Began)
-                {
-                    InspectObjectBasedOn(touch.screenPosition);
-                }
-            }
-        }
-
     }
 
-    private void CheckInputActivity()
-    {
-        isInputActive = PlayerInputManager.Instance.cameraHorizontalInput != 0 || PlayerInputManager.Instance.cameraVerticalInput != 0;
-
-        if (touchField != null && !player.playerInteractionManager.isInspectingObject)
-        {
-            isInputActive = isInputActive || touchField.SwipeDelta != Vector2.zero;
-        }
-        if (player.playerInteractionManager.isInspectingObject)
-        {
-            inspectObjectTouchField.enabled = true;
-            touchField.enabled = false;
-
-            isInputActive = isInputActive || inspectObjectTouchField.SwipeDelta != Vector2.zero;
-        }
-        else
-        {
-            inspectObjectTouchField.enabled=false;
-            touchField.enabled = true;
-        }
-    }
+    
 
     public void HandleAllCameraActions()
     {
         if (player != null)
         {
 
-            if (isInFocusMode)
-                return;
-
-
-
 
             HandleFollowTarget();
             HandleRotation();
             HandleCollisions();
-
-
-
-
-
 
         }
     }
@@ -205,13 +214,19 @@ public class PlayerCamera : MonoBehaviour
     private void HandleFollowTarget()
     {
 
+        
+
 
 
         if (player.isAiming)
         {
 
+            
             Vector3 targetCameraPosition = Vector3.SmoothDamp(transform.position, followTransformWhenAiming.transform.position, ref cameraVelocity, cameraAimSmoothSpeed);
             transform.position = targetCameraPosition;
+            cameraObject.fieldOfView = CameraAimingFOV;
+            
+
 
 
 
@@ -233,6 +248,7 @@ public class PlayerCamera : MonoBehaviour
         {
 
             cameraObject.fieldOfView = CameraFOV;
+            
 
 
             Vector3 targetCameraPosition = Vector3.SmoothDamp(transform.position, player.transform.position, ref cameraVelocity, cameraSmoothSpeed);
@@ -245,6 +261,9 @@ public class PlayerCamera : MonoBehaviour
 
     private void HandleRotation()
     {
+        if (!cameraInputEnabled)
+            return;
+
         if (player.isAiming)
         {
             HandndleAimedRotation();
@@ -422,7 +441,7 @@ public class PlayerCamera : MonoBehaviour
         //IF Locked on Force Rotation towards target 
 
         cameraObject.transform.localRotation = Quaternion.Euler(0, 0, 0);
-
+        bool hasTouchInput =false;
         if (player.playerCombatManager.isLockedOn)
         {
             Vector3 rotationDirection = player.playerCombatManager.currentTarget.characterCombatManager.LockOnTransform.position - transform.position;
@@ -439,8 +458,8 @@ public class PlayerCamera : MonoBehaviour
             targetRotation = Quaternion.LookRotation(rotationDirection);
             cameraPivotTransform.transform.rotation = Quaternion.Slerp(cameraPivotTransform.rotation, targetRotation, lockOnTargetFollowSpeed);
 
-            float tiltAmount = 13.5f; // degrees of downward camera tilt
-            Quaternion tiltRotation = Quaternion.Euler(tiltAmount, 0f, 0f);
+            //Set Camera TileAngle When LockedOn
+            Quaternion tiltRotation = Quaternion.Euler(lockedonTiltAngle, 0f, 0f);
             cameraPivotTransform.localRotation = tiltRotation;
 
             //Save our rotation to our look Angles, so when we unlock it doesnt snap too far away
@@ -452,13 +471,31 @@ public class PlayerCamera : MonoBehaviour
         // Otherwise rotate regularly
         else
         {
-            bool hasCameraInput = false;
+            bool hasCameraInput = PlayerInputManager.Instance.cameraHorizontalInput != 0 || PlayerInputManager.Instance.cameraVerticalInput != 0;
 
-            if (isInputActive)
+            foreach (var touch in ETouch.Touch.activeTouches)
             {
+                // Ignore joystick touches
+                if (IsTouchOverJoystick(touch.startScreenPosition))
+                    continue;
+
+                // Only treat real drags as camera input
+                if (touch.phase == InputTouchPhase.Moved &&
+                    touch.delta.sqrMagnitude > 2f) // small noise filter
+                {
+                    hasTouchInput = true;
+                    break;
+                }
+            }
+
+            if (hasTouchInput || hasCameraInput)
+            {
+                //Disable Recenter
+                //Camera Is Fully Under Player Control
                 recenterTimer = 0f;
                 isRecentering = false;
 
+                //Gather camerahorizontal and vertical inputs
                 leftAndRightLookAngle = (PlayerInputManager.Instance.cameraHorizontalInput * leftAndRightRotationSpeed) * Time.deltaTime;
                 upAndDownLookAngle = -(PlayerInputManager.Instance.cameraVerticalInput * upAndDownRotationSpeed) * Time.deltaTime;
 
@@ -468,11 +505,28 @@ public class PlayerCamera : MonoBehaviour
                     upAndDownLookAngle -= (PlayerInputManager.Instance.cameraVerticalInput * 100) * Time.deltaTime;
                 }
 
-                if (touchField != null && touchField.SwipeDelta != Vector2.zero)
+
+                //Gather touch/swipe inputs
+                foreach (var touch in ETouch.Touch.activeTouches)
                 {
-                    leftAndRightLookAngle = (touchField.SwipeDelta.x * touchSensitivity * leftAndRightRotationSpeed / Screen.width) * Time.deltaTime;
-                    upAndDownLookAngle = -(touchField.SwipeDelta.y * touchSensitivity * upAndDownRotationSpeed / Screen.height) * Time.deltaTime;
+                    //Ignore touches that are moving the joystick
+                    if (IsTouchOverJoystick(touch.startScreenPosition))
+                        continue;
+
+                    if (touch.phase != InputTouchPhase.Moved)
+                        continue;
+
+                    Vector2 delta = touch.delta;
+
+                    leftAndRightLookAngle += (delta.x * touchSensitivity * leftAndRightRotationSpeed / Screen.width) * Time.deltaTime;
+
+                    upAndDownLookAngle += -(delta.y * touchSensitivity * upAndDownRotationSpeed / Screen.height) * Time.deltaTime;
+
+                    break;
                 }
+
+
+                //Rotate the camera
 
                 Vector3 cameraRotation = Vector3.zero;
                 Quaternion targetRotation;
@@ -493,18 +547,19 @@ public class PlayerCamera : MonoBehaviour
             }
             else
             {
-                // Auto-align/recenter behavior like in CameraController
+                // Auto-align/recenter behavior when there is no Camera Input
                 if (enableRecentering)
                 {
+                    //Check if the camera is misaligned
                     if(cameraPivotAngle >= camerPivotAngleRecenterThreshold)
                         return;
 
-                    // Check if player is actually moving before we try to recenter
+                    // Check if player is moving before we try to recenter
                     bool isPlayerMoving = PlayerInputManager.Instance.movementInput.magnitude > 0.1f;
 
                     if (!isPlayerMoving)
                     {
-                        // Player is idle — don't recenter at all
+                        // Player is idle don't recenter at all
                         recenterTimer = 0f;
                         isRecentering = false;
                         return;
@@ -513,6 +568,7 @@ public class PlayerCamera : MonoBehaviour
                     Vector3 characterForward = player.transform.forward;
                     characterForward.y = 0f; // Keep horizontal plane
 
+                    //Recenter camera when there is horizontal input 
                     if (PlayerInputManager.Instance.horizontalInput > 0.2f || PlayerInputManager.Instance.horizontalInput < -0.2f)
                     { 
                         
@@ -526,27 +582,27 @@ public class PlayerCamera : MonoBehaviour
                                 float angleDifference = Vector3.SignedAngle(cameraForward, characterForward, Vector3.up);
                                 recenterTimer += Time.deltaTime;
 
-                                // Start recentering only after delay and if difference is meaningful
+                                // Start recentering only after delay and if camera is sufficiently misaligned
                                 if (recenterTimer >= recenterDelay && Mathf.Abs(angleDifference) > 5f)
                                 {
                                     isRecentering = true;
 
-                                    float targetYaw = Mathf.MoveTowardsAngle(
-                                        transform.eulerAngles.y,
-                                        player.transform.eulerAngles.y,
-                                        cameraRotateSpeedWhenPlayerIsTurning * Time.deltaTime
-                                    );
+                                    //Calculate next horizontal camera rotation value
+                                    // Moves camera Y-axis rotation (yaw) toward player facing direction
+                                    //MoveTowards(): slowly reaches the target over multiple frames
+                                    float targetYaw = Mathf.MoveTowardsAngle(transform.eulerAngles.y, player.transform.eulerAngles.y,cameraRotateSpeedWhenPlayerIsTurning * Time.deltaTime);
 
+                                    //Apply horizontal camera rotation
                                     transform.rotation = Quaternion.Euler(0f, targetYaw, 0f);
 
-                                    float targetPitch = Mathf.MoveTowards(
-                                        cameraPivotAngle,
-                                        0f,
-                                        cameraRotateSpeedWhenPlayerIsTurning * Time.deltaTime
-                                    );
+                                    //Calculate next vertical camera rotation value
+                                    // Moves camera X-axis rotation (pitch) toward neutral (0)
+                                    float targetPitch = Mathf.MoveTowards(cameraPivotAngle, 0f, cameraRotateSpeedWhenPlayerIsTurning * Time.deltaTime);
+                                    //Apply vertical camera rotation
                                     cameraPivotAngle = targetPitch;
                                     cameraPivotTransform.localRotation = Quaternion.Euler(cameraPivotAngle, 0f, 0f);
 
+                                    //Sync the values with the actual camera rotation
                                     leftAndRightLookAngle = targetYaw;
                                     upAndDownLookAngle = targetPitch;
                                 }
@@ -571,34 +627,67 @@ public class PlayerCamera : MonoBehaviour
 
 
 
-
-
-
-
-
     private void HandndleAimedRotation()
     {
 
-        cameraPivotTransform.localRotation = Quaternion.Euler(0, 0, 0);
+        
         if (!player.isGrounded)
             player.isAiming = false;
 
         if (player.isPerformingAction)
             return;
 
-        aimDirection = cameraObject.transform.forward.normalized;
 
-        if (isInputActive)
+        cameraPivotTransform.localRotation = Quaternion.Euler(0, 0, 0);
+
+        aimDirection = cameraObject.transform.forward.normalized;
+        bool hasTouchInput = false;
+
+
+        bool hasCameraInput = PlayerInputManager.Instance.cameraHorizontalInput != 0 || PlayerInputManager.Instance.cameraVerticalInput != 0;
+
+        foreach (var touch in ETouch.Touch.activeTouches)
+        {
+            // Ignore joystick touches
+            if (IsTouchOverJoystick(touch.startScreenPosition))
+                continue;
+
+            // Only treat real drags as camera input
+            if (touch.phase == InputTouchPhase.Moved &&
+                touch.delta.sqrMagnitude > 2f) // small noise filter
+            {
+                hasTouchInput = true;
+                break;
+            }
+        }
+
+        if (hasCameraInput || hasTouchInput)
         {
             //Gather Inputs
             float horizontal = PlayerInputManager.Instance.cameraHorizontalInput* upAndDownAimRotationSpeed * Time.deltaTime;
             float vertical = PlayerInputManager.Instance.cameraVerticalInput*leftAndRightAimRotationSpeed * Time.deltaTime;
 
-            if (touchField != null && touchField.SwipeDelta != Vector2.zero)
+
+
+            foreach (var touch in ETouch.Touch.activeTouches)
             {
-                horizontal = touchField.SwipeDelta.x * touchSensitivity* leftAndRightAimRotationSpeed / Screen.width*Time.deltaTime;
-                vertical = -(touchField.SwipeDelta.y * touchSensitivity * upAndDownAimRotationSpeed / Screen.height) * Time.deltaTime;
+                // Ignore touches that are moving the joystick
+                if (IsTouchOverJoystick(touch.startScreenPosition))
+                    continue;
+
+                if (touch.phase != InputTouchPhase.Moved)
+                    continue;
+
+                Vector2 delta = touch.delta;
+
+                leftAndRightLookAngle += (delta.x * touchSensitivity * leftAndRightRotationSpeed / Screen.width) * Time.deltaTime;
+
+                upAndDownLookAngle += -(delta.y * touchSensitivity * upAndDownRotationSpeed / Screen.height) * Time.deltaTime;
+
+                break;
             }
+
+
 
 
             //upAndDownLookAngle = Mathf.Clamp(upAndDownLookAngle, aimedMinimumpivot, aimedMaximumpivot);
@@ -612,33 +701,51 @@ public class PlayerCamera : MonoBehaviour
 
         }
         transform.rotation = Quaternion.Euler(0, leftAndRightLookAngle, 0);
-        cameraObject.transform.localEulerAngles= new Vector3(upAndDownLookAngle, 0f, 0f);
+        //cameraObject.transform.localEulerAngles= new Vector3(upAndDownLookAngle, 0f, 0f);
+        cameraPivotTransform.transform.localEulerAngles = new Vector3(upAndDownLookAngle, 0, 0);
 
+    }
+
+
+    bool IsTouchOverJoystick(Vector2 screenPos)
+    {
+        return RectTransformUtility.RectangleContainsScreenPoint(
+            joystickRect,
+            screenPos,
+            null   // null = screen space overlay
+        );
     }
 
 
     public void OnIsAimingChanged(bool isAiming)
     {
         //Reset Local EulerAngles Of the Camera Object When Not Aiming
+        Vector3 velocity = Vector3.zero;
+        Vector3 aimcamHeight = new Vector3(cameraPivotTransform.transform.localPosition.x, AimCameraHeight);
+        Vector3 unlockedAimcamHeight = new Vector3(cameraPivotTransform.transform.localPosition.x, unlockedCameraHeight);
         if (!isAiming ||player.isExitingToEmptyAfterReload)
         {
             hasInitializedAim = false;
             cameraObject.transform.localEulerAngles = new Vector3(0, 0, 0);
-            if (player.playerInventoryManager.currentTwoHandWeapon != null && player.playerInventoryManager.currentTwoHandWeapon.weaponClass == WeapomClass.Gun || player.playerInventoryManager.currentRightHandWeapon.weaponClass == WeapomClass.Gun)
+            if (player.playerInventoryManager.currentTwoHandWeapon != null && player.playerInventoryManager.currentTwoHandWeapon.weaponClass == WeapomClass.Gun)
             {
                 player.playerAnimatorManager.EnableDisableIK(0, 0);
                 player.playerAnimatorManager.UpdateAimedConstraints();
+                aimCameraHeightCoroutine = StartCoroutine(SetAimingCameraHeight(false));
+                PlayerUIManager.instance.playerUIHUDManager.ToggleCrossHair(false);
 
-            } 
-           
+
+            }
+
+            else if (player.playerInventoryManager.currentTwoHandWeapon != null && player.playerInventoryManager.currentTwoHandWeapon.weaponClass == WeapomClass.Bow)
+            {
+                aimCameraHeightCoroutine = StartCoroutine(SetAimingCameraHeight(false));
+                player.playerAnimatorManager.EnableDisableIK(0, 0);
+                player.playerAnimatorManager.UpdateAimedConstraintsForBow();
+                PlayerUIManager.instance.playerUIHUDManager.ToggleCrossHair(false);
+
+            }
             player.isExitingToEmptyAfterReload = false;
-            
-
-
-
-
-
-            //Debug.Log("Reset CamObj");
 
 
         }
@@ -648,15 +755,34 @@ public class PlayerCamera : MonoBehaviour
 
             
             leftAndRightLookAngle = transform.eulerAngles.y;
-            upAndDownLookAngle = -4f;
+            upAndDownLookAngle = 7f;
             hasInitializedAim = true;
-            if(player.playerInventoryManager.currentTwoHandWeapon.weaponClass == WeapomClass.Gun || player.playerInventoryManager.currentRightHandWeapon.weaponClass == WeapomClass.Gun)
+            if(player.playerInventoryManager.currentTwoHandWeapon.weaponClass == WeapomClass.Gun)
             {
                 player.playerAnimatorManager.EnableDisableIK(1, 1);
                 player.playerAnimatorManager.UpdateAimedConstraints();
+                aimCameraHeightCoroutine = StartCoroutine(SetAimingCameraHeight(true));
+                PlayerUIManager.instance.playerUIHUDManager.ToggleCrossHair(true);
+                cameraObject.transform.localPosition = new Vector3(0f, 0f, cameraAimZPosition);
+                Debug.Log("Setting aim height");
+
+
 
             }
-            Debug.Log("Reset CamPivot");
+            else if (player.playerInventoryManager.currentTwoHandWeapon.weaponClass == WeapomClass.Bow)
+            {
+                aimCameraHeightCoroutine = StartCoroutine(SetAimingCameraHeight(true));
+                player.playerAnimatorManager.EnableDisableIK(0, 0);
+                player.playerAnimatorManager.UpdateAimedConstraintsForBow();
+                PlayerUIManager.instance.playerUIHUDManager.ToggleCrossHair(true);
+                cameraObject.transform.localPosition = new Vector3(0f, 0f, cameraAimZPosition);
+
+
+
+            }
+
+
+                Debug.Log("Reset CamPivot");
 
         }
         player.animator.SetBool("isAiming", player.isAiming);
@@ -664,11 +790,63 @@ public class PlayerCamera : MonoBehaviour
 
 
 
+
+    private IEnumerator SetAimingCameraHeight(bool aiming)
+    {
+        float duration = 0.25f;  // how smooth the transition is
+        float timer = 0f;
+
+        Vector3 velocity = Vector3.zero;
+
+        // Current pivot position
+        Vector3 startPos = cameraPivotTransform.localPosition;
+
+        // Target height when aiming
+        Vector3 aimedHeight = new Vector3(
+            startPos.x,
+            AimCameraHeight,
+            startPos.z
+        );
+
+        // Target height when not aiming
+        Vector3 unAimedHeight = new Vector3(
+            startPos.x,
+            unlockedCameraHeight,
+            startPos.z
+        );
+
+        Vector3 targetPos = aiming ? aimedHeight : unAimedHeight;
+
+        // Smooth transition
+        while (timer < duration)
+        {
+            timer += Time.deltaTime;
+
+            cameraPivotTransform.localPosition =
+                Vector3.SmoothDamp(cameraPivotTransform.localPosition, targetPos, ref velocity, cameraHeightSpeed);
+
+            yield return null;
+        }
+
+        // Ensure exact value on finish
+        cameraPivotTransform.localPosition = targetPos;
+    }
+
+
+
+
     private void HandleCollisions()
     {
 
+        if (player.isAiming)
+        {
+            targetCameraZPosition = cameraAimZPosition;
 
-        targetCameraZPosition = cameraZPosition;
+        }
+        else
+        {
+            targetCameraZPosition = cameraZPosition;
+        }    
         RaycastHit hit;
         Vector3 direction = cameraObject.transform.position - cameraPivotTransform.position;
         direction.Normalize();
@@ -690,6 +868,11 @@ public class PlayerCamera : MonoBehaviour
 
     public void HandleLocatingLockOnTarget()
     {
+        nearestLockOnTarget = null;
+        leftLockOnTarget   = null;
+        RightLockOnTarget  = null;
+        availableTargets.Clear();
+
         float shortestDistance = Mathf.Infinity;  //Used to determine the target closest to Player
 
         float shortestDistanceOfRightTarget = Mathf.Infinity;// Closest Target to the Right Of Current Target(+)
@@ -792,6 +975,7 @@ public class PlayerCamera : MonoBehaviour
             {
                 ClearLockOnTargets();
                 player.playerCombatManager.isLockedOn = false;
+                
             }
 
         }
@@ -905,65 +1089,58 @@ public class PlayerCamera : MonoBehaviour
     }
 
 
-    public void snapCameraToFocusPoint(Transform target)
+    public void TitleScreenCameraOffset()
     {
-        isInFocusMode = true;
-        player.canMove=false;
-        cameraObject.transform.position = target.position;
-        cameraObject.transform.rotation = target.rotation;
-        PlayerUIManager.instance.mobileControls.DisableMobileControls();
-        player.playerBodyManager.TogglePlayerObject(false);
+        cameraObject.transform.localPosition = titleScreenOffset;
 
+        Quaternion titleScreenCameraPivotangle = Quaternion.Euler(titleScreenCameraPivotAngle, 0f, 0f);
+        cameraPivotTransform.localRotation = titleScreenCameraPivotangle;
+
+
+        Quaternion CameraUpDownAngle = Quaternion.Euler(0, titleScreenCameraUpDownAngle, 0f);
+
+        transform.rotation = CameraUpDownAngle;
+
+        DisableCameraInput();
 
     }
-    public void ResetCameraFromFocus()
-    {
-        isInFocusMode=false;
-        player.canMove = true;
-        cameraObject.transform.localPosition = new Vector3(0, 0, cameraZPosition); // Reset and Set it back to default Z offset
-        cameraObject.transform.localRotation = Quaternion.identity;//reset Rotation
-        PlayerUIManager.instance.mobileControls.EnableMobileControls();
-        player.playerBodyManager.TogglePlayerObject(true);
-
-    }
-
-    public void InspectObjectBasedOn(Vector2 screenPos)
-    {
-        if(!isInFocusMode)
-            return;
-
-        Ray ray = cameraObject.ScreenPointToRay(screenPos);
-        if (Physics.Raycast(ray, out RaycastHit hit, inspectRayDistance, inspectLayerMask))
-        {
-            // restrict to children of the inspected object
-            if (currentInspectRoot != null && !hit.transform.IsChildOf(currentInspectRoot))
-                return;
-
-            Interactable interactable = hit.collider.GetComponent<Interactable>();
-            if (interactable == null)
-                interactable = hit.collider.GetComponentInParent<Interactable>();
-
-            if (interactable != null)
-                interactable.Interact(player);
-        }
-
-    }
-
 
     public void ResetCamera()
     {
         transform.rotation = Quaternion.identity;
         cameraPivotTransform.rotation = Quaternion.identity;
+        cameraObject.transform.localPosition = new Vector3(0f, 0f, cameraZPosition);
         leftAndRightLookAngle = 0;
         upAndDownLookAngle = 0;
         cameraPivotAngle = 10;
 
     }
 
-    
+    public void DisableCameraInput()
+    {
+        cameraInputEnabled = false;
+        EnhancedTouchSupport.Disable();
+
+        cameraFingerId = -1;
+        lastTouchPos = Vector2.zero;
+    }
+
+    public void EnableCameraInput()
+    {
+        cameraInputEnabled = true;
+        EnhancedTouchSupport.Enable();
+    }
+
+    public void shakeCamera()
+    {
+        StartCoroutine(cameraShake.shake(shakeMagnitude, shakeMagnitude));
+
+    }
 
 
-   
+
+
+
 
 }
 

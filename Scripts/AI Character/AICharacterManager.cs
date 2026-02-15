@@ -89,7 +89,16 @@ public class AICharacterManager : CharacterManager
 
     protected override void Update()
     {
-        base.Update();
+
+        animator.SetBool("IsGrounded", isGrounded);
+        animator.SetBool("isMoving", isMoving);
+
+        OnIsChargingAttack(isChargingAttack);
+
+        if (combatStance.canBlock)
+        {
+            OnIsBlocking(isBlocking);
+        }
 
         if (characterStatsManager.isDead)
             return;
@@ -114,6 +123,11 @@ public class AICharacterManager : CharacterManager
             navMeshAgent.transform.localPosition=Vector3.zero;
         
 
+    }
+
+    public override void OnIsBlocking(bool Status)
+    {
+        animator.SetBool("isBlocking", isBlocking);
     }
 
     
@@ -199,15 +213,16 @@ public class AICharacterManager : CharacterManager
             PlayerInputManager.Instance.player.playerCombatManager.currentTarget = null;
             PlayerUIManager.instance.SetLockOnTarget(null);
             //PlayerCamera.instance.SetLockCameraHeight();
+            if (!killer.playerCombatManager.isAimLockedOn)
+            {
+                PlayerUIManager.instance.mobileControls.EnablelockOn();
+            }
+           
 
             if (killer != null && !killer.playerStatsManager.isDead)
             {
                 aiCharacterCombatManager.AwardRunesOnDeath(killer);
             }
-
-
-
-           PlayerUIManager.instance.SetLockOnTarget(null);
           
 
         }

@@ -31,15 +31,16 @@ public class OffHandMeleeAction : WeaponItemBasedAction
             PerformOffHandAttack(playerPerformingAction, weaponPerformingAction);
         }
 
-        if (playerPerformingAction.playerInventoryManager.currentLeftHandWeapon.weaponClass == WeapomClass.Shield || playerPerformingAction.playerInventoryManager.currentLeftHandWeapon.canBlockUsingOffHand)
+        if (playerPerformingAction.playerInventoryManager.currentLeftHandWeapon.weaponClass == WeapomClass.Shield)
         {
             playerPerformingAction.isBlocking = true;
-            playerPerformingAction.isUsingLeftHand = true;
+            playerPerformingAction.isBlockingWithShield = true;
         }
 
         else
         {
-
+            playerPerformingAction.isBlocking = true;
+            playerPerformingAction.isBlockingWithShield = false;
             playerPerformingAction.isUsingLeftHand = true;
 
         }

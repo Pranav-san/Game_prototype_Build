@@ -7,32 +7,46 @@ public class PlayerUIMenu : MonoBehaviour
     [Header("Menu")]
     [SerializeField] protected GameObject menu;
     [SerializeField] protected MenuSlideAnimator menuAnimator;
+    [SerializeField] protected MenuFadeInOut menuFadeInOut;
 
-
+    [Header("Settings ")]
+    [SerializeField] GameObject settingsButton;
 
 
     public virtual void OpenMenu()
     {
-        PlayerUIManager.instance.menuWindowOpen =true;
+       
         menu.SetActive(true);
 
-        if (menuAnimator != null)
-        {
-            menuAnimator.ShowMenu();
-        }
-        
+        //if (menuAnimator != null)
+        //{
+        //    menuAnimator.ShowMenu();
+        //}
+
+        //if (menuFadeInOut != null)
+        //{
+        //    menuFadeInOut.FadeIn();
+        //}
+        PlayerUIManager.instance.menuWindowOpen =true;
+
 
 
     }
     public virtual void CloseMenu()
     {
+        
+        //if (menuAnimator != null )
+        //{
+        //    menuAnimator.HideMenu();
+        //}
+
+        //if (menuFadeInOut != null)
+        //{
+        //    menuFadeInOut.FadeOut(true);
+        //}
         PlayerUIManager.instance.menuWindowOpen =false;
-        if (menuAnimator != null )
-        {
-            menuAnimator.HideMenu();
-        }
-       
         menu.SetActive(false);
+
 
     }
     public virtual void ReturnToMainMenu()
@@ -46,6 +60,7 @@ public class PlayerUIMenu : MonoBehaviour
     protected IEnumerator ReturnToMainMenuRoutine()
     {
         PlayerUIManager.instance.CloseAllMenu();
+        PlayerUIManager.instance.mobileControls.ToggleInventoryButton(false);
 
         WorldSaveGameManager.instance.DisableMobileControlsOnSceneChange();
 
@@ -69,19 +84,25 @@ public class PlayerUIMenu : MonoBehaviour
         PlayerInputManager.Instance.player.playerAnimatorManager.PlayTargetActionAnimationInstantly("Title Screen Animation", false);
 
 
-        PlayerCamera.instance.ResetCamera();
+        PlayerCamera.instance.TitleScreenCameraOffset();
+
+        //PlayerCamera.instance.touchField.gameObject.SetActive(false);
 
 
-
+        
 
         AsyncOperation loadOperation = SceneManager.LoadSceneAsync("Main menu");
         loadOperation.completed += (AsyncOperation op) =>
         {
-          
+            Vector3 position = PlayerCamera.instance.player.titleScreenPlayerPosition;
+            PlayerCamera.instance.player.transform.position = position;
+
         };
 
         // 7. No need to manually deactivate the loading screen — it's handled in OnSceneChanged
-       
+
+
+
     }
 
     public virtual void CloseMenuAfterFixedUpdtate()
@@ -92,16 +113,32 @@ public class PlayerUIMenu : MonoBehaviour
 
     protected virtual IEnumerator WaitThenCloseMenu()
     {
+
         yield return new WaitForFixedUpdate();
 
         PlayerUIManager.instance.menuWindowOpen =false;
         menu.SetActive(false);
+
+
     }
 
     public void Quicksave()
     {
         WorldSaveGameManager.instance.SaveGame();
 
+
+    }
+
+    public void ToggleSettingsButton(bool value = false)
+    {
+        if (value)
+        {
+            settingsButton.SetActive(true);
+        }
+        else
+        {
+            settingsButton.SetActive(false);
+        }
 
     }
 }

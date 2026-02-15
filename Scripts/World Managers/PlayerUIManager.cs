@@ -16,6 +16,15 @@ public class PlayerUIManager : MonoBehaviour
     [HideInInspector] public PlayerUILoadingScreenManager playerUILoadingScreenManager;
     [HideInInspector] public PlayerUILevelUpManager playerUILevelUpManager;
     [HideInInspector] public MobileControls mobileControls;
+    [HideInInspector] public SettingsManager settingsManager;
+
+
+    [Header("FPS")]
+    public FPSDisplay fpsDisplay;
+    public bool showFPS = false;
+
+
+   
 
     [Header("isLodingScreenActive")]
     public bool isLoadingScreenActive = false;
@@ -60,6 +69,8 @@ public class PlayerUIManager : MonoBehaviour
         playerUIInventoryManager = GetComponentInChildren<PlayerUIInventoryManager>();
         playerUILevelUpManager = GetComponentInChildren<PlayerUILevelUpManager>();
         mobileControls = GetComponentInChildren<MobileControls>();
+        settingsManager = GetComponentInChildren<SettingsManager>();
+       
 
 
 

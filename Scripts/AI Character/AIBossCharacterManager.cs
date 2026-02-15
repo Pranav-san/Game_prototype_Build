@@ -138,6 +138,7 @@ public class AIBossCharacterManager : AICharacterManager
 
 
             PlayerInputManager.Instance.player.playerCombatManager.isLockedOn = false;
+            PlayerUIManager.instance.mobileControls.EnablelockOn();
             PlayerInputManager.Instance.player.playerCombatManager.currentTarget = null;
             //PlayerCamera.instance.SetLockCameraHeight();
 

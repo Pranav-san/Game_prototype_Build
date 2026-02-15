@@ -101,7 +101,12 @@ public class PlayerInventoryManager : CharacterInventoryManager
         currentLeftHandWeapon = newWeapon;
         currentRightHandWeapon = newWeapon;
         currentTwoHandWeapon = newWeapon;
-        player.playerEquipmentManager.LoadTwoHandWeapon();
+
+        if (player.playerEquipmentManager.isTwoHandingWeapon)
+        {
+            player.playerEquipmentManager.ReloadTwoHandWeapon();
+        }
+        
 
 
         PlayerUIManager.instance.playerUIHUDManager.SetLeftweaponQuickSlotIcon(newID);

@@ -50,7 +50,7 @@ public class CombatStanceState : AIState
     [SerializeField] float strafeMoveAmount = 0;
 
     [Header("Blocking")]
-    [SerializeField] bool canBlock = false;
+    public bool canBlock = false;
     [SerializeField] int percentageOfTimeWillBlock =  75;
     [SerializeField] bool hasRolledForBlockChance = false;
     [SerializeField] bool willBlockDuringThisCombatRotation = false;
@@ -82,13 +82,12 @@ public class CombatStanceState : AIState
             return ProcessExploderCombatStyle(aiCharacter);
         }
 
-        aiCharacter.characterController.Move(Vector3.zero);
-
         if (aiCharacter.isPerformingAction)
             return this;
 
         if (!aiCharacter.navMeshAgent.enabled)
             aiCharacter.navMeshAgent.enabled = true;
+
 
         if (enablePivot)
         {
@@ -131,7 +130,7 @@ public class CombatStanceState : AIState
             willBlockDuringThisCombatRotation = RollForOutComeChance(percentageOfTimeWillBlock);
         }
 
-        if ((willBlockDuringThisCombatRotation))
+        if (willBlockDuringThisCombatRotation)
         {
             aiCharacter.isBlocking = true;
         }
@@ -140,8 +139,6 @@ public class CombatStanceState : AIState
             aiCharacter.isBlocking = false;
             
         }
-
-
 
 
         if (canEvade && !hasRolledorEvasionChance)
@@ -162,49 +159,54 @@ public class CombatStanceState : AIState
 
         //if (!hasAttack && attackDecisionTimer >= attackDecisionInterval)
 
-        if (hasAttack)
-        {
-            if (aiCharacter.aiCharacterCombatManager.currentTarget.isPerformingAction)
-                return this;
-
-
-
-
-            aiCharacter.navMeshAgent.enabled = false;
-            aiCharacter.attackState.currentAttack = choosenAttack;
-
-            return SwitchState(aiCharacter, aiCharacter.attackState);
-
-
-        }
-        else
+        if (!hasAttack)
         {
             GetNewAttack(aiCharacter);
-            attackDecisionTimer = 0f;
+            //If we are outside of its Combat EngagementDistance, switch to Pursue Target State
+            if (aiCharacter.aiCharacterCombatManager.distanceFromTarget > aiCharacter.combatStance.maximumEngagementDistance)
+            {
+                return SwitchState(aiCharacter, aiCharacter.pursueTarget);
+
+            }
+
+            //Performant 
+            //May Cause Frame Drop
+
+            if (!IsDestinationReachable(aiCharacter, aiCharacter.characterCombatManager.currentTarget.transform.position))
+            {
+                if (!aiCharacter.isMoving && (aiCharacter.aiCharacterCombatManager.viewableAngle < -30f || aiCharacter.aiCharacterCombatManager.viewableAngle > 30f))
+                {
+                    aiCharacter.aiCharacterCombatManager.PivotTowardsTarget(aiCharacter);
+                }
+                if (NavMesh.SamplePosition(aiCharacter.characterCombatManager.currentTarget.transform.position, out var hit, 2f, -1))
+                {
+                    NavMeshPath path = new NavMeshPath();
+                    aiCharacter.navMeshAgent.CalculatePath(hit.position, path);
+                    aiCharacter.navMeshAgent.SetPath(path);
+                }
+                return this;
+            }
+
+
+            NavMeshPath path2 = new NavMeshPath();
+            aiCharacter.navMeshAgent.CalculatePath(aiCharacter.aiCharacterCombatManager.currentTarget.transform.position, path2);
+            aiCharacter.navMeshAgent.SetPath(path2);
+
+            return this;
 
         }
-
-        //If we are outside of its Combat EngagementDistance, switch to Pursue Target State
-        if (aiCharacter.aiCharacterCombatManager.distanceFromTarget > maximumEngagementDistance)
+        aiCharacter.navMeshAgent.enabled = false;
+        aiCharacter.attackState.currentAttack = choosenAttack;
+        if (canPerformCombo)
         {
 
-            return SwitchState(aiCharacter, aiCharacter.pursueTarget);
         }
+        return SwitchState(aiCharacter, aiCharacter.attackState);
 
-        //navMeshUpdateTimer += Time.deltaTime;
 
-        //if (navMeshUpdateTimer >= navMeshUpdateInterval)
-        {
-            NavMeshPath path = new NavMeshPath();
-            aiCharacter.navMeshAgent.CalculatePath(aiCharacter.aiCharacterCombatManager.currentTarget.transform.position, path);
-            aiCharacter.navMeshAgent.SetPath(path);
 
-            navMeshUpdateTimer = 0f;
-        }
-        //Performant 
-        //May Cause Frame Drop
+        
 
-        return this;
 
     }
 
@@ -366,11 +368,6 @@ public class CombatStanceState : AIState
 
         if (hasAttack)
         {
-            if (aiCharacter.aiCharacterCombatManager.currentTarget.isPerformingAction)
-                return this;
-
-
-
 
             aiCharacter.navMeshAgent.enabled = false;
             aiCharacter.attackState.currentAttack = choosenAttack;

@@ -63,10 +63,17 @@ public class WeaponItem : EquipmentItem
     public WeaponItemBasedAction OH_LB_Action; // One Handed Left Bumper Action (Blocking)
 
 
-
     [Header("whoosh")]
     public AudioClip[] whooshes;
     public AudioClip[] blocking;
+
+    [Header("Bow SFX")]
+    public AudioClip drawArrowSound;
+    public AudioClip releaseArrowSound;
+
+    [Header("Gun SFX")]
+    public AudioClip reloadGunSound;
+    public AudioClip fireBulletSound;
 
 
     [Header("VFX")]

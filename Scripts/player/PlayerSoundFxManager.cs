@@ -8,6 +8,14 @@ public class PlayerSoundFxManager : CharacterSoundFxManager
     [SerializeField] AudioClip currentFootStepAudioClipToPlay;
     playerManager player;
 
+    
+
+    [Header("Recoil")]
+    public AudioClip recoilSFX;
+
+    [Header("Location Type")]
+    public LocationType locationType;
+
     protected override void Awake()
     {
         base.Awake();
@@ -15,6 +23,11 @@ public class PlayerSoundFxManager : CharacterSoundFxManager
         player=GetComponent<playerManager>();
 
 
+    }
+
+    public override void PlayRecoilSFX()
+    {
+        audioSource.PlayOneShot(recoilSFX);
     }
 
     public override void playBlockSoundfx()
@@ -63,6 +76,27 @@ public class PlayerSoundFxManager : CharacterSoundFxManager
 
 
         
+    }
+
+    public void SwitchAtmosphereSFXBasedOnLocationType()
+    {
+
+        switch (locationType)
+        {
+            case LocationType.Indoor:
+                WorldSoundFXManager.instance.StopOutdoorAtmospherMusic();
+                WorldSoundFXManager.instance.PlayIndoorAtmospherMusic();
+                break;
+            case LocationType.OutDoor:
+                WorldSoundFXManager.instance.StopIndoorAtmospherMusic();
+                WorldSoundFXManager.instance.PlayOutdoorAtmospherMusic();
+                break;
+
+            default:
+                break;
+
+        }
+
     }
 
     public override void PlayLadderFootStepSfx()

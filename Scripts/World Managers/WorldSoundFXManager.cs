@@ -21,9 +21,17 @@ public class WorldSoundFXManager : MonoBehaviour
 
 
     [Header("World Bg Music")]
-    public AudioClip bgMusic;
-    public AudioClip stormSfx;
+    public AudioClip inDoorAmbient;
+    public AudioClip outDoorAmbient;
     public AudioClip pickUpItemSfx;
+
+    [Header("UI SFX")]
+    public AudioClip loadGameClickSFX;
+    public AudioClip InventorySlotClickSFX;
+    public AudioClip settingCategoryClickSFX;
+    public AudioClip settingToggleSFX;
+    public AudioClip menuOpenSFX;
+    public AudioClip menuCloseSFX;
   
 
     [Header("Action Sound Fx")]
@@ -48,9 +56,15 @@ public class WorldSoundFXManager : MonoBehaviour
 
     public AudioClip useKeySfx;
 
+    
 
     [Header("Menu Music")]
-    public AudioClip titleScreenMusic; 
+    public AudioClip titleScreenMusic;
+
+
+
+
+
 
 
 
@@ -75,6 +89,8 @@ public class WorldSoundFXManager : MonoBehaviour
         audioSource = GetComponent<AudioSource>();
         DontDestroyOnLoad(gameObject);
 
+        PlayTitleScreenMusic();
+
         
 
 
@@ -95,12 +111,47 @@ public class WorldSoundFXManager : MonoBehaviour
 
     }
 
+    public void PlayIndoorAtmospherMusic()
+    {
+            audioSource.clip = inDoorAmbient;
+            audioSource.loop = true;
+            audioSource.Play();
+
+    }
+
+    public void PlayOutdoorAtmospherMusic()
+    {
+            audioSource.clip = outDoorAmbient;
+            audioSource.loop = true;
+            audioSource.Play();
+
+    }
+
+    public void StopOutdoorAtmospherMusic()
+    {
+        audioSource.clip = inDoorAmbient;
+        audioSource.loop = false;
+        audioSource.Stop();
+
+    }
+
+    public void StopIndoorAtmospherMusic()
+    {
+        audioSource.clip = inDoorAmbient;
+        audioSource.loop = false;
+        audioSource.Stop();
+
+    }
+
+
+
+
     public void StopTitleScreenMusic()
     {
         if (titleScreenMusic != null)
         {
             audioSource.clip = titleScreenMusic; 
-            audioSource.loop = true; // Set it to loop if the storm effect needs to play continuously
+            audioSource.loop = true;
             audioSource.Stop(); 
         }
 
@@ -124,6 +175,37 @@ public class WorldSoundFXManager : MonoBehaviour
     public void PlayUseKeySfx()
     {
         audioSource.PlayOneShot(useKeySfx);
+    }
+
+    public void PlayLoadGameClickSFX()
+    {
+        audioSource.PlayOneShot(loadGameClickSFX);
+    }
+
+    public void PlayInventorySlotClickSFX()
+    {
+        audioSource.PlayOneShot(InventorySlotClickSFX);
+    }
+
+   
+
+    public void PlayMenuOpenSFX()
+    {
+        audioSource.PlayOneShot(menuOpenSFX);
+    }
+    public void PlayMenuCloseSFX()
+    {
+        audioSource.PlayOneShot(menuCloseSFX);
+    }
+
+    public void PlaySettingCategoryClickSFX()
+    {
+        audioSource.PlayOneShot(settingCategoryClickSFX);
+    }
+
+    public void PlaySettingToggleSFX()
+    {
+        audioSource.PlayOneShot(settingToggleSFX);
     }
     public AudioClip ChooseRandomSoundFxFromArray(AudioClip[] array)
     {

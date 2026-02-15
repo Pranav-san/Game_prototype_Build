@@ -18,7 +18,7 @@ public class PlayerInputManager : MonoBehaviour
 
     [Header("Mobile Inputs")]
     [SerializeField] FloatingJoystick floatingJoystick;
-    
+
 
 
 
@@ -40,22 +40,22 @@ public class PlayerInputManager : MonoBehaviour
     [SerializeField] bool dodgeInput = false;
     [SerializeField] bool sprintInput = false;
     [SerializeField] bool jumpInput = false;
-    
+
     [SerializeField] bool use_Item_Input = false;
-   
+
     [SerializeField] bool Switch_Right_Weapon_Input = false;
     [SerializeField] bool Switch_Left_Weapon_Input = false;
     [SerializeField] bool Switch_Quick_Slot_Item_Input = false;
 
     [Header("Bumper Input")]
-    [SerializeField] bool RB_Input = false;
-    [SerializeField] bool Hold_RB_Input = false;
+    public bool RB_Input = false;
+    public bool Hold_RB_Input = false;
     [SerializeField] bool LB_Input = false;
     [SerializeField] bool Hold_LB_Input = false;
 
     [Header("Two Hand Input")]
     [SerializeField] public bool Two_Hand_Input = false;
-   
+
 
     [Header("Trigger Input")]
     [SerializeField] bool RT_Input = false;
@@ -67,7 +67,7 @@ public class PlayerInputManager : MonoBehaviour
     [Header("UI Inputs")]
     [SerializeField] bool openCharacterMenuInput = false;
     [SerializeField] bool closeMenuInput = false;
-    [SerializeField] bool openSurvivalWheelInput = false;
+    
 
 
     [Header("Qued Inputs")]
@@ -76,6 +76,15 @@ public class PlayerInputManager : MonoBehaviour
     [SerializeField] float qued_Input_Timer = 0;
     [SerializeField] bool que_RB_Input = false;
     [SerializeField] bool que_LB_Input = false;
+
+
+    [Header("Aim Setting")]
+    [SerializeField] float rbHoldThreshold = 0.25f;
+    float rbHoldTimer;
+    bool rbAimTriggered;
+
+    [SerializeField] bool oneHandRBDecisionPending;
+
 
 
 
@@ -97,14 +106,16 @@ public class PlayerInputManager : MonoBehaviour
             Destroy(gameObject);
         }
 
+
+
     }
 
     private void Start()
     {
 
         DontDestroyOnLoad(gameObject);
-        
-        
+
+
 
 
         SceneManager.activeSceneChanged += OnSceneChange;
@@ -112,7 +123,7 @@ public class PlayerInputManager : MonoBehaviour
 
 
 
-        
+
 
     }
 
@@ -141,7 +152,7 @@ public class PlayerInputManager : MonoBehaviour
             playerControls = new PlayerControls2();
             playerControls.PlayerMovement.Movement.performed += i => movementInput = i.ReadValue<Vector2>();
             playerControls.PlayerCamera.Movement.performed += i => cameraInput = i.ReadValue<Vector2>();
-            
+
             playerControls.PlayerActions.Dodge.performed += i => dodgeInput = true;
             playerControls.PlayerActions.Jump.performed += i => jumpInput = true;
             playerControls.PlayerActions.SwitchRightWeapon.performed += i => Switch_Right_Weapon_Input = true;
@@ -159,14 +170,15 @@ public class PlayerInputManager : MonoBehaviour
             playerControls.PlayerActions.LB.performed += i => LB_Input = true;
             playerControls.PlayerActions.LB.canceled += i => player.isBlocking = false;
             //playerControls.PlayerActions.LB.canceled += i => player.isAiming = false;
-            playerControls.PlayerActions.LB.canceled += i => {
+            playerControls.PlayerActions.LB.canceled += i =>
+            {
                 if (!player.playerCombatManager.isAimLockedOn)
                 {
                     player.isAiming = false;
                     PlayerCamera.instance.OnIsAimingChanged(false);
                 }
-               
-               };
+
+            };
 
 
             playerControls.PlayerActions.RT.performed += i => RT_Input = true;
@@ -194,9 +206,7 @@ public class PlayerInputManager : MonoBehaviour
             //UI Inputs
             playerControls.PlayerActions.OpenCharacterMenu.performed += i => openCharacterMenuInput = true;
             //playerControls.PlayerActions.OpenSurvivalWheel.performed += i => openSurvivalWheelInput = true;
-            playerControls.PlayerActions.OpenSurvivalWheel.performed += i => openSurvivalWheelInput = true;
-            playerControls.PlayerActions.OpenSurvivalWheel.canceled += i => openSurvivalWheelInput = false;
-
+            
             //Qued Inputs
             playerControls.PlayerActions.QueRB.performed += i => QueInput(ref que_RB_Input);
             playerControls.PlayerActions.QueLB.performed += i => QueInput(ref que_LB_Input);
@@ -206,7 +216,7 @@ public class PlayerInputManager : MonoBehaviour
         }
         playerControls.Enable();
 
-        
+
     }
 
     private void OnDestroy()
@@ -221,15 +231,15 @@ public class PlayerInputManager : MonoBehaviour
         HandleAllInputs();
         ForceStateUpdate();
 
-       
-        
+
+
 
 
     }
 
     private void HandleAllInputs()
     {
-        if(player.playerStatsManager.isDead)
+        if (player.playerStatsManager.isDead)
             return;
 
         HandleAllQuedInput();
@@ -259,7 +269,7 @@ public class PlayerInputManager : MonoBehaviour
         HandleLockOnSwitchTargetInput();
         HandleInteractionInput();
         HandleOpenCharacterMenuInput();
-       
+
         HandleRTInput();
         HandleChargeRTInput();
 
@@ -267,12 +277,10 @@ public class PlayerInputManager : MonoBehaviour
 
     }
 
-   
-
     private void ProcessQuedInput()
     {
 
-        if(player.playerStatsManager.isDead) 
+        if (player.playerStatsManager.isDead)
             return;
 
 
@@ -289,64 +297,80 @@ public class PlayerInputManager : MonoBehaviour
 
     private void HandleLockOnInput()
     {
-        if (LockOn_Input && player.isAiming && !player.playerCombatManager.isAimLockedOn)
+        //AIM Lock
+
+        if(LockOn_Input && player.playerInventoryManager.currentTwoHandWeapon !=null && player.playerEquipmentManager.isTwoHandingWeapon)
         {
-            LockOn_Input = false;
-            player.playerCombatManager.isAimLockedOn= true;
-            PlayerCamera.instance.OnIsAimingChanged(player.playerCombatManager.isAimLockedOn);
-
-
-
-
-        }
-
-        if(LockOn_Input && player.isAiming && player.playerCombatManager.isAimLockedOn)
-        {
-            LockOn_Input = false;
-            player.playerCombatManager.isAimLockedOn = false;
-            player.isAiming = !player.isAiming;
-            PlayerCamera.instance.OnIsAimingChanged(player.isAiming);
-
-        }
-        
-        if (player.playerCombatManager.isLockedOn)
+            if (player.playerInventoryManager.currentTwoHandWeapon.weaponClass == WeapomClass.Bow || player.playerInventoryManager.currentTwoHandWeapon.weaponClass == WeapomClass.Gun)
             {
-                if (player.playerCombatManager.currentTarget==null)
-                return;
-
-                
-                if (player.characterStatsManager.isDead)
+                if (LockOn_Input && !player.playerCombatManager.isAimLockedOn)
                 {
-                    player.playerCombatManager.isLockedOn = false;
+
+                    LockOn_Input = false;
+                    player.playerCombatManager.isAimLockedOn= true;
+                    PlayerCamera.instance.OnIsAimingChanged(player.playerCombatManager.isAimLockedOn);
+                   
+
+                    if(player.playerInventoryManager.currentTwoHandWeapon.weaponClass == WeapomClass.Bow)
+                    {
+                        TriggerBowAim();
+                        
+                    }
+                    player.playerCombatManager.PerformWeaponBasedAction(player.playerInventoryManager.currentRightHandWeapon.OH_LB_Action, player.playerInventoryManager.currentRightHandWeapon);
+
+                    PlayerUIManager.instance.mobileControls.EnableAimLockOn();
+                    PlayerUIManager.instance.mobileControls.ToggleLeftFireButton(player.playerCombatManager.isAimLockedOn);
+
                 }
 
-                //Attempt to Find new Target 
+                if (LockOn_Input && player.playerCombatManager.isAimLockedOn && player.isAiming)
+                {
+                    LockOn_Input = false;
+                    player.playerCombatManager.isAimLockedOn = false;
+                    player.isAiming = false;
 
-                //This Ensures that Couroutine never runs multiple times overlapping itself
-                if (lockOnCoroutine !=null)
-                    StopCoroutine(lockOnCoroutine);
+                    if(player.playerInventoryManager.currentTwoHandWeapon.weaponClass == WeapomClass.Bow)
+                    {
+                        ExitBowAim();
+                    }
 
-                lockOnCoroutine = StartCoroutine(PlayerCamera.instance.WaitThenfindNewTarget());
 
+                    PlayerCamera.instance.OnIsAimingChanged(player.isAiming);
+                    PlayerUIManager.instance.mobileControls.EnableAimLockOn();
+                    PlayerUIManager.instance.mobileControls.ToggleLeftFireButton(player.playerCombatManager.isAimLockedOn);
 
+                }
 
             }
+            else
+            {
+                //Two Hand Melee Werapon
+            }
+
+        }
+
+        
         
 
-        if(LockOn_Input && player.playerCombatManager.isLockedOn)
+        //Disable Lock On
+
+        if (LockOn_Input && player.playerCombatManager.isLockedOn &&  !player.playerEquipmentManager.isTwoHandingWeapon)
         {
 
-            LockOn_Input = false;//Disable Lock On
+            LockOn_Input = false;
             PlayerCamera.instance.ClearLockOnTargets();
             player.playerCombatManager.isLockedOn = false;
             PlayerUIManager.instance.SetLockOnTarget(null);
             player.playerCombatManager.currentTarget = null; // Clear current target
+            PlayerUIManager.instance.mobileControls.EnablelockOn();
             return;
         }
 
-        if (LockOn_Input && !player.playerCombatManager.isLockedOn)
+        //Enable Lock On
+
+        if (LockOn_Input && !player.playerCombatManager.isLockedOn && !player.playerEquipmentManager.isTwoHandingWeapon)
         {
-            LockOn_Input = false;//Enable Lock On
+            LockOn_Input = false;
 
             PlayerCamera.instance.HandleLocatingLockOnTarget();
 
@@ -355,25 +379,50 @@ public class PlayerInputManager : MonoBehaviour
                 player.playerCombatManager.SetTarget(PlayerCamera.instance.nearestLockOnTarget);
                 player.playerCombatManager.isLockedOn = true;
                 PlayerUIManager.instance.SetLockOnTarget(player.playerCombatManager.currentTarget.characterCombatManager.LockOnTransform);
-               
+                PlayerUIManager.instance.mobileControls.EnablelockOn();
+
+
             }
             return;
-            
+
         }
+
+        if (player.playerCombatManager.isLockedOn && !player.playerEquipmentManager.isTwoHandingWeapon)
+        {
+            if (player.playerCombatManager.currentTarget==null)
+                return;
+
+            if (!PlayerCamera.instance.autoSwitchToNearestTarget)
+                return;
+
+
+            //Attempt to Find new Target 
+
+            //This Ensures that Couroutine never runs multiple times overlapping itself
+            if (lockOnCoroutine !=null)
+                StopCoroutine(lockOnCoroutine);
+
+            lockOnCoroutine = StartCoroutine(PlayerCamera.instance.WaitThenfindNewTarget());
+
+
+
+        }
+
+
+
     }
 
-   
 
     private void HandleUseItemInput()
     {
-        if(use_Item_Input)
+        if (use_Item_Input)
         {
             use_Item_Input = false;
 
-            if(PlayerUIManager.instance.menuWindowOpen)
+            if (PlayerUIManager.instance.menuWindowOpen)
                 return;
 
-            if(player.playerInventoryManager.currentQuickSlotItem != null)
+            if (player.playerInventoryManager.currentQuickSlotItem != null)
             {
                 player.playerInventoryManager.currentQuickSlotItem.AttemptToUseItem(player);
             }
@@ -382,9 +431,9 @@ public class PlayerInputManager : MonoBehaviour
 
     private void HandleTwoHandInput()
     {
-        if(player.isAttacking)
+        if (player.isAttacking)
             return;
-        if(player.isPerformingAction)
+        if (player.isPerformingAction)
             return;
 
         if (Two_Hand_Input)
@@ -400,6 +449,13 @@ public class PlayerInputManager : MonoBehaviour
 
             if (player.playerInventoryManager.weaponsInTwoHandSlot != null && player.playerEquipmentManager.isTwoHandingWeapon)
             {
+
+                if (player.isAiming)
+                {
+                    player.isAiming = false;
+                    player.animator.SetBool("isAiming", player.isAiming);
+                    PlayerCamera.instance.OnIsAimingChanged(player.isAiming);
+                }
                 // Unload two-hand weapon, restore previous one-handed weapons
                 player.playerEquipmentManager.UnloadTwoHandWeaponAndRestore();
                 player.playerEquipmentManager.isTwoHandingWeapon = false;
@@ -415,17 +471,17 @@ public class PlayerInputManager : MonoBehaviour
                 player.playerEquipmentManager.LoadTwoHandWeapon();
 
             }
-           
+
         }
     }
 
     private void HandleLockOnSwitchTargetInput()
     {
-        if(LockOn_Left_Input)
+        if (LockOn_Left_Input)
         {
             LockOn_Left_Input = false;
 
-            if(player.playerCombatManager.isLockedOn)
+            if (player.playerCombatManager.isLockedOn)
             {
                 PlayerCamera.instance.HandleLocatingLockOnTarget();
 
@@ -454,7 +510,7 @@ public class PlayerInputManager : MonoBehaviour
 
     private void HandlePlayerMovementInput()
     {
-        
+
 
 
         if (useFloatingJoyStick)
@@ -466,7 +522,7 @@ public class PlayerInputManager : MonoBehaviour
 
         }
 
-        
+
 
 
         verticalInput = movementInput.y;
@@ -474,15 +530,15 @@ public class PlayerInputManager : MonoBehaviour
 
         moveAmount = Mathf.Clamp01(Mathf.Abs(verticalInput)+ Mathf.Abs(horizontalInput));
 
-        if (!player.canMove)
+        if (!player.canMove || player.isPerformingAction)
         {
             moveAmount = 0;
             return;
 
         }
-            
 
-        
+
+
         if (moveAmount<=0.5 && moveAmount > 0&& !player.isAiming)
         {
             moveAmount = 0.5f;
@@ -544,17 +600,17 @@ public class PlayerInputManager : MonoBehaviour
 
 
         }
-        
+
         if (!player.playerCombatManager.isLockedOn && !player.isAiming || player.isSprinting)
         {
-            player.playerAnimatorManager.UpdateAnimatorMovementParameters(0, moveAmount, player.isSprinting,player.isAiming);
+            player.playerAnimatorManager.UpdateAnimatorMovementParameters(0, moveAmount, player.isSprinting, player.isAiming);
         }
         else
         {
             player.playerAnimatorManager.UpdateAnimatorMovementParameters(horizontalInput, verticalInput, player.isSprinting, player.isAiming);
         }
 
-       
+
 
 
 
@@ -570,7 +626,7 @@ public class PlayerInputManager : MonoBehaviour
     }
     private void HandleDodgeInput()
     {
-        if(dodgeInput == true)
+        if (dodgeInput == true)
         {
             dodgeInput = false;
 
@@ -603,7 +659,7 @@ public class PlayerInputManager : MonoBehaviour
 
     private void HandleJumpInput()
     {
-        if(jumpInput)
+        if (jumpInput)
         {
             jumpInput= false;
 
@@ -626,45 +682,72 @@ public class PlayerInputManager : MonoBehaviour
     {
         if (PlayerUIManager.instance.menuWindowOpen)
             return;
-        if(PlayerUIManager.instance.isLoadingScreenActive)
+        if (PlayerUIManager.instance.isLoadingScreenActive)
             return;
 
         //We Are Using An Item Return
-        if(player.playerCombatManager.isUsingItem)
+        if (player.playerCombatManager.isUsingItem)
             return;
-
-        if(PlayerCamera.instance.isInFocusMode)
-            return;
-
 
        
+
+
+
+        //if (player.playerInventoryManager.currentTwoHandWeapon != null && player.playerInventoryManager.currentTwoHandWeapon.weaponClass == WeapomClass.Bow && player.playerCombatManager.isAimLockedOn)
+        //{
+        //    if (!player.isAiming)
+        //        return;
+
+        //    RB_Input = false;
+
+        //    player.isUsingRightHand = true;
+        //    player.currentDamageType = WeapomClass.Bow;
+
+        //    player.playerCombatManager.PerformWeaponBasedAction(player.playerInventoryManager.currentRightHandWeapon.OH_RB_Action,player.playerInventoryManager.currentRightHandWeapon);
+
+        //    return; 
+        //}
+
+
+
+        if (player.playerInventoryManager.currentTwoHandWeapon != null)
+        {
+            if (RB_Input == true && player.playerInventoryManager.currentTwoHandWeapon.weaponClass == WeapomClass.Gun &&
+            !player.playerCombatManager.isAimLockedOn && !player.isAiming)
+            {
+                RB_Input = false;
+                LockOn_Input = true;
+
+            }
+
+        }
+
+        
+
+
+
 
         if (RB_Input == true)
         {
             RB_Input = false;
-           
 
-            if(player.playerStatsManager.currentStamina < player.playerInventoryManager.currentRightHandWeapon.baseStaminaCost)
+
+            if (player.playerStatsManager.currentStamina < player.playerInventoryManager.currentRightHandWeapon.baseStaminaCost)
                 return;
             player.isUsingRightHand = true;
             player.currentDamageType = player.playerInventoryManager.currentRightHandWeapon.weaponClass;
-            player.playerCombatManager.PerformWeaponBasedAction(player.playerInventoryManager.currentRightHandWeapon.OH_RB_Action,player.playerInventoryManager.currentRightHandWeapon);
-
-
-
-     
-
+            player.playerCombatManager.PerformWeaponBasedAction(player.playerInventoryManager.currentRightHandWeapon.OH_RB_Action, player.playerInventoryManager.currentRightHandWeapon);
 
         }
 
     }
 
-    private void QueInput(ref bool  quedInput)
+    private void QueInput(ref bool quedInput)
     {
         que_RB_Input = false;
         que_LB_Input = false;
 
-        if(player.isAiming)
+        if (player.isAiming)
             return;
 
 
@@ -675,7 +758,7 @@ public class PlayerInputManager : MonoBehaviour
             quedInput = true;
             qued_Input_Timer = default_Que_Input_Time;
             is_Input_Que_Active = true;
-            
+
 
         }
 
@@ -712,7 +795,7 @@ public class PlayerInputManager : MonoBehaviour
 
             player.playerCombatManager.PerformWeaponBasedAction(player.playerInventoryManager.currentRightHandWeapon.OH_RT_Action, player.playerInventoryManager.currentRightHandWeapon);
 
-            
+
 
 
 
@@ -725,6 +808,13 @@ public class PlayerInputManager : MonoBehaviour
         if (PlayerUIManager.instance.menuWindowOpen)
             return;
 
+        if (player.isAiming)
+        {
+            LB_Input = false;
+            return;
+        }
+            
+
         //We Are Using An Item Return
         if (player.playerCombatManager.isUsingItem)
             return;
@@ -736,14 +826,12 @@ public class PlayerInputManager : MonoBehaviour
             PlayerCamera.instance.OnIsAimingChanged(false);
             return;
         }
-        if (PlayerCamera.instance.isInFocusMode)
-            return;
 
         if (LB_Input == true)
         {
             LB_Input = false;
             player.isUsingLeftHand = true;
-          
+
             player.currentDamageType = player.playerInventoryManager.currentLeftHandWeapon.weaponClass;
             player.playerCombatManager.PerformWeaponBasedAction(player.playerInventoryManager.currentLeftHandWeapon.OH_LB_Action, player.playerInventoryManager.currentLeftHandWeapon);
 
@@ -758,16 +846,16 @@ public class PlayerInputManager : MonoBehaviour
 
     private void HandleChargeRTInput()
     {
-        if(Hold_RT_Input)
+        if (Hold_RT_Input)
         {
-            
-            
-              player.isChargingAttack = Hold_RT_Input;
-               
 
-                
 
-            
+            player.isChargingAttack = Hold_RT_Input;
+
+
+
+
+
         }
         else
         {
@@ -788,7 +876,7 @@ public class PlayerInputManager : MonoBehaviour
 
             if (PlayerUIManager.instance.menuWindowOpen)
                 return;
-            
+
             player.playerEquipmentManager.SwitchRightWeapon();
 
 
@@ -808,9 +896,9 @@ public class PlayerInputManager : MonoBehaviour
 
             if (PlayerUIManager.instance.menuWindowOpen)
                 return;
-            
+
             player.playerEquipmentManager.SwitchLeftWeapon();
-            
+
         }
 
 
@@ -825,12 +913,12 @@ public class PlayerInputManager : MonoBehaviour
             if (PlayerUIManager.instance.menuWindowOpen)
                 return;
 
-            if(player.isPerformingAction)
+            if (player.isPerformingAction)
                 return;
             player.playerEquipmentManager.SwitchQuickSlotItem();
 
-           
-            
+
+
 
 
 
@@ -852,50 +940,199 @@ public class PlayerInputManager : MonoBehaviour
     private void HandleOpenCharacterMenuInput()
     {
         if (openCharacterMenuInput)
-    {
-        openCharacterMenuInput = false;
-        
-        // Check if the menu is already open
-        if (PlayerUIManager.instance.menuWindowOpen)
         {
-            // Close the menu if it's open
-            PlayerUIManager.instance.CloseAllMenu();
+            openCharacterMenuInput = false;
+
+            // Check if the menu is already open
+            if (PlayerUIManager.instance.menuWindowOpen)
+            {
+                // Close the menu if it's open
+                PlayerUIManager.instance.CloseAllMenu();
+                PlayerUIManager.instance.playerUICharacterMenuManager.ToggleSettingsButton(false);
 
 
 
 
-        }
-         else
-          {
-            // Open the menu if it's not open
-            PlayerUIManager.instance.playerUICharacterMenuManager.OpenMenu();
-          }
+
+            }
+            else
+            {
+                // Open the menu if it's not open
+                PlayerUIManager.instance.playerUICharacterMenuManager.OpenMenu();
+                WorldSoundFXManager.instance.PlayMenuOpenSFX();
+                PlayerUIManager.instance.playerUICharacterMenuManager.ToggleSettingsButton(true);
+            }
         }
     }
 
-   
-    
-
-   
 
     private void HandleHoldRBInput()
     {
 
-        if (Hold_RB_Input)
-        {
-            player.isHoldingArrow = true;
 
-           
-            player.animator.SetBool("isHoldingArrow", player.isHoldingArrow);
-           
-        }
-        else
+      
+
+
+
+
+
+
+
+
+        if (player.playerInventoryManager.currentTwoHandWeapon == null)
+            return;
+        
+        // Only care about bow & gun
+        if (player.playerInventoryManager.currentTwoHandWeapon.weaponClass != WeapomClass.Bow && player.playerInventoryManager.currentTwoHandWeapon.weaponClass != WeapomClass.Gun)
+            return;
+
+
+        //Bow
+        if(player.playerInventoryManager.currentTwoHandWeapon.weaponClass == WeapomClass.Bow)
         {
-            player.isHoldingArrow=false;
-           
-            player.animator.SetBool("isHoldingArrow", player.isHoldingArrow);
-           
+
+            if (Hold_RB_Input)
+            {
+                rbHoldTimer += Time.deltaTime;
+
+                // ENTER AIM MODE
+                if (!rbAimTriggered && rbHoldTimer >= rbHoldThreshold)
+                {
+                    rbAimTriggered = true;
+
+                    player.isAiming = true;
+                    player.animator.SetBool("isAiming", true);
+                    PlayerCamera.instance.OnIsAimingChanged(true);
+
+                    // Aim action
+                    player.playerCombatManager.PerformWeaponBasedAction(player.playerInventoryManager.currentRightHandWeapon.OH_LB_Action, player.playerInventoryManager.currentRightHandWeapon);
+                }
+
+                player.isHoldingArrow = true;
+                player.animator.SetBool("isHoldingArrow", true);
+            }
+            else
+            {
+                // RELEASE FRAME
+                if (rbHoldTimer > 0f )
+                {
+                    if (rbAimTriggered)
+                    {
+                        // Stop holding arrow
+                        player.isHoldingArrow = false;
+                        player.animator.SetBool("isHoldingArrow", false);
+
+
+                    }
+                    else
+                    {
+                        // Tap shot
+                        RB_Input = true;
+
+                        player.isHoldingArrow = false;
+                        player.animator.SetBool("isHoldingArrow", false);
+                    }
+                }
+
+                rbHoldTimer = 0f;
+                rbAimTriggered = false;
+            }
+
+
         }
+
+
+        //Gun
+        if (player.playerInventoryManager.currentTwoHandWeapon.weaponClass == WeapomClass.Gun)
+        {
+
+            if (Hold_RB_Input && !player.playerCombatManager.isAimLockedOn && !player.isAiming)
+            {
+                rbHoldTimer += Time.deltaTime;
+
+                // ENTER AIM MODE
+                if (!rbAimTriggered && rbHoldTimer >= rbHoldThreshold)
+                {
+                    rbAimTriggered = true;
+
+                    player.isAiming = true;
+                    player.animator.SetBool("isAiming", true);
+                    LockOn_Input = true;
+                    PlayerCamera.instance.OnIsAimingChanged(true);
+
+                    // Aim action
+                    player.playerCombatManager.PerformWeaponBasedAction(player.playerInventoryManager.currentRightHandWeapon.OH_LB_Action, player.playerInventoryManager.currentRightHandWeapon);
+                }
+
+            }
+            else
+            {
+                // RELEASE FRAME
+                if (rbHoldTimer > 0f)
+                {
+                    if (rbAimTriggered)
+                    {
+                        
+
+
+                    }
+                    else
+                    {
+                        // Tap shot
+                        
+                    }
+                }
+
+                rbHoldTimer = 0f;
+                rbAimTriggered = false;
+            }
+
+        }
+
+
+
 
     }
+
+    public void TriggerBowAim()
+    {
+        if (player.isHoldingArrow)
+            return;
+
+        if (!player.playerCombatManager.isAimLockedOn)
+            return;
+
+
+        player.isAiming = true;
+        player.animator.SetBool("isAiming", true);
+        player.isHoldingArrow = true;
+        player.animator.SetBool("isHoldingArrow", true);
+        player.playerCombatManager.PerformWeaponBasedAction(player.playerInventoryManager.currentRightHandWeapon.OH_LB_Action, player.playerInventoryManager.currentRightHandWeapon);
+    }
+
+    public void ExitBowAim()
+    {
+        // 1. Exit aim state
+        player.isAiming = false;
+        player.animator.SetBool("isAiming", false);
+        PlayerCamera.instance.OnIsAimingChanged(false);
+
+        // 3. Cancel arrow if it exists
+        if (player.hasArrowNotched)
+        {
+            player.hasArrowNotched = false;
+
+            if (player.playerEquipmentManager.notchedArrow != null)
+            {
+                Destroy(player.playerEquipmentManager.notchedArrow);
+                player.playerEquipmentManager.notchedArrow = null;
+            }
+        }
+
+        // 4. Safety: stop any bow firing state
+        player.playerCombatManager.isFiringBow = false;
+    }
+
+
+
 }

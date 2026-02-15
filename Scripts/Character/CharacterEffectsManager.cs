@@ -67,7 +67,7 @@ public class CharacterEffectsManager : MonoBehaviour
     public virtual void ProcessInstantEffect(InstantCharacterEffect effect)
     {
 
-        character.TriggerHitPause(0.05f);
+        //character.TriggerHitPause(0.05f);
         effect.ProcessEffect(character);
 
 

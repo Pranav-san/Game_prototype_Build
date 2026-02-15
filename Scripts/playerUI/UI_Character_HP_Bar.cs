@@ -13,11 +13,14 @@ public class UI_Character_HP_Bar : UI_StatBar, AIHealthUI
     private float hideTimer = 0;
     [SerializeField] TextMeshProUGUI characterName;
     [SerializeField] TextMeshProUGUI characterDamage;
+    [SerializeField] UI_YellowBar yellowBar;
+    [SerializeField] float yellowBarTimer = 3;
 
     protected override void Awake()
     {
         base.Awake();
         character = GetComponentInParent<CharacterManager>();
+        yellowBar = GetComponentInChildren<UI_YellowBar>();
 
         if (character != null)
         {
@@ -32,6 +35,12 @@ public class UI_Character_HP_Bar : UI_StatBar, AIHealthUI
         }
 
         gameObject.SetActive(false);  // Hide by default
+
+
+        if(yellowBar != null)
+        {
+            yellowBar.gameObject.SetActive(false);// Trigger The OnEnable Method On The Yellow Bar
+        }
     }
 
     private void Update()
@@ -55,6 +64,16 @@ public class UI_Character_HP_Bar : UI_StatBar, AIHealthUI
     public void OnHealthChanged(int oldHealth, int newHealth)
     {
         base.SetStat(newHealth); // Update the slider
+
+        if(yellowBar != null)
+        {
+            if(newHealth < oldHealth)
+            {
+                yellowBar.slider.value =  Mathf.Max(yellowBar.slider.value, oldHealth);
+                yellowBar.gameObject.SetActive(true);
+                yellowBar.timer = yellowBarTimer; // Every Time We Hit We renew Timer
+            }
+        }
 
         gameObject.SetActive(true);
         hideTimer = defaultTimeBeforeBarHides;

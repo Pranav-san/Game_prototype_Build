@@ -46,11 +46,14 @@ public class TakeDamageEffect : InstantCharacterEffect
         if (character.isInvulnerable)
             return;
 
-       
-        
+
+
         CalculateDamage(character.characterStatsManager);
+        
         if(!character.characterStatsManager.isDead)
         {
+
+            
             PlayDirectionalBasedDamageAnimation(character);
             character.characterEffectsManager.InterruptEffect();
 
@@ -70,6 +73,8 @@ public class TakeDamageEffect : InstantCharacterEffect
 
         //Run This After All Other Functions Attempt To play Animation
         CalculateStanceDamage(character);
+
+       
 
 
 
@@ -99,6 +104,8 @@ public class TakeDamageEffect : InstantCharacterEffect
             poiseIsBroken = true;
 
         character.poiseResetTimer = character.defaultPoiseResetTimer;
+
+
 
        
 

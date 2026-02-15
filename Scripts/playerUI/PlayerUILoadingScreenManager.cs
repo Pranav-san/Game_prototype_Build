@@ -69,18 +69,12 @@ public class PlayerUILoadingScreenManager : MonoBehaviour
         loadingScreen.SetActive(true);
         PlayerUIManager.instance.isLoadingScreenActive = true;
 
-        string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
-        if (sceneName == "Main menu")
-        {
-            WorldSaveGameManager.instance.DisableMobileControlsOnSceneChange();
-        }
-        else
-        {
-            WorldSaveGameManager.instance.EnableMobileControlsOnSceneChange();
-            PlayerUIManager.instance.mobileControls.DisableMobileControls();
-        }
+       int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
 
-        while(delay > 0)
+
+      
+
+        while (delay > 0)
         {
             delay -=Time.deltaTime;
             yield return null;
@@ -95,21 +89,29 @@ public class PlayerUILoadingScreenManager : MonoBehaviour
             elaspsedTime += Time.deltaTime;
             canvasGroup.alpha = Mathf.Lerp(1,0,elaspsedTime/duration);
 
-            if (sceneName != "Main menu")
-                PlayerUIManager.instance.mobileControls.EnableMobileControls();
-
             yield return null;
         }
 
+
+        if (currentSceneIndex == 0)
+        {
+            PlayerUIManager.instance.mobileControls.DisableMobileControls();
+            WorldSaveGameManager.instance.DisableMobileControlsOnSceneChange();
+            PlayerUIManager.instance.mobileControls.ToggleInventoryButton(false);
+        }
+        else
+        {
+            PlayerUIManager.instance.mobileControls.EnableMobileControls();
+            WorldSaveGameManager.instance.EnableMobileControlsOnSceneChange();
+            PlayerUIManager.instance.mobileControls.ToggleInventoryButton(true);
+
+        }
+
         canvasGroup.alpha = 0f;
+
         loadingScreen.SetActive(false);
         PlayerUIManager.instance.isLoadingScreenActive = false;
         fadeLoadingScreenCoroutine = null;
-
-        
-
-
-
 
 
         yield return null;

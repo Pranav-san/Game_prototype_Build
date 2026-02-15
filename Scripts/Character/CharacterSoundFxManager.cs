@@ -11,11 +11,12 @@ public class CharacterSoundFxManager : MonoBehaviour
     [SerializeField]protected AudioClip[] attackDamageSFX;
 
     [Header("Guns")]
-    [SerializeField] protected AudioClip shotGun;
+    public AudioClip reloadPistolSfx;
+   
 
 
 
-   protected virtual void  Start()
+    protected virtual void  Start()
    {
 
    }
@@ -52,10 +53,7 @@ public class CharacterSoundFxManager : MonoBehaviour
 
     }
 
-    public virtual void PlayShotgunSfx()
-    {
-        audioSource.PlayOneShot(shotGun);
-    }
+   
 
 
     public virtual void PlayFootStepSFX(SurfaceType surfaceType)
@@ -70,6 +68,14 @@ public class CharacterSoundFxManager : MonoBehaviour
         
 
     }
+
+    public virtual void PlayRecoilSFX()
+    {
+
+
+    }
+
+
 
 
 

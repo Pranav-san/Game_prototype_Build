@@ -18,7 +18,7 @@ public class ResetUpperBodyAction : StateMachineBehaviour
         if (player.playerEffectsManager.activeQuickSlotItemFx!=null)
             Destroy(player.playerEffectsManager.activeQuickSlotItemFx);
 
-        player.UnHideWeaponmodel();
+        //player.UnHideWeaponmodel();
        
         if (player.playerEffectsManager.activeQuickSlotItemFx!=null)
             Destroy(player.playerEffectsManager.activeQuickSlotItemFx);

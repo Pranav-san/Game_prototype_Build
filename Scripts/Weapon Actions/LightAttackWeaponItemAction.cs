@@ -25,6 +25,7 @@ public class LightAttackWeaponItemAction : WeaponItemBasedAction
             return;
 
         PerformLightAttack(playerPerformingAction, weaponPerformingAction);
+        
     }
 
     private void PerformLightAttack(playerManager playerPerformingAction, WeaponItem WeaponPerformingAction)

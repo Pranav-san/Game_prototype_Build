@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CharacterCombatManager : MonoBehaviour
+public abstract class CharacterCombatManager : MonoBehaviour
 {
     protected CharacterManager character;
 
@@ -29,7 +29,10 @@ public class CharacterCombatManager : MonoBehaviour
     [SerializeField] float criticalAttackDistance = 0.7f;
     public int pendingCriticalDamage;
     public bool isRipostable = false;
-    
+
+    [Header("Bow")]
+    public bool isFiringBow;
+
     protected virtual void Awake()
     {
         character = GetComponent<CharacterManager>();
@@ -261,5 +264,22 @@ public class CharacterCombatManager : MonoBehaviour
         character.characterSoundFxManager.PlayCriticalStrikeSfx();
 
         character.characterStatsManager.currentHealth = 0;
+    }
+
+
+    public virtual void CancelCurrentAttack()
+    {
+        DisableAllDamageColliders();
+    }
+
+    protected virtual void DisableAllDamageColliders() 
+    { 
+
+    }
+
+
+    public virtual void OnWeaponRecoil()
+    {
+       
     }
 }

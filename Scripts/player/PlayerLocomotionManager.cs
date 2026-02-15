@@ -31,6 +31,11 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
     [SerializeField] float jumpHeight = 3;
     private Vector3 jumpDirection;
     [SerializeField] float jumpForwardSpeed = 7;
+    [Header("Air Control")]
+    [SerializeField] float airControl = 0.4f;      // 0–1
+    [SerializeField] float airForwardDamp = 3f;    // higher = quicker slowdown
+
+    private Vector3 currentAirVelocity;
 
 
 
@@ -80,9 +85,17 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
 
         }
 
+        if (player.isJumping)
+        {
+            HandleJumpingMovement();
+            return;
+        }
+
         HandleGroundedMovement();
         HandleRotation();
-        HandleJumpingMovement();
+
+       
+        
 
 
 
@@ -112,6 +125,9 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
 
 
         if (!player.canMove || player.playerInteractionManager.isInspectingObject)
+            return;
+
+        if (player.isJumping)
             return;
 
 
@@ -404,6 +420,9 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
         }
     }
 
+
+   
+
     public void PlayLadderFootstepSfx()
     {
 
@@ -521,9 +540,12 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
 
     private void HandleJumpingMovement()
     {
+        if (player.isGrounded)
+            return;
+
         if (player.isJumping)
         {
-            player.characterController.Move(jumpDirection*jumpForwardSpeed* Time.deltaTime);
+            player.characterController.Move(jumpDirection * jumpForwardSpeed * Time.deltaTime);
         }
     }
 
@@ -592,6 +614,8 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
             else
             {
                 //Backstep ANimation
+                player.playerAnimatorManager.PlayTargetActionAnimation("Roll Backward", true, true);
+                player.playerStatsManager.ConsumeStamina(player.playerStatsManager.dodgeStaminaCost);
 
             }
 
@@ -642,6 +666,10 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
     {
         if (player.isAiming)
             return;
+
+        if(player.playerCombatManager.isLockedOn)
+            return;
+
         float currentStamina = player.playerStatsManager.currentStamina;
         float sprintingStaminaCost = player.playerStatsManager.sprintingStaminaCost;
 
@@ -691,7 +719,7 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
         if (!player.isGrounded)
             return;
 
-        player.playerAnimatorManager.PlayTargetActionAnimation("Jump_01", true);
+        player.playerAnimatorManager.PlayTargetActionAnimation("Jump_Start", true);
 
 
         player.playerStatsManager.ConsumeStamina(player.playerStatsManager.jumpStaminaCost);
@@ -700,10 +728,13 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
 
 
         //JumpDirection based on Movement Input
-        jumpDirection =  PlayerCamera.instance.cameraObject.transform.forward* PlayerInputManager.Instance.verticalInput;
-        jumpDirection +=  PlayerCamera.instance.cameraObject.transform.forward* PlayerInputManager.Instance.horizontalInput;
+        jumpDirection = PlayerCamera.instance.transform.forward * PlayerInputManager.Instance.verticalInput +
+    PlayerCamera.instance.transform.right * PlayerInputManager.Instance.horizontalInput;
 
         jumpDirection.y = 0;
+        jumpDirection.Normalize();
+
+       
 
 
         if (jumpDirection!=Vector3.zero)
@@ -720,6 +751,7 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
 
 
 
+
             }
             else if (PlayerInputManager.Instance.moveAmount <= 0.5)
             {
@@ -728,6 +760,8 @@ public class PlayerLocomotionManager : CharacterLocomotionManager
             }
 
         }
+
+        player.isJumping = true;
 
 
 

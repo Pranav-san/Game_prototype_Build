@@ -15,10 +15,9 @@ public class FloatingJoystick : MonoBehaviour, IPointerDownHandler, IDragHandler
     private Vector3 defaultScale;
     private Coroutine scaleCoroutine;
 
-
-
-
     [HideInInspector] public Vector2 inputVector;
+    [HideInInspector] public int joystickFingerId = -1;
+    public RectTransform joyStickrect;
 
     private Vector2 joystickCenter;
     private CanvasGroup canvasGroup;
@@ -26,8 +25,8 @@ public class FloatingJoystick : MonoBehaviour, IPointerDownHandler, IDragHandler
     private void Awake()
     {
         canvasGroup = GetComponent<CanvasGroup>();
-
         defaultScale = joystickBackground.localScale;
+        joyStickrect = GetComponent<RectTransform>();
     }
 
     void Start()
@@ -38,7 +37,7 @@ public class FloatingJoystick : MonoBehaviour, IPointerDownHandler, IDragHandler
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        Debug.Log(" OnPointerDown");
+        joystickFingerId = eventData.pointerId;
 
         if (isFloating)
         {
@@ -72,7 +71,8 @@ public class FloatingJoystick : MonoBehaviour, IPointerDownHandler, IDragHandler
 
     public void OnPointerUp(PointerEventData eventData)
     {
-        Debug.Log(" OnPointerUp");
+        joystickFingerId = -1;
+
         inputVector = Vector2.zero;
         joystickHandle.position = joystickCenter;
 

@@ -26,6 +26,7 @@ public class ResetActionFlag : StateMachineBehaviour
             character.characterAnimatorManager.DisableCanDoCombo();
             character.characterLocomotionManager.isRolling = false;
             character.isAttacking = false;
+            
             character.isInvulnerable = false;
             character.isJumping = false;
             character.canRoll = true;
@@ -45,13 +46,16 @@ public class ResetActionFlag : StateMachineBehaviour
             player.applyRootMotion = false;
             player.isUsingRightHand = false;
             player.isUsingLeftHand = false;
-            player.isAiming = false;
+            //player.isAiming = false;
             player.playerCombatManager.isAimLockedOn = false;
             player.isReloadedWeapon = false;
-            player.animator.SetBool("isAiming",player.isAiming);
-            if (player.playerInventoryManager.currentTwoHandWeapon!=null && player.playerInventoryManager.currentTwoHandWeapon.weaponClass == WeapomClass.Gun || player.playerInventoryManager.currentRightHandWeapon.weaponClass == WeapomClass.Gun)
+            //player.animator.SetBool("isAiming",player.isAiming);
+            if (player.playerInventoryManager.currentTwoHandWeapon!=null && player.playerInventoryManager.currentTwoHandWeapon.weaponClass == WeapomClass.Gun || player.playerInventoryManager.currentRightHandWeapon.weaponClass == WeapomClass.Bow)
             {
                 PlayerCamera.instance.OnIsAimingChanged(false);
+                player.playerCombatManager.isAimLockedOn = false;
+                PlayerUIManager.instance.mobileControls.EnableAimLockOn();
+                PlayerUIManager.instance.mobileControls.ToggleLeftFireButton(player.playerCombatManager.isAimLockedOn);
             }
             
             player.isGrappled = false;

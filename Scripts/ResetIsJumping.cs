@@ -13,6 +13,7 @@ public class ResetIsJumping : StateMachineBehaviour
         }
 
         character.isJumping = false;
+       
         
     }
 

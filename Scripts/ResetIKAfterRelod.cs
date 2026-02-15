@@ -29,6 +29,11 @@ public class ResetIKAfterRelod : StateMachineBehaviour
         if (player!=null && player.isAiming)
         {
             player.isExitingToEmptyAfterReload = true;
+
+            if (player.isAiming)
+            {
+                player.playerAnimatorManager.PlayTargetActionAnimation("Gun_Aim", false, false, true, true);
+            }
             
             
         }

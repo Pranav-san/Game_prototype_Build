@@ -33,6 +33,8 @@ public class AICharacterAttackAction : ScriptableObject
 
         //If Ai character Attack is Purely Animation based, & not Equipment/Weapon Based, If so use PlayTargetActionAnimation()
         aiCharacter.characterAnimatorManager.PlayTargetActionAnimation(attackAnimation, true,true);
+        aiCharacter.isAttacking = true;
+        
 
 
     }

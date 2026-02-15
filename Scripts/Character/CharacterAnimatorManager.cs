@@ -102,47 +102,46 @@ public class CharacterAnimatorManager : MonoBehaviour
         float snappedHorizontalAmount;
         float snappedVerticalAmount;
 
-        if(character!=null)
+        if(character==null)
+            return;
+
+        if (isAiming)
         {
-            if (isAiming)
+            if (horizontalMovement > 0.0f &&  horizontalMovement<=1 && isAiming)
             {
-                if (horizontalMovement > 0.0f &&  horizontalMovement<=1 && isAiming)
-                {
-                    snappedHorizontalAmount = 0.5f;
-                }
-                else if (horizontalMovement<0.0f &&  horizontalMovement>=-1 &&isAiming)
-                {
-                    snappedHorizontalAmount = -0.5f;
-
-                }
-                else
-                {
-                    snappedHorizontalAmount = 0f;
-                }
-                if (verticalMovement > 0.0f && verticalMovement<=1 && isAiming)
-                {
-                    snappedVerticalAmount = 0.5f;
-                }
-                else if (verticalMovement<0.0f &&  verticalMovement>=-1 && isAiming)
-                {
-                    snappedVerticalAmount = -0.5f;
-
-                }
-                else
-                {
-                    snappedVerticalAmount =0f;
-                }
-
-                character.animator.SetFloat(horizontal, snappedHorizontalAmount, 0.2f, Time.deltaTime);
-                character.animator.SetFloat(vertical, snappedVerticalAmount, 0.2f, Time.deltaTime);
+                snappedHorizontalAmount = 0.5f;
+            }
+            else if (horizontalMovement<0.0f &&  horizontalMovement>=-1 &&isAiming)
+            {
+                snappedHorizontalAmount = -0.5f;
 
             }
+            else
+            {
+                snappedHorizontalAmount = 0f;
+            }
+            if (verticalMovement > 0.0f && verticalMovement<=1 && isAiming)
+            {
+                snappedVerticalAmount = 0.5f;
+            }
+            else if (verticalMovement<0.0f &&  verticalMovement>=-1 && isAiming)
+            {
+                snappedVerticalAmount = -0.5f;
+
+            }
+            else
+            {
+                snappedVerticalAmount =0f;
+            }
+
+            character.animator.SetFloat(horizontal, snappedHorizontalAmount, 0.2f, Time.deltaTime);
+            character.animator.SetFloat(vertical, snappedVerticalAmount, 0.2f, Time.deltaTime);
 
         }
 
-        
-       
-        
+
+
+
 
         if (!isAiming && !PlayerCamera.instance.player.playerCombatManager.isLockedOn)
         {

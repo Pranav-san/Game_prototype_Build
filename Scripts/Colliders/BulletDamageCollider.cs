@@ -2,8 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-
-public class RangedProjectileDamageCollider : DamageCollider
+public class BulletDamageCollider : DamageCollider
 {
     [Header("Marksman")]
     public CharacterManager characterShootingProjectile;
@@ -22,6 +21,14 @@ public class RangedProjectileDamageCollider : DamageCollider
         capsuleCollider = GetComponent<CapsuleCollider>();
     }
 
+    //private void FixedUpdate()
+    //{
+    //    if (rigidbody.angularVelocity != Vector3.zero)
+    //    {
+    //        rigidbody.rotation = Quaternion.LookRotation(rigidbody.angularVelocity);
+    //    }
+    //}
+
     private void OnCollisionEnter(Collision collision)
     {
 
@@ -29,7 +36,7 @@ public class RangedProjectileDamageCollider : DamageCollider
 
         WorldSoundFXManager.instance.AlertNearByCharactersToSound(transform.position, 5);
 
-        CharacterManager potentialTarget = collision.transform.GetComponent<CharacterManager>();
+        CharacterManager potentialTarget = collision.transform.GetComponentInParent<CharacterManager>();
 
         if (characterShootingProjectile == null)
             return;
@@ -37,16 +44,11 @@ public class RangedProjectileDamageCollider : DamageCollider
         if (potentialTarget == null)
             return;
 
-       
-
-
         if (WorldUtilityManager.Instance.CanIDamageThisTarget(characterShootingProjectile.characterGroup, potentialTarget.characterGroup))
         {
             DamageTarget(potentialTarget);
 
         }
-
-        
 
         //Destroy Game Object 
         Destroy(gameObject);
@@ -76,7 +78,7 @@ public class RangedProjectileDamageCollider : DamageCollider
             //Disable Colliders and Rigidbody
             rigidbody.isKinematic = true;
             capsuleCollider.enabled = false;
-            
+
             //Destroy Damage Collider and Projectile After A Time
             Destroy(GetComponent<RangedProjectileDamageCollider>());
             Destroy(gameObject, 7);

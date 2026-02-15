@@ -19,15 +19,18 @@ public class TitleScreenManager : MonoBehaviour
     public float TargetFrameRate = 60.0f;
     float currentFrameTime;
 
-   
-
-
-
     [Header("Menu objects")]
     [SerializeField] GameObject titleScreenMainMenu;
     [SerializeField] GameObject titleScreenLoadMenu;
     [SerializeField] GameObject SettingsMenu;
     [SerializeField] GameObject titleScreenCharacterCreationMenu;
+
+    [Header("Settings Menu Objects")]
+    [SerializeField] GameObject gameSettings;
+    [SerializeField] GameObject cameraSettings;
+    [SerializeField] GameObject soundSettings;
+    [SerializeField] GameObject graphicsSettings;
+
 
 
     [Header("Buttons")]
@@ -75,6 +78,18 @@ public class TitleScreenManager : MonoBehaviour
     [Header("Classes")]
     public CharacterClass[] startingClasses;
     [SerializeField] int currentSelectedClassID = -1;
+
+    [Header("Settings")]
+    [SerializeField] Color defaultSettingMenuTextColor;
+    [SerializeField] Color selectedSettingMenuTextColor;
+    [SerializeField] TextMeshProUGUI gameSettingsButtonText;
+    [SerializeField] TextMeshProUGUI cameraSettingsButtonText;
+    [SerializeField] TextMeshProUGUI soundSettingsButtonText;
+    [SerializeField] TextMeshProUGUI graphicsSettingsButtonText;
+
+
+
+    
    
 
     private void OnEnable()
@@ -97,8 +112,9 @@ public class TitleScreenManager : MonoBehaviour
         }
 
         //WorldSoundFXManager.instance.PlayTitleScreenMusic();
+       
 
-        
+
 
 
 
@@ -148,8 +164,6 @@ public class TitleScreenManager : MonoBehaviour
         if (WorldSaveGameManager.instance.HasFreeCharacterSlot())
         {
             OpenCharacterCreationMenu();
-            
-
 
         }
         else
@@ -184,11 +198,12 @@ public class TitleScreenManager : MonoBehaviour
 
 
         CloseCharacterCreationMenu();
+        
 
 
 
-      
-       
+
+
 
 
 
@@ -198,7 +213,6 @@ public class TitleScreenManager : MonoBehaviour
 
         }
 
-        WorldSoundFXManager.instance.StopTitleScreenMusic();
 
 
 
@@ -206,6 +220,32 @@ public class TitleScreenManager : MonoBehaviour
 
 
 
+    }
+
+    public void ContinueGame()
+    {
+        if (!PlayerPrefs.HasKey("LastUsedSlot"))
+        {
+            DisplayNoFreeCharacterSlots();
+            return;
+        }
+
+        CharacterSlot lastSlot = (CharacterSlot)PlayerPrefs.GetInt("LastUsedSlot");
+
+        WorldSaveGameManager.instance.currentCharacterSlotBeingUsed = lastSlot;
+
+        // Check if file actually exists
+        SaveFileDataWriter writer = new SaveFileDataWriter();
+        writer.saveDataDirectoryPath = Application.persistentDataPath;
+        writer.saveFileName = WorldSaveGameManager.instance.DecideCharacterFileNamebasedOnCharacterSlotBeingUsed(lastSlot);
+
+        if (!writer.CheckToSeeIfFileExists())
+        {
+            DisplayNoFreeCharacterSlots();
+            return;
+        }
+
+        WorldSaveGameManager.instance.LoadGame();
 
     }
     public void QuitGame()
@@ -348,11 +388,6 @@ public class TitleScreenManager : MonoBehaviour
     {
         //Close Main Menu
         titleScreenMainMenu.SetActive(false);
-        
-
-       
-
-
 
         //Open Load Menu
         titleScreenLoadMenu.SetActive(true);
@@ -369,40 +404,108 @@ public class TitleScreenManager : MonoBehaviour
         //Close Load Menu
         titleScreenMainMenu.SetActive(true);
 
-        
-
-        mainMenuNewGameButton.Select();
-
         currentSelectedCharacterSlot = CharacterSlot.NO_SLOT;
 
 
     }
 
+
+
+    // Game Settings
+
     public void OpenSettingsMenu()
     {
-        //Close Main Menu
-        titleScreenMainMenu.SetActive(false);
+       
+        PlayerUIManager.instance.settingsManager.OpenMenu();
 
-        //Open Load Menu
-        SettingsMenu.SetActive(true);
 
-        
 
     }
     public void CloseSettingsMenu()
     {
-        //Open Main Menu
-        SettingsMenu.SetActive(false);
 
-        //Close Load Menu
-        titleScreenMainMenu.SetActive(true);
-
-
-
-        mainMenuLoadGameButton.Select();
-
+        PlayerUIManager.instance.settingsManager.CloseMenu();
+        
+        
 
     }
+
+    public void OpenGameSettingsMenu()
+    {
+        gameSettings.SetActive(true);
+        WorldSoundFXManager.instance.PlaySettingCategoryClickSFX();
+
+        gameSettingsButtonText.color = selectedSettingMenuTextColor;
+        cameraSettingsButtonText.color = defaultSettingMenuTextColor;
+        soundSettingsButtonText.color = defaultSettingMenuTextColor;
+        graphicsSettingsButtonText.color = defaultSettingMenuTextColor;
+    }
+
+    public void CloseGameSettingsMenu()
+    {
+        gameSettings.SetActive(false);
+    }
+
+    public void OpenCameraSettingsMenu()
+    {
+        cameraSettings.SetActive(true);
+        WorldSoundFXManager.instance.PlaySettingCategoryClickSFX();
+
+        gameSettingsButtonText.color = defaultSettingMenuTextColor;
+        cameraSettingsButtonText.color = selectedSettingMenuTextColor;
+        soundSettingsButtonText.color = defaultSettingMenuTextColor;
+        graphicsSettingsButtonText.color = defaultSettingMenuTextColor;
+    }
+
+    public void CloseCameraSettingsMenu()
+    {
+        cameraSettings.SetActive(false);
+    }
+
+    public void OpenSoundSettingsMenu()
+    {
+        soundSettings.SetActive(true);
+        WorldSoundFXManager.instance.PlaySettingCategoryClickSFX();
+
+        gameSettingsButtonText.color = defaultSettingMenuTextColor;
+        cameraSettingsButtonText.color = defaultSettingMenuTextColor;
+        soundSettingsButtonText.color = selectedSettingMenuTextColor;
+        graphicsSettingsButtonText.color = defaultSettingMenuTextColor;
+    }
+
+    public void CloseSoundSettingsMenu()
+    {
+        soundSettings.SetActive(false);
+    }
+
+    public void OpenGraphicsSettingsMenu()
+    {
+        graphicsSettings.SetActive(true);
+        WorldSoundFXManager.instance.PlaySettingCategoryClickSFX();
+
+        gameSettingsButtonText.color = defaultSettingMenuTextColor;
+        cameraSettingsButtonText.color = defaultSettingMenuTextColor;
+        soundSettingsButtonText.color = defaultSettingMenuTextColor;
+        graphicsSettingsButtonText.color = selectedSettingMenuTextColor;
+    }
+
+    public void CloseGraphicsSettingsMenu()
+    {
+        graphicsSettings.SetActive(false);
+    }
+
+    public void CloseAllSettingsMenu()
+    {
+        CloseGameSettingsMenu();
+        CloseCameraSettingsMenu();
+        CloseSoundSettingsMenu();
+        CloseGraphicsSettingsMenu();
+
+    }
+
+
+
+
     public void DisplayNoFreeCharacterSlots()
     {
         noCharacterSlotPopUp.SetActive(true);

@@ -123,6 +123,14 @@ public class AiUndeadCombatManager : AICharacterCombatManager
 
     }
 
+    protected override void DisableAllDamageColliders()
+    {
+        CloseRightHandDamageCollider();
+        CloseLeftHandDamageCollider();
+        //CloseGrappleColliders();
+        //CloseExplosionleColliders();
+    }
+
 
 
 

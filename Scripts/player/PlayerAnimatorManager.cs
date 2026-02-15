@@ -15,6 +15,7 @@ public class PlayerAnimatorManager : CharacterAnimatorManager
     [Header("Aim Constraints")]
     public MultiAimConstraint spine_01;
     public MultiAimConstraint spine_02;
+    public MultiAimConstraint spine_03;
     public MultiAimConstraint head;
     public MultiAimConstraint rightHand;
     public MultiAimConstraint lefttHand;
@@ -99,9 +100,26 @@ public class PlayerAnimatorManager : CharacterAnimatorManager
 
     public void AssignHandIK(RightHandIKTarget rightHandIKTarget, LeftHandIKTarget leftHandIKTarget)
     {
-        rightHandIk.data.target = rightHandIKTarget.transform;
-        lefttHandIk.data.target = leftHandIKTarget.transform;
-        rig.Build();
+        rig.enabled = false;
+        if(rightHandIKTarget != null && leftHandIKTarget!=null)
+        {
+            rightHandIk.data.target = rightHandIKTarget.transform;
+            lefttHandIk.data.target = leftHandIKTarget.transform;
+
+            rig.enabled = true;
+            rig.Build();
+
+        }
+        else
+        {
+            rightHandIk.data.target =null;
+            lefttHandIk.data.target = null;
+
+            rig.enabled = true;
+            rig.Build();
+
+        }
+       
     }
 
     public void EnableDisableIK(float rightHandIKWeight, float leftHandIKWeight)
@@ -112,15 +130,25 @@ public class PlayerAnimatorManager : CharacterAnimatorManager
        
     }
 
+    public void DisableIK()
+    {
+        rig.enabled =false;
+        rightHandIk.data.target =null;
+        lefttHandIk.data.target=null;
+
+        rig.Clear();
+    }
+
    
 
     public void UpdateAimedConstraints () 
     {
         if (player.isAiming)
         {
-            spine_01.weight = 1f;
-            spine_02.weight = 1f;
-            head.weight = 0.7f;
+            spine_01.weight = 0.5f;
+            spine_02.weight = 0.75f;
+            spine_03.weight = 1f;
+            head.weight = 1f;
             rightHand.weight= 0.9f;
             
 
@@ -131,9 +159,38 @@ public class PlayerAnimatorManager : CharacterAnimatorManager
 
             spine_01.weight = 0f;
             spine_02.weight = 0f;
+            spine_03.weight = 0f;
             head.weight = 0;
             rightHand.weight= 0f;
            
+
+        }
+
+    }
+
+
+    public void UpdateAimedConstraintsForBow()
+    {
+        if (player.isAiming)
+        {
+            spine_01.weight = 1f;
+            spine_02.weight = 1f;
+            head.weight = 0f;
+            rightHand.weight= 0f;
+            lefttHand.weight= 0f;
+
+
+
+        }
+        else
+        {
+
+            spine_01.weight = 0f;
+            spine_02.weight = 0f;
+            head.weight = 0;
+            rightHand.weight= 0f;
+            lefttHand.weight= 0f;
+
 
         }
 

@@ -13,6 +13,7 @@ public class CharacterLocomotionManager : MonoBehaviour
 
     public float gravityForce = -5.5f;
     [SerializeField] float groundCheckSphereRadius = 1;
+    [SerializeField] float notGroundCheckSphereRadius = 0.1f;
     [SerializeField] protected LayerMask groundLayer;
     [SerializeField] public Vector3 yVelocity;
     [SerializeField] protected float groundedYVelocity=-20;//force at which character is sticking to the GROUND
@@ -114,7 +115,8 @@ public class CharacterLocomotionManager : MonoBehaviour
         else
         {
             // DEPENDING ON YOUR CHARACTER SETUP, SOMETIMES MAKING THE GROUND CHECK SPHERE RADIUS DIFFERENT WHILST NOT GROUNDED HAS BENEFITS
-            character.isGrounded = Physics.CheckSphere(character.transform.position, groundCheckSphereRadius, groundLayer, QueryTriggerInteraction.Ignore);
+            character.isGrounded = Physics.CheckSphere(character.transform.position, notGroundCheckSphereRadius, groundLayer, QueryTriggerInteraction.Ignore);
+
 
             if(yVelocity.y > 0 )
             {

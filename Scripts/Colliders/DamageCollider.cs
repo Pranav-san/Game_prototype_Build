@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.TextCore.Text;
 
 public class DamageCollider : MonoBehaviour
 {
@@ -56,14 +57,15 @@ public class DamageCollider : MonoBehaviour
         CheckForBlock(damageTarget);
         DamageTarget(damageTarget);
 
-
-
     }
 
     protected virtual void CheckForBlock(CharacterManager damageTarget)
     {
+        if (damageTarget==null)
+            return;
+
         //If character Has already been damaged, do not proceed 
-        if(charactersDamaged.Contains(damageTarget))
+        if (charactersDamaged.Contains(damageTarget))
             return;
 
        
@@ -116,9 +118,27 @@ public class DamageCollider : MonoBehaviour
         damageEffect.contactPoint = contactPoint;
         damageEffect.poiseDamage = poiseDamage;
 
+
+
         damageTarget.characterEffectsManager.ProcessInstantEffect(damageEffect);
 
+        
 
+
+
+    }
+
+
+    public void TriggerAutoLockON(CharacterManager character)
+    {
+        //Auto Lock-On
+        if (character is AICharacterManager && !character.characterStatsManager.isDead)
+        {
+            if (PlayerCamera.instance.autoLockOn && !PlayerCamera.instance.player.playerCombatManager.isLockedOn)
+            {
+                PlayerInputManager.Instance.LockOn_Input = true;
+            }
+        }
 
     }
 

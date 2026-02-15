@@ -53,12 +53,17 @@ public class CharacterManager : MonoBehaviour
 
     public bool isChargingAttack = false;
     public bool isBlocking = false;
+    public bool isBlockingWithShield = false;
     public bool isAttacking = false;
     public bool isInvulnerable = false;
     public bool isPerformingCriticalAttack =  false;
 
 
     public bool isGrappled = false;
+
+    public bool hasAcceptedHit;
+
+
 
     [Header("Projectile Flags")]
     public bool hasArrowNotched = false;
@@ -102,13 +107,14 @@ public class CharacterManager : MonoBehaviour
 
     }
 
+
     public virtual void OnIsBlocking( bool Status)
     {
         animator.SetBool("isBlocking", isBlocking);
+        animator.SetBool("IsBlockingWithShied", isBlockingWithShield);
     }
     protected virtual void LateUpdate()
     {
-        
 
     }
 

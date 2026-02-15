@@ -32,7 +32,8 @@ public class UI_EquipmentInventorySlot : MonoBehaviour
     {
         highlightedItemIcon.enabled = true;
         equipButton.SetActive(true);
-        
+        WorldSoundFXManager.instance.PlayInventorySlotClickSFX();
+
     }
 
     public void DeSelectSlot()
@@ -40,6 +41,13 @@ public class UI_EquipmentInventorySlot : MonoBehaviour
         highlightedItemIcon.enabled = false;
         equipButton.SetActive(false);
         
+    }
+
+    public void SelectSlotTrigger()
+    {
+        highlightedItemIcon.enabled = true;
+        equipButton.SetActive(true);
+
     }
 
     public void EquipItem()
@@ -96,6 +104,7 @@ public class UI_EquipmentInventorySlot : MonoBehaviour
                     player.playerInventoryManager.currentRightHandWeaponID = currentItem.itemID;
                     player.playerInventoryManager.OnCurrentRightHandWeaponIDChange(1, player.playerInventoryManager.currentRightHandWeaponID);
                 }
+
                 //Refresh Equipment Window 
                 PlayerUIManager.instance.playerUIEquipmentManager.RefreshMenu();
                 break;
@@ -176,6 +185,17 @@ public class UI_EquipmentInventorySlot : MonoBehaviour
                 break;
 
             case EquipmentType.TwoHandWeapon:
+                
+                //Disable Aiming if player is aiming
+                if (player.isAiming)
+                {
+                    player.isAiming = false;
+                    player.animator.SetBool("isAiming", player.isAiming);
+                    PlayerCamera.instance.OnIsAimingChanged(player.isAiming);
+                }
+
+                player.playerAnimatorManager.EnableDisableIK(0, 0);
+
 
                 //If our current weapon slot is not unArmed item, Add to inventory
                 equipedItem = player.playerInventoryManager.weaponsInTwoHandSlot[0];
@@ -190,12 +210,18 @@ public class UI_EquipmentInventorySlot : MonoBehaviour
                 //Then Remove the New Weapon From our inventory
                 player.playerInventoryManager.RemoveItemToInventory(currentItem);
 
-                //Re-Equip Weapon If we holding the CurrentWeapon in this slott
+                //Re-Equip Weapon If we holding the CurrentWeapon in this slot
                 if (player.playerInventoryManager.twoHandWeaponIndex ==0 && player.playerEquipmentManager.isTwoHandingWeapon)
                 {
-                    player.playerInventoryManager.currentLeftHandWeaponID = currentItem.itemID;
-                    player.playerInventoryManager.OnCurrentTwoHandWeaponIDChange(0, player.playerInventoryManager.currentTwoHandWeaponID);
+                    player.playerInventoryManager.currentTwoHandWeaponID = currentItem.itemID;
+                    //player.playerInventoryManager.OnCurrentTwoHandWeaponIDChange(0, player.playerInventoryManager.currentTwoHandWeaponID);
                 }
+                if (player.playerEquipmentManager.isTwoHandingWeapon)
+                {
+                    player.ReloadTHWeapons(player.playerEquipmentManager);
+                }
+
+
                 //Refresh Equipment Window 
                 PlayerUIManager.instance.playerUIEquipmentManager.RefreshMenu();
                 break;

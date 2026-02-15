@@ -28,11 +28,13 @@ public class PlayerUIHUDManager : MonoBehaviour
     [SerializeField] Image runeIcon;
 
     [Header("Quick Slots")]
-    
     [SerializeField] Image rightWeaponQuickSlotIcon;
     [SerializeField] Image leftWeaponQuickSlotIcon;
     [SerializeField] Image quickslotItemQuickSlotIcon;
     [SerializeField] TextMeshProUGUI quickslotItemCount;
+
+    [Header("CrossHair")]
+    [SerializeField] Image crossHair;
 
 
     
@@ -169,6 +171,23 @@ public class PlayerUIHUDManager : MonoBehaviour
 
             canvasGroup[0].alpha= 0f;
         }
+
+    }
+
+
+    public void ToggleCrossHair(bool status)
+    {
+
+
+        if (status)
+        {
+            crossHair.enabled = true;
+        }
+        else
+        {
+            crossHair.enabled= false;
+        }
+
 
     }
 

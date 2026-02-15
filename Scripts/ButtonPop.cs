@@ -1,10 +1,12 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class ButtonPop : MonoBehaviour, IPointerDownHandler,  IPointerUpHandler
 {
     public float popScale = 1.2f;
     public float scaleSpeed = 10f;
+    public Button ignoreClickBTN;
 
     private Vector3 originalScale;
     private Vector3 targetScale;
@@ -24,12 +26,23 @@ public class ButtonPop : MonoBehaviour, IPointerDownHandler,  IPointerUpHandler
 
     public void OnPointerDown(PointerEventData eventData)
     {
+        if (ignoreClickBTN != null && eventData.pointerEnter == ignoreClickBTN.gameObject)
+        {
+            return;
+        }
+            
         isHeld = true;
         targetScale = originalScale * popScale;
     }
 
     public void OnPointerUp(PointerEventData eventData)
     {
+        if (ignoreClickBTN != null && eventData.pointerEnter == ignoreClickBTN.gameObject)
+        {
+
+            return;
+        }
+
         isHeld = false;
         targetScale = originalScale;
     }

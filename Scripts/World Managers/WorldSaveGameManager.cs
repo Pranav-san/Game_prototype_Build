@@ -32,8 +32,10 @@ public class WorldSaveGameManager : MonoBehaviour
 
     [Header("Current Character Data")]
     public CharacterSlot currentCharacterSlotBeingUsed;
+    public CharacterSlot lastUsedCharacterSlot;
     public CharacterSaveData currentCharacterData;
     private string saveFileName;
+    
 
     [Header("Character Slots")]
     public CharacterSaveData characterSlot01;
@@ -91,6 +93,9 @@ public class WorldSaveGameManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
         urpAsset = (UniversalRenderPipelineAsset)GraphicsSettings.defaultRenderPipeline;
         LoadAllCharacterProfiles();
+
+
+        
     }
 
     public bool HasFreeCharacterSlot()
@@ -200,7 +205,9 @@ public class WorldSaveGameManager : MonoBehaviour
             currentCharacterData.currentStamina = player.characterStatsManager.maxStamina; // Initialize to max value
             currentCharacterData.currentHealth = player.characterStatsManager.maxHealth;
             LoadWorldScene();
-            
+            SetLastUsedSlot(currentCharacterSlotBeingUsed);
+
+
             return;
         }
 
@@ -217,7 +224,8 @@ public class WorldSaveGameManager : MonoBehaviour
             currentCharacterData.currentStamina = player.characterStatsManager.maxStamina; // Initialize to max value
             currentCharacterData.currentHealth = player.characterStatsManager.maxHealth;
             LoadWorldScene();
-           
+            SetLastUsedSlot(currentCharacterSlotBeingUsed);
+
 
             return;
         }
@@ -232,7 +240,8 @@ public class WorldSaveGameManager : MonoBehaviour
             currentCharacterData.currentStamina = player.characterStatsManager.maxStamina; // Initialize to max value
             currentCharacterData.currentHealth = player.characterStatsManager.maxHealth;
             LoadWorldScene();
-           
+            SetLastUsedSlot(currentCharacterSlotBeingUsed);
+
             return;
         }
        
@@ -245,7 +254,8 @@ public class WorldSaveGameManager : MonoBehaviour
             currentCharacterData.currentStamina = player.characterStatsManager.maxStamina; // Initialize to max value
             currentCharacterData.currentHealth = player.characterStatsManager.maxHealth;
             LoadWorldScene();
-            
+            SetLastUsedSlot(currentCharacterSlotBeingUsed);
+
             return;
         }
         saveFileDataWriter.saveFileName = DecideCharacterFileNamebasedOnCharacterSlotBeingUsed(CharacterSlot.CharacterSlot_05);
@@ -253,14 +263,17 @@ public class WorldSaveGameManager : MonoBehaviour
         if (!saveFileDataWriter.CheckToSeeIfFileExists())
         {
             currentCharacterSlotBeingUsed = CharacterSlot.CharacterSlot_05;
+            
             currentCharacterData = new CharacterSaveData();
             currentCharacterData.currentStamina = player.characterStatsManager.maxStamina; // Initialize to max value
             currentCharacterData.currentHealth = player.characterStatsManager.maxHealth;
             LoadWorldScene();
-           
+            SetLastUsedSlot(currentCharacterSlotBeingUsed);
+
             return;
         }
         TitleScreenManager.Instance.DisplayNoFreeCharacterSlots();
+        
 
 
 
@@ -274,6 +287,7 @@ public class WorldSaveGameManager : MonoBehaviour
         saveFileDataWriter.saveDataDirectoryPath = Application.persistentDataPath;
         saveFileDataWriter.saveFileName = saveFileName;
         currentCharacterData = saveFileDataWriter.LoadSaveFile();
+        SetLastUsedSlot(currentCharacterSlotBeingUsed);
 
         LoadWorldScene();
 
@@ -358,15 +372,28 @@ public class WorldSaveGameManager : MonoBehaviour
         loadOperation.completed += (AsyncOperation op) =>
         {
 
+            player.animator.Rebind();
+            player.animator.Update(0f);
+
             if (!saveFileDataWriter.CheckToSeeIfFileExists())
             {
-                player.transform.position = player.defaultPlayerposition;
+                Vector3 position = player.newGameStartPlayerPosition;
+                player.transform.position = position;
+
+                player.playerInventoryManager.currentRightHandWeapon =  player.playerInventoryManager.weaponsInRightHandSlot[0];
+                player.playerInventoryManager.rightHandWeaponIndex = 0;
+                player.playerEquipmentManager.LoadRightWeapon();
+                
 
             }
             else
             {
                 StartCoroutine(ApplyLoadedData());
+                
             }
+
+            PlayerCamera.instance.ResetCamera();
+            PlayerCamera.instance.EnableCameraInput();
 
             
         };
@@ -383,7 +410,9 @@ public class WorldSaveGameManager : MonoBehaviour
         if (currentCharacterData != null && player != null)
         {
             player.LoadGameDataToCharacterData(ref currentCharacterData);
-            
+
+
+
             Debug.Log("Loaded player data applied successfully!");
         }
         else
@@ -396,8 +425,22 @@ public class WorldSaveGameManager : MonoBehaviour
 
     }
 
+
+    public void SetLastUsedSlot(CharacterSlot slot)
+    {
+        lastUsedCharacterSlot = slot;
+        PlayerPrefs.SetInt("LastUsedSlot", (int)slot);
+        PlayerPrefs.Save();
+    }
+
+    
+
+
+
     public void DisableMobileControlsOnSceneChange()
     {
+        
+
         for (int i = 0; i <mobileControls.Length; i++)
         {
             mobileControls[i].alpha=0;
@@ -419,6 +462,7 @@ public class WorldSaveGameManager : MonoBehaviour
 
 
         }
+        
 
 
     }

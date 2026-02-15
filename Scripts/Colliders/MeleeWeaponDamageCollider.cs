@@ -15,6 +15,11 @@ public class MeleeWeaponDamageCollider : DamageCollider
     public float Heavy_Attack_01_Modifier;
     public float Charged_Attack__Modifier;
 
+    [Header("Recoil")]
+    [SerializeField] LayerMask environmentLayers;
+    public bool willRecoil;
+    private bool hasHitSomething;
+
     protected override void Awake()
     {
         base.Awake();
@@ -25,6 +30,10 @@ public class MeleeWeaponDamageCollider : DamageCollider
 
     protected override void  OnTriggerEnter(Collider other)
     {
+        // Ignore self
+        if (other.transform.root == characterCausingDamage.transform)
+            return;
+
         CharacterManager damageTarget = other.GetComponentInParent<CharacterManager>();
 
         if (damageTarget != null)
@@ -35,6 +44,7 @@ public class MeleeWeaponDamageCollider : DamageCollider
             contactPoint = other.GetComponent<Collider>().ClosestPointOnBounds(transform.position);
         }
         CheckForBlock(damageTarget);
+
         DamageTarget(damageTarget);
 
     }
@@ -56,7 +66,9 @@ public class MeleeWeaponDamageCollider : DamageCollider
         damageEffect.poiseDamage = poiseDamage;
         damageEffect.angleHitFrom = Vector3.SignedAngle(characterCausingDamage.transform.forward, damageTarget.transform.forward, Vector3.up);
 
-        switch(characterCausingDamage.characterCombatManager.currentAttackType)
+        
+
+        switch (characterCausingDamage.characterCombatManager.currentAttackType)
         {
             case AttackType.LightAttack01:
                 ApplyAttackDamageModifiers(light_Attack_01_Modifier, damageEffect);
@@ -71,12 +83,41 @@ public class MeleeWeaponDamageCollider : DamageCollider
                 break;
         }
 
+        
+
+
         damageTarget.characterEffectsManager.ProcessInstantEffect(damageEffect);
+
+        Debug.Log("Attack Type at hit: " + characterCausingDamage.characterCombatManager.currentAttackType);
+        Debug.Log("Physical Base Damage: " + physicalDamage);
+
+
+
+
+        TriggerAutoLockON(damageTarget);
+
+        if (!damageTarget.characterStatsManager.isDead)
+        {
+            if (damageTarget is playerManager)
+            {
+                PlayerCamera.instance.shakeCamera();
+
+            }
+            else
+            {
+                PlayerCamera.instance.shakeCamera();
+
+            }
+
+        }
+
 
     }
 
     protected override void GetBlockingDotValues(CharacterManager damageTarget)
     {
+        if(damageTarget == null)
+            return;
         directionFromAttackToDamageTarget = characterCausingDamage.transform.position - damageTarget.transform.position;
         dotvalueFromAttackToDamageTarget = Vector3.Dot(directionFromAttackToDamageTarget, damageTarget.transform.forward);
     }
@@ -90,6 +131,8 @@ public class MeleeWeaponDamageCollider : DamageCollider
         damage.lightininglDamage *= modifier;
 
     }
+
+
 
 
 

@@ -12,7 +12,15 @@ public class TitleSreenPlayerPreviewRotator : MonoBehaviour
     [Header("Rotation")]
     [SerializeField] private float horizontalInput;
     [SerializeField]private float rotationSpeed;
+    [SerializeField] private TouchField touchFieldPlayerPreview;
+    [SerializeField] private float leftAndRightRotationSpeed;
+    [SerializeField] private float touchSensitivity;
 
+    [Header("Zoom")]
+    [SerializeField] private Transform cameraHolder;
+    [SerializeField] private float minDistance = 1f;
+    [SerializeField] private float maxDistance = 5f;
+    [SerializeField] private float zoomSpeed = 0.5f;
     private void Start()
     {
         transform.position =  WorldSaveGameManager.instance.player.defaultPlayerposition;
@@ -39,14 +47,29 @@ public class TitleSreenPlayerPreviewRotator : MonoBehaviour
     {
         horizontalInput =cameraInput.x;
 
-        lookAngle += (horizontalInput *rotationSpeed)*Time.deltaTime;
-        Vector3 cameraRotation = Vector3.zero;
-        cameraRotation.y = lookAngle;
-        Quaternion targetRotation = Quaternion.Euler(cameraRotation);
-        transform.rotation = targetRotation;
-        
+        if (touchFieldPlayerPreview != null && touchFieldPlayerPreview.SwipeDelta != Vector2.zero)
+        {
+            lookAngle += (touchFieldPlayerPreview.SwipeDelta.x * touchSensitivity * leftAndRightRotationSpeed / Screen.width) * Time.deltaTime;
+            Vector3 cameraRotation = Vector3.zero;
+            cameraRotation.y = lookAngle;
+            Quaternion targetRotation = Quaternion.Euler(cameraRotation);
+            transform.rotation = targetRotation;
+
+        }
+        else
+        {
+            lookAngle += (horizontalInput *rotationSpeed)*Time.deltaTime;
+            Vector3 cameraRotation = Vector3.zero;
+            cameraRotation.y = lookAngle;
+            Quaternion targetRotation = Quaternion.Euler(cameraRotation);
+            transform.rotation = targetRotation;
+
+        }
+
+
+
     }
 
-    
+
 
 }

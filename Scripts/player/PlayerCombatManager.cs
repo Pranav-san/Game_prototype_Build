@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -20,7 +20,7 @@ public class PlayerCombatManager : CharacterCombatManager
     [Header("Projectile")]
     Vector3 projectileAimDirection;
 
-    [Header("Not LockedON Attack Rotation Setting ")]
+    [Header("Not LockedOn Attack Rotation Setting ")]
     [Range(0, 180)] public float angleLimit = 180f;
 
     [Header("Flags")]
@@ -84,7 +84,7 @@ public class PlayerCombatManager : CharacterCombatManager
             return;
         }
 
-        if (!isLockedOn)
+        if (!isLockedOn && !player.isUsingLeftHand)
         {
             TryAutoFaceNearestEnemy(3f, angleLimit);
         }
@@ -376,32 +376,23 @@ public class PlayerCombatManager : CharacterCombatManager
 
     public void ReleaseArrow()
     {
-
         player.hasArrowNotched = false;
+        player.playerCombatManager.isFiringBow = true;
 
         if (player.playerEquipmentManager.notchedArrow != null)
             Destroy(player.playerEquipmentManager.notchedArrow);
 
-
-
-        Animator bowAnimator;
-
-        bowAnimator = player.playerInventoryManager.currentRightHandWeapon.weaponModel.GetComponentInChildren<Animator>();
+        Animator bowAnimator = player.playerInventoryManager.currentRightHandWeapon.weaponModel.GetComponentInChildren<Animator>();
 
         if (bowAnimator == null)
             return;
 
-
-
-
-
-        //Animate The Bow
-        //Play Fire Animation
         bowAnimator.SetBool("isDrawn", false);
         bowAnimator.Play("Bow_Fire");
+
         player.canMove = false;
 
-        //Projectile we are Firing
+        // Get projectile item
         RangedProjectileItem projectileItem = null;
 
         switch (currentProjectileBeingUsed)
@@ -412,241 +403,202 @@ public class PlayerCombatManager : CharacterCombatManager
             case ProjectileSlot.Secondary:
                 projectileItem = player.playerInventoryManager.secondaryProjectile;
                 break;
-            default:
-                break;
         }
 
-        if (projectileItem == null)
+        if (projectileItem == null || projectileItem.currentAmmoAmount <= 0)
             return;
 
-        if (projectileItem.currentAmmoAmount <=0)
-            return;
+        projectileItem.currentAmmoAmount--;
 
-        Transform projectileInstantiationLocation;
-        GameObject projectileGameObject;
-        Rigidbody projectileRigidbody;
-        RangedProjectileDamageCollider projectileDamageCollider;
+        
+        Camera cam = PlayerCamera.instance.cameraObject.GetComponent<Camera>();
 
-        //Subtract Ammo
-        projectileItem.currentAmmoAmount -= 1;
+        Ray cameraRay = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+        RaycastHit hit;
 
-        projectileInstantiationLocation = player.playerCombatManager.LockOnTransform;
-        projectileGameObject = Instantiate(projectileItem.releaseProjectileModel, projectileInstantiationLocation);
-        projectileDamageCollider = projectileGameObject.GetComponent<RangedProjectileDamageCollider>();
-        projectileRigidbody = projectileGameObject.GetComponent<Rigidbody>();
+        Vector3 targetPoint;
+        float maxDistance = 50f;
+        int mask = LayerMask.GetMask("Default", "Damageable Character");
 
-        //Formula To Set Damage
-        projectileDamageCollider.physicalDamage = 20;
-        projectileDamageCollider.characterShootingProjectile = player;
-
-        //Fire Arrow Based On On out of 3 Variations
-
-        //Aiming
-        if (player.isAiming)
-        {
-            // Cast a short ray from camera center
-            Ray ray = new Ray(PlayerCamera.instance.cameraObject.transform.position, PlayerCamera.instance.cameraObject.transform.forward);
-
-            RaycastHit hit;
-
-            //  Reduce raycast distance (1000f is overkill)
-            float rayDistance = 20f;
-
-            //  Use specific layers to avoid unnecessary hits
-            int layerMask = LayerMask.GetMask("Default", "Damageable Character"); // Replace as needed
-
-#if UNITY_EDITOR
-            Debug.DrawRay(ray.origin, ray.direction * rayDistance, Color.green, 20);
-#endif
-
-            if (Physics.Raycast(ray, out hit, rayDistance, layerMask))
-            {
-                projectileAimDirection = hit.point;
-            }
-            else
-            {
-                projectileAimDirection = ray.GetPoint(rayDistance);
-            }
-
-            projectileGameObject.transform.LookAt(projectileAimDirection);
-            projectileGameObject.transform.position += projectileGameObject.transform.forward * 0.2f;
-
-
-        }
+        if (Physics.Raycast(cameraRay, out hit, maxDistance, mask))
+            targetPoint = hit.point;
         else
+            targetPoint = cameraRay.GetPoint(maxDistance);
+
+        
+        Transform spawnTransform = player.playerCombatManager.LockOnTransform;
+
+        GameObject arrow =Instantiate(projectileItem.releaseProjectileModel, spawnTransform.position, Quaternion.identity);
+
+        Rigidbody rb = arrow.GetComponent<Rigidbody>();
+        RangedProjectileDamageCollider damageCollider = arrow.GetComponent<RangedProjectileDamageCollider>();
+
+        if (rb == null || damageCollider == null)
+            return;
+
+        
+        rb.isKinematic = false;
+        rb.useGravity = true;
+        rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
+
+        damageCollider.characterShootingProjectile = player;
+
+        // Ignore self collision BEFORE force
+        Collider[] selfColliders = player.GetComponentsInChildren<Collider>();
+        foreach (var col in selfColliders)
         {
-            //Locked And Not Aiming
-            if (player.playerCombatManager.currentTarget != null)
-            {
-                Quaternion arrowRotation = Quaternion.LookRotation(player.playerCombatManager.currentTarget.characterCombatManager.LockOnTransform.position
-                    - projectileGameObject.transform.position);
-
-                projectileGameObject.transform.rotation = arrowRotation;
-
-
-            }
-            //unlocked And Not Aiming
-            else
-            {
-                Quaternion arrowRotation = Quaternion.LookRotation(player.transform.forward);
-                projectileGameObject.transform.rotation = arrowRotation;
-
-            }
-
+            Physics.IgnoreCollision(damageCollider.GetComponent<Collider>(), col, true);
         }
 
+        // =========================
+        // 4️⃣ PERFECT AIM DIRECTION
+        // =========================
+        Vector3 direction =
+            (targetPoint - spawnTransform.position).normalized;
 
+        arrow.transform.rotation = Quaternion.LookRotation(direction);
 
+        // Small offset to avoid immediate self-hit
+        arrow.transform.position += direction * 0.2f;
 
+        // =========================
+        // 5️⃣ FIRE
+        // =========================
+        rb.AddForce(direction * projectileItem.forwardVelocity, ForceMode.Impulse);
 
-            //Get All Character Damage Collider and Ignore Self
+        arrow.transform.parent = null;
 
-            Collider[] characterColliders = player.GetComponentsInChildren<Collider>();
-            List<Collider> collidersArrowWillIgnore = new List<Collider>();
-
-            foreach (var item in characterColliders)
-                collidersArrowWillIgnore.Add(item);
-
-            foreach (Collider hitBox in collidersArrowWillIgnore)
-                Physics.IgnoreCollision(projectileDamageCollider.damageCollider, hitBox, true);
-
-            projectileRigidbody.AddForce(projectileGameObject.transform.forward* projectileItem.forwardVelocity);
-            projectileGameObject.transform.parent = null;
-
-
-
-
-
-
-
-
-
-
-
+        if (!isAimLockedOn)
+        {
+            StartCoroutine(ExitAimNextFrame());
         }
+        
+
+
+
+
+    }
+
+
+    public void OnBowFireAnimationFinished()
+    {
+       
+        isFiringBow = false;
+
+        if (isAimLockedOn)
+        {
+            PlayerInputManager.Instance.RB_Input = true;
+        }
+        
+    }
+
+
 
     public void FireBullet()
     {
-        if(player.playerInventoryManager.FireBullet)
+        if (!player.playerInventoryManager.FireBullet)
+            return;
+
+        // GET PROJECTILE DATA
+        RangedProjectileItem projectileItem = null;
+
+        switch (currentProjectileBeingUsed)
         {
-            // Projectile we are firing
-            RangedProjectileItem projectileItem = null;
+            case ProjectileSlot.Main:
+                projectileItem = player.playerInventoryManager.mainProjectile;
+                break;
+        }
 
-            switch (currentProjectileBeingUsed)
-            {
-                case ProjectileSlot.Main:
-                    projectileItem = player.playerInventoryManager.mainProjectile;
-                    break;
+        if (projectileItem == null || projectileItem.currentMagazineAmmo <= 0)
+            return;
 
-                default:
-                    break;
+        projectileItem.currentMagazineAmmo--;
 
-            }
-
-            if (projectileItem == null)
-                return;
-
-            if (projectileItem.currentMagazineAmmo <= 0)
-            {
-              
-                return;
-            }
+        AudioClip fireBulletSfx = player.playerInventoryManager.currentRightHandWeapon.fireBulletSound;
 
 
+        // RayCast from center of screen
+        Camera cam = PlayerCamera.instance.cameraObject;
 
-            // Subtract ammo
-            projectileItem.currentMagazineAmmo -= 1;
+        Ray cameraRay = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+        RaycastHit hit;
 
-            // Instantiate projectile
-            Transform projectileInstantiationLocation = player.playerEquipmentManager.projectileInstantiationTransform;
-            GameObject projectileGameObject = Instantiate(projectileItem.releaseProjectileModel, projectileInstantiationLocation.position, projectileInstantiationLocation.rotation);
-            RangedProjectileDamageCollider projectileDamageCollider = projectileGameObject.GetComponent<RangedProjectileDamageCollider>();
-            Rigidbody projectileRigidbody = projectileGameObject.GetComponent<Rigidbody>();
+        Vector3 targetPoint;
+        float maxDistance = 100f;
+        int mask = LayerMask.GetMask("Default", "Damageable Character");
 
-            // Set damage (replace 20 with weapon damage if needed)
-            projectileDamageCollider.physicalDamage = 20;
-            projectileDamageCollider.characterShootingProjectile = player;
+        if (Physics.Raycast(cameraRay, out hit, maxDistance, mask))
+            targetPoint = hit.point;
+        else
+            targetPoint = cameraRay.GetPoint(maxDistance);
 
-            // Aiming logic � same as bow
-            if (player.isAiming)
-            {
-                // Cast a short ray from camera center
-                Ray ray = new Ray(PlayerCamera.instance.cameraObject.transform.position, PlayerCamera.instance.cameraObject.transform.forward);
+        
+        // SPAWN BULLET
+        Transform spawnTransform = player.playerEquipmentManager.projectileInstantiationTransform;
 
-                RaycastHit hit;
+        GameObject bullet = Instantiate(projectileItem.releaseProjectileModel, spawnTransform.position, Quaternion.identity);
 
-                //  Reduce raycast distance (1000f is overkill)
-                float rayDistance = 20f;
+        Rigidbody rb = bullet.GetComponent<Rigidbody>();
+        RangedProjectileDamageCollider damageCollider =
+            bullet.GetComponent<RangedProjectileDamageCollider>();
 
-                //  Use specific layers to avoid unnecessary hits
-                int layerMask = LayerMask.GetMask("Default", "Damageable Character"); // Replace as needed
+        if (rb == null || damageCollider == null)
+        {
+            Destroy(bullet);
+            return;
+        }
 
-#if UNITY_EDITOR
-                Debug.DrawRay(ray.origin, ray.direction * rayDistance, Color.green, 20);
-#endif
+        
+        // PHYSICS SETUP
+        rb.isKinematic = false;
+        rb.useGravity = false;
+        rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
 
-                if (Physics.Raycast(ray, out hit, rayDistance, layerMask))
-                {
-                    projectileAimDirection = hit.point;
-                }
-                else
-                {
-                    projectileAimDirection = ray.GetPoint(rayDistance);
-                }
+        damageCollider.characterShootingProjectile = player;
+        damageCollider.physicalDamage = 20;
 
-                projectileGameObject.transform.LookAt(projectileAimDirection);
-                projectileGameObject.transform.position += projectileGameObject.transform.forward * 0.2f;
-
-
-            }
-            else
-            {
-                //Locked And Not Aiming
-                if (player.playerCombatManager.currentTarget != null)
-                {
-                    Quaternion arrowRotation = Quaternion.LookRotation(player.playerCombatManager.currentTarget.characterCombatManager.LockOnTransform.position
-                        - projectileGameObject.transform.position);
-
-                    projectileGameObject.transform.rotation = arrowRotation;
-
-
-                }
-                //unlocked And Not Aiming
-                else
-                {
-                    Quaternion arrowRotation = Quaternion.LookRotation(player.transform.forward);
-                    projectileGameObject.transform.rotation = arrowRotation;
-
-                }
-            }
-
-            //Play Sfx
-            player.characterSoundFxManager.PlayShotgunSfx();
-
-            // Ignore self colliders
-            Collider[] characterColliders = player.GetComponentsInChildren<Collider>();
-            foreach (var col in characterColliders)
-                Physics.IgnoreCollision(projectileDamageCollider.damageCollider, col, true);
-
-            // Fire projectile
-            projectileRigidbody.AddForce(projectileGameObject.transform.forward * projectileItem.forwardVelocity);
-            projectileGameObject.transform.parent = null;
-
-
+        // Ignore self collision BEFORE velocity
+        Collider[] selfColliders = player.GetComponentsInChildren<Collider>();
+        foreach (var col in selfColliders)
+        {
+            Physics.IgnoreCollision(damageCollider.damageCollider, col, true);
         }
 
 
+        // Set Direction Before Firing
+        Vector3 direction = (targetPoint - spawnTransform.position).normalized;
+
+        bullet.transform.rotation = Quaternion.LookRotation(direction);
+
+        // Prevent immediate self-hit
+        bullet.transform.position += direction * 0.1f;
+
+        bullet.transform.parent = null;
+
+        // 6FIRE (DETERMINISTIC)
+        rb.linearVelocity = direction * projectileItem.forwardVelocity;
+
+
+        // AUDIO / VFX
+        player.playerSoundFxManager.PlaySoundfx(fireBulletSfx);
+    }
 
 
 
 
+    public void ExitBowAimAfterFire()
+    {
+        player.isAiming = false;
+        player.animator.SetBool("isAiming", false);
+        PlayerCamera.instance.OnIsAimingChanged(false);
+    }
 
-
-
-
-
-        // Optional: play muzzle flash / SFX here
-
+    IEnumerator ExitAimNextFrame()
+    {
+        yield return null; // wait one frame
+        ExitBowAimAfterFire();
     }
 
     public void ResetFireBulletFlag()
@@ -674,10 +626,16 @@ public class PlayerCombatManager : CharacterCombatManager
         projectileItem.currentMagazineAmmo += ammoToLoad;
         projectileItem.currentAmmoAmount -= ammoToLoad;
 
-        Debug.Log("Reloaded");
+        //Play Reload SFX
+        AudioClip reloadSfx = player.playerInventoryManager.currentRightHandWeapon.reloadGunSound;
+        if (reloadSfx != null)
+        {
+            player.playerSoundFxManager.PlaySoundfx(reloadSfx);
+        }
+            
 
-        // Optionally trigger reload animation
-       
+
+
 
     }
 
@@ -685,6 +643,7 @@ public class PlayerCombatManager : CharacterCombatManager
     {
         player.playerAnimatorManager.EnableDisableIK(1, 1);
         Debug.Log("IK Enabled After reload");
+       
     }
 
    
@@ -693,6 +652,37 @@ public class PlayerCombatManager : CharacterCombatManager
     {
         if(player.playerInventoryManager.currentQuickSlotItem != null)
         player.playerInventoryManager.currentQuickSlotItem.SuccessfullyUsedItem(player);
+    }
+
+
+    public override void OnWeaponRecoil()
+    {
+        if (!character.isAttacking)
+            return;
+
+        // Cancel attack
+        character.isAttacking = false;
+
+        // Stop combo
+        canComboWithMainHandleWeapon = false;
+        canComboWithOffHandleWeapon = false;
+
+        // Play recoil animation
+        character.characterAnimatorManager.PlayTargetActionAnimationInstantly("AttackRecoil",true, false);
+    }
+
+    public void CheckForWallRecoil(MeleeWeaponItem weapon)
+    {
+        if (weapon == null)
+            return;
+
+        Vector3 origin = character.transform.position + Vector3.up * 1.2f;
+        Vector3 direction = character.transform.forward;
+
+        if (Physics.SphereCast(origin, weapon.wallCheckRadius, direction,out RaycastHit hit, weapon.wallCheckDistance, LayerMask.GetMask("Default")))
+        {
+            OnWeaponRecoil();
+        }
     }
 
     private void OnDrawGizmosSelected()
@@ -712,6 +702,22 @@ public class PlayerCombatManager : CharacterCombatManager
         Gizmos.DrawRay(transform.position, leftRayDirection);
         Gizmos.DrawRay(transform.position, rightRayDirection);
     }
+
+    public void TriggerBowAimEvent()
+    {
+        if (player.isHoldingArrow)
+            return;
+
+        if (!isAimLockedOn)
+            return;
+
+        player.isHoldingArrow = true;
+        player.animator.SetBool("isHoldingArrow", true);
+        
+    }
+
+
+
 
 
 

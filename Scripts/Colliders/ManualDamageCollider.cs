@@ -1,11 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.TextCore.Text;
 
 public class ManualDamageCollider : DamageCollider
 {
 
-    AICharacterManager characterCausingDamage;
+    [SerializeField] AICharacterManager characterCausingDamage;
 
 
     protected override void Awake()
@@ -13,6 +14,8 @@ public class ManualDamageCollider : DamageCollider
         base.Awake();
         damageCollider = GetComponent<Collider>();
         characterCausingDamage = GetComponentInParent<AICharacterManager>();
+
+        
         damageCollider.enabled = false;
 
 
@@ -20,13 +23,22 @@ public class ManualDamageCollider : DamageCollider
 
     protected override void GetBlockingDotValues(CharacterManager damageTarget)
     {
+        if (damageTarget == null)
+            return;
+
         directionFromAttackToDamageTarget =  characterCausingDamage.transform.position - damageTarget.transform.position;
         dotvalueFromAttackToDamageTarget = Vector3.Dot(directionFromAttackToDamageTarget, damageTarget.transform.forward);
     }
     protected override void DamageTarget(CharacterManager damageTarget)
     {
+        if (damageTarget==null)
+            return;
 
-
+        if (characterCausingDamage == null)
+        {
+            Debug.LogError($"{name} ManualDamageCollider has NO AICharacterManager in parents");
+            return;
+        }
 
 
         if (damageTarget == characterCausingDamage)
@@ -35,6 +47,8 @@ public class ManualDamageCollider : DamageCollider
         }
         if (damageTarget.characterGroup == characterCausingDamage.characterGroup)
             return;
+
+        
 
         if (charactersDamaged.Contains(damageTarget))
         {
@@ -51,12 +65,39 @@ public class ManualDamageCollider : DamageCollider
         damageEffect.poiseDamage = poiseDamage;
         damageEffect.angleHitFrom = Vector3.SignedAngle(characterCausingDamage.transform.forward, damageTarget.transform.forward, Vector3.up);
 
+
+
+       
+
+       
+
+
+
         damageTarget.characterEffectsManager.ProcessInstantEffect(damageEffect);
+
+
+
+
+
+        if (!damageTarget.characterStatsManager.isDead)
+        {
+            if (damageTarget is playerManager)
+            {
+                PlayerCamera.instance.shakeCamera();
+
+            }
+            else
+            {
+                PlayerCamera.instance.shakeCamera();
+
+            }
+
+        }
 
     }
 
-    
 
-    
+
+
 
 }

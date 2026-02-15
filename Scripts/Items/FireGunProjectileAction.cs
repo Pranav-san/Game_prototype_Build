@@ -11,6 +11,10 @@ public class FireGunProjectileAction : WeaponItemBasedAction
         if (!playerPerformingAction.isGrounded)
             return;
 
+        if(!playerPerformingAction.isAiming)
+            return;
+
+
         RangedProjectileItem projectileItem = null;
 
         //Define Which Projectile We are Using
@@ -42,9 +46,13 @@ public class FireGunProjectileAction : WeaponItemBasedAction
         if (projectileItem.currentMagazineAmmo <=0)
         {
             //Play Out of Ammo Animation
+
+
             if (projectileItem.currentAmmoAmount>0)
             {
                 playerPerformingAction.playerAnimatorManager.EnableDisableIK(0, 0);
+                playerPerformingAction.playerInventoryManager.FireBullet = false;
+                playerPerformingAction.animator.SetBool("FireBullet", playerPerformingAction.playerInventoryManager.FireBullet);
                 playerPerformingAction.playerAnimatorManager.PlayTargetActionAnimationInstantly("ReloadWeapon", true);
                
                 
@@ -62,10 +70,10 @@ public class FireGunProjectileAction : WeaponItemBasedAction
         playerPerformingAction.playerInventoryManager.FireBullet = true;
         playerPerformingAction.animator.SetBool("FireBullet", playerPerformingAction.playerInventoryManager.FireBullet);
 
-            
 
 
-        
+
+
 
 
     }

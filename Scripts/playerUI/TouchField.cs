@@ -28,6 +28,25 @@ public class TouchField : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 
     void Update()
     {
+
+        if (ETouch.Touch.activeTouches.Count == 2)
+        {
+            var t0 = ETouch.Touch.activeTouches[0];
+            var t1 = ETouch.Touch.activeTouches[1];
+
+            float currentDistance = Vector2.Distance(t0.screenPosition, t1.screenPosition);
+            float previousDistance = Vector2.Distance(
+                t0.screenPosition - t0.delta,
+                t1.screenPosition - t1.delta
+            );
+
+            PinchDelta = currentDistance - previousDistance; // positive = zoom out, negative = zoom in
+        }
+        else
+        {
+            PinchDelta = 0f;
+
+        }
         if (!pressed || trackedFinger == null)
         {
             SwipeDelta = Vector2.zero;
@@ -45,23 +64,9 @@ public class TouchField : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
             }
         }
 
-        if (ETouch.Touch.activeTouches.Count == 2)
-        {
-            var t0 = ETouch.Touch.activeTouches[0];
-            var t1 = ETouch.Touch.activeTouches[1];
-
-            float currentDistance = Vector2.Distance(t0.screenPosition, t1.screenPosition);
-            float previousDistance = Vector2.Distance(
-                t0.screenPosition - t0.delta,
-                t1.screenPosition - t1.delta
-            );
-
-            PinchDelta = currentDistance - previousDistance; // positive = zoom out, negative = zoom in
-        }
-
         // Finger lifted or lost
         SwipeDelta = Vector2.zero;
-        PinchDelta = 0f;
+
     }
 
     public void OnPointerDown(PointerEventData eventData)

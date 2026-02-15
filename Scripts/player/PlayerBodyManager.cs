@@ -227,7 +227,7 @@ public class PlayerBodyManager : MonoBehaviour
 
     public void ToggleBodyType(bool isMale)
     {
-        if (isMale)
+        if (isMale && maleObject !=null)
         {
             maleObject.SetActive(true);
             feMaleObject.SetActive(false);

@@ -33,10 +33,6 @@ public class AttackState : AIState
         }
 
 
-
-
-        aiCharacter.characterController.Move(Vector3.zero);
-
         if (aiCharacter.aiCharacterCombatManager.currentTarget == null)
             return SwitchState(aiCharacter, aiCharacter.idle);
 
@@ -47,7 +43,11 @@ public class AttackState : AIState
         //Rotate Whilest performing a  Attack
         aiCharacter.aiCharacterCombatManager.RotateTowardsTargetWhilestAttacking(aiCharacter);
 
-        aiCharacter.characterAnimatorManager.UpdateAnimatorMovementParameters(0,0, false,false);
+        if (aiCharacter.isPerformingAction)
+        {
+            aiCharacter.characterAnimatorManager.UpdateAnimatorMovementParameters(0, 0, false, false);
+        }
+        
 
 
 
@@ -68,20 +68,23 @@ public class AttackState : AIState
             //If we are Recovering from an Action, Wait before performing Another
             if (aiCharacter.aiCharacterCombatManager.actionRecoveryTimer > 0)
             {
-                aiCharacter.isBlocking = true;
+                if (aiCharacter.combatStance.canBlock)
+                {
+                    aiCharacter.isBlocking = true;
+
+                }
                 return this;
 
             }
 
-            
+            if (!aiCharacter.isPerformingAction)
+            {
+                hasPerformedAttack = true;
+                performAttack(aiCharacter);
 
-            performAttack(aiCharacter);
-
+            }
             //Return to the Top, So if we have a Combo We process that when are able
             return this;
-
-           
-
         }
 
         if(pivotAfterAttack)
@@ -92,8 +95,6 @@ public class AttackState : AIState
         {
             aiCharacter.aiCharacterCombatManager.PivotTowardsTargetFourRotations(aiCharacter);
         }
-
-        aiCharacter.navMeshAgent.enabled = true;
         return SwitchState(aiCharacter, aiCharacter.combatStance);
 
 
@@ -174,8 +175,11 @@ public class AttackState : AIState
 
     protected void performAttack(AICharacterManager aiCharacter)
     {
-        hasPerformedAttack = true;
-        currentAttack.AttemptToPerformAction(aiCharacter);
+        if(currentAttack!= null)
+        {
+            currentAttack.AttemptToPerformAction(aiCharacter);
+        }
+        
 
         aiCharacter.aiCharacterCombatManager.actionRecoveryTimer = currentAttack.actionRecoveryTime;
 

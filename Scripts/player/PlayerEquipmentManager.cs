@@ -114,35 +114,35 @@ public class PlayerEquipmentManager : CharacterEquipmentManager
 
 
         //UpperBody
-        List<GameObject> maleBodieslist = new List<GameObject>();
+        //List<GameObject> maleBodieslist = new List<GameObject>();
 
-        foreach (Transform child in maleFullBodyObject.transform)
-        {
-            maleBodieslist.Add(child.gameObject);
+        //foreach (Transform child in maleFullBodyObject.transform)
+        //{
+        //    maleBodieslist.Add(child.gameObject);
 
-        }
-        maleBodies = maleBodieslist.ToArray();
+        //}
+        //maleBodies = maleBodieslist.ToArray();
 
         //Lower Body
-        List<GameObject> maleFullLegArmorlist = new List<GameObject>();
+        //List<GameObject> maleFullLegArmorlist = new List<GameObject>();
 
-        foreach (Transform child in maleFullLegObject.transform)
-        {
-            maleFullLegArmorlist.Add(child.gameObject);
+        //foreach (Transform child in maleFullLegObject.transform)
+        //{
+        //    maleFullLegArmorlist.Add(child.gameObject);
 
-        }
-        maleFullLegArmor = maleFullLegArmorlist.ToArray();
+        //}
+        //maleFullLegArmor = maleFullLegArmorlist.ToArray();
 
 
         //Arm
-        List<GameObject> maleFullHandArmorlist = new List<GameObject>();
+        //List<GameObject> maleFullHandArmorlist = new List<GameObject>();
 
-        foreach (Transform child in maleFullHandObject.transform)
-        {
-            maleFullHandArmorlist.Add(child.gameObject);
+        //foreach (Transform child in maleFullHandObject.transform)
+        //{
+        //    maleFullHandArmorlist.Add(child.gameObject);
 
-        }
-        maleFullHandArmor = maleFullHandArmorlist.ToArray();
+        //}
+        //maleFullHandArmor = maleFullHandArmorlist.ToArray();
     }
 
     protected override void Start()
@@ -202,6 +202,7 @@ public class PlayerEquipmentManager : CharacterEquipmentManager
             rightWeaponManager.SetWeaponDamage(player, player.playerInventoryManager.currentRightHandWeapon);
 
             player.playerAnimatorManager.UpdateAnimatorController(player.playerInventoryManager.currentRightHandWeapon.weaponAnimator);
+            PlayerUIManager.instance.mobileControls.LoadMeleeSprite();
         }
     }
 
@@ -399,7 +400,6 @@ public class PlayerEquipmentManager : CharacterEquipmentManager
     //Two Hand
     public void LoadTwoHandWeapon()
     {
-        
         //Play Equip Animation
         player.playerAnimatorManager.PlayTargetActionAnimation("Equip_TwoHandWeapon", false, false, true, true, true, true);
 
@@ -418,8 +418,11 @@ public class PlayerEquipmentManager : CharacterEquipmentManager
         leftHandWeaponSlot.UnLoadWeapon();
         leftHandShieldSlot.UnLoadWeapon();
 
-        if (rightHandWeaponModel != null) Destroy(rightHandWeaponModel);
-        if (leftHandWeaponModel != null) Destroy(leftHandWeaponModel);
+        rightHandWeaponModel = null;
+        leftHandWeaponModel = null;
+
+        //if (rightHandWeaponModel != null) Destroy(rightHandWeaponModel);
+        //if (leftHandWeaponModel != null) Destroy(leftHandWeaponModel);
 
         bool isBow = weapon.weaponClass == WeapomClass.Bow;
         bool isGun = weapon.weaponClass == WeapomClass.Gun;
@@ -440,6 +443,9 @@ public class PlayerEquipmentManager : CharacterEquipmentManager
             leftHandWeaponSlot.LoadWeaponModel(leftHandWeaponModel);
             leftWeaponManager = leftHandWeaponModel.GetComponent<WeaponManager>();
             leftWeaponManager.SetWeaponDamage(player, weapon);
+            player.playerAnimatorManager.UpdateAnimatorController(weapon.weaponAnimator);
+            PlayerUIManager.instance.mobileControls.ToggleAimIcon(true);
+            PlayerUIManager.instance.mobileControls.LoadBulletOrBowSprite(isBow);
         }
         else
         {
@@ -459,6 +465,9 @@ public class PlayerEquipmentManager : CharacterEquipmentManager
                 {
                     player.playerAnimatorManager.AssignHandIK(rightHandIKTarget, leftHandIKTarget);
                     player.playerAnimatorManager.EnableDisableIK(0, 0);
+                    PlayerUIManager.instance.mobileControls.ToggleAimIcon(true);
+                    PlayerUIManager.instance.mobileControls.LoadBulletOrBowSprite(false);
+
                 }
 
             }
@@ -466,6 +475,23 @@ public class PlayerEquipmentManager : CharacterEquipmentManager
             player.playerAnimatorManager.UpdateAnimatorController(weapon.weaponAnimator);
         }
 
+
+
+    }
+
+    public IEnumerator ReloadTwoHandWeapon()
+    {
+        UnloadTwoHandWeaponAndRestore();
+        isTwoHandingWeapon = false;
+
+        yield return null;
+
+        SaveCurrentOneHandedWeapons();
+        isTwoHandingWeapon=true;
+
+        LoadTwoHandWeapon();
+
+        Debug.Log("Loaded TH WEAPONS");
 
 
     }
@@ -490,14 +516,29 @@ public class PlayerEquipmentManager : CharacterEquipmentManager
         leftHandWeaponSlot.UnLoadWeapon();
         leftHandShieldSlot.UnLoadWeapon();
 
-        if (rightHandWeaponModel != null) Destroy(rightHandWeaponModel);
-        if (leftHandWeaponModel != null) Destroy(leftHandWeaponModel);
+        if (rightHandWeaponModel != null) 
+            Destroy(rightHandWeaponModel);
+
+        if (leftHandWeaponModel != null) 
+            Destroy(leftHandWeaponModel);
 
         // Restore previously saved 1H weapons
         player.playerInventoryManager.currentRightHandWeapon = previousRightHandWeapon;
         player.playerInventoryManager.currentLeftHandWeapon = previousLeftHandWeapon;
 
+        PlayerUIManager.instance.mobileControls.ToggleAimIcon(false);
         LoadWeaponOnBothHands();
+
+        if (player.playerCombatManager.isAimLockedOn)
+        {
+            player.playerCombatManager.isAimLockedOn = false;
+            player.isAiming = false;
+            PlayerCamera.instance.OnIsAimingChanged(player.isAiming);
+            PlayerUIManager.instance.mobileControls.EnableAimLockOn();
+            PlayerUIManager.instance.mobileControls.ToggleLeftFireButton(player.playerCombatManager.isAimLockedOn);
+
+        }
+
     }
 
 

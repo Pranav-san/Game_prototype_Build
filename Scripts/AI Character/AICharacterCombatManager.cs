@@ -374,6 +374,12 @@ public class AICharacterCombatManager : CharacterCombatManager
     }
 
 
+    public override void CancelCurrentAttack()
+    {
+        base.CancelCurrentAttack();
+    }
+
+
 
     public void HandleActionRecovery(AICharacterManager aiCharacter)
     {

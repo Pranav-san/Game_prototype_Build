@@ -237,21 +237,16 @@ public class UI_Character_Save_Slot : MonoBehaviour
 
     public void OnSlotClicked()
     {
-        CharacterSlot clickedSlot = characterSlot;
+        TitleScreenManager.Instance.currentSelectedCharacterSlot = characterSlot;
+        LoadGameFromCharacterSlots();
+        TitleScreenManager.Instance.CloseLoadGameMenu();
+        WorldSoundFXManager.instance.PlayLoadGameClickSFX();
+    }
 
-        // If clicked slot is already the current selected slot load game
-        if (TitleScreenManager.Instance.currentSelectedCharacterSlot == clickedSlot)
-        {
-            LoadGameFromCharacterSlots();
-            TitleScreenManager.Instance.CloseLoadGameMenu();
-
-
-        }
-        else
-        {
-            // First click – update currentSelectedCharacterSlot
-            TitleScreenManager.Instance.currentSelectedCharacterSlot = clickedSlot;
-        }
+    public void DeleteSlot()
+    {
+        TitleScreenManager.Instance.currentSelectedCharacterSlot = characterSlot;
+        TitleScreenManager.Instance.AttemptToDeleteCharacterSlot();
     }
 
 }

@@ -36,12 +36,10 @@ public class FireProjectileAction : WeaponItemBasedAction
         {
            
             PlayerInputManager.Instance.Two_Hand_Input = true;
-          
 
-            
         }
 
-        if(!playerPerformingAction.hasArrowNotched)
+        if(!playerPerformingAction.hasArrowNotched && !playerPerformingAction.playerCombatManager.isFiringBow)
         {
             playerPerformingAction.hasArrowNotched = true;
 
@@ -54,7 +52,7 @@ public class FireProjectileAction : WeaponItemBasedAction
                 return;
             }
             playerPerformingAction.playerCombatManager.currentProjectileBeingUsed = projectileSlot;
-            playerPerformingAction.playerAnimatorManager.PlayTargetActionAnimation("Bow_Draw", true);
+            playerPerformingAction.playerAnimatorManager.PlayTargetActionAnimation("Bow_Draw", false, false, true, false);
             playerPerformingAction.playerEquipmentManager.DrawProjectile(projectileItem.itemID);
 
 

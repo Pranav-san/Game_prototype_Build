@@ -12,6 +12,7 @@ public class playerManager : CharacterManager
 
     [Header("Default Player Position")]
     public Vector3 defaultPlayerposition;
+    public Vector3 newGameStartPlayerPosition;
     public Vector3 titleScreenPlayerPosition;
     public Quaternion titleScreenPlayerRotation;
 
@@ -38,6 +39,7 @@ public class playerManager : CharacterManager
     [HideInInspector]public PlayerBodyManager playerBodyManager;
     [HideInInspector] public PlayerRespawnManager playerRespawnManager;
     [HideInInspector] public PlayerEffectsManager playerEffectsManager;
+    [HideInInspector] public PlayerSoundFxManager playerSoundFxManager;
    
 
 
@@ -74,6 +76,7 @@ public class playerManager : CharacterManager
         playerBodyManager = GetComponent<PlayerBodyManager>();
         playerRespawnManager = GetComponent<PlayerRespawnManager>();
         playerEffectsManager = GetComponent<PlayerEffectsManager>();
+        playerSoundFxManager = GetComponent <PlayerSoundFxManager>();
     }
 
     protected override void Update()
@@ -301,11 +304,19 @@ public class playerManager : CharacterManager
 
     }
 
+    public void ReloadTHWeapons(PlayerEquipmentManager equip)
+    {
+        StartCoroutine(equip.ReloadTwoHandWeapon());
+       
+    }
+
 
 
     public override void OnIsBlocking(bool Status)
     {
         base.OnIsBlocking(Status);
+
+
 
         playerStatsManager.blockingPhysicalAbsorption = playerCombatManager.currentWeaponBeingUsed.physicalBaseDamageAbsorption;
         playerStatsManager.blockingFireAbsorption = playerCombatManager.currentWeaponBeingUsed.fireBaseDamageAbsorption;

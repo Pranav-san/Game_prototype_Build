@@ -240,6 +240,14 @@ public enum SurfaceType
     Metal,
 }
 
+//Used for Playing Atmosphere Ambient SFX
+
+public enum LocationType
+{
+    Indoor,
+    OutDoor,
+}
+
 //Used To Tag Sliders For LevelUp UI
 public enum CharacterAttributes
 {

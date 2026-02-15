@@ -374,6 +374,8 @@ public class PlayerUIEquipmentManager : PlayerUIMenu
                 break;
         }
 
+        WorldSoundFXManager.instance.PlayInventorySlotClickSFX();
+
 
 
     }
